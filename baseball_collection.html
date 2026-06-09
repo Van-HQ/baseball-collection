@@ -2031,12 +2031,8 @@ buildEbayLinks();
 
       <!-- Comps -->
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="margin-bottom:8px">
           <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px">Last 5 Comps</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span id="cd-save-status" style="font-size:11px;font-weight:600;transition:color .2s"></span>
-            <button onclick="saveComps()" class="vm-action-btn" style="padding:5px 14px;font-size:11px">Save</button>
-          </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
           <input id="cd-comp-1" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
@@ -2045,8 +2041,9 @@ buildEbayLinks();
           <input id="cd-comp-4" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
           <input id="cd-comp-5" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
         </div>
-        <div style="margin-top:10px;text-align:center">
-          <button onclick="saveComps()" class="vm-action-btn" style="padding:7px 28px;font-size:12px">Save</button>
+        <div style="margin-top:10px;display:flex;align-items:center;justify-content:flex-end;gap:10px">
+          <span id="cd-save-status" style="font-size:11px;font-weight:600;transition:color .2s"></span>
+          <button onclick="saveComps()" class="vm-action-btn" style="padding:7px 20px;font-size:12px">Save</button>
         </div>
       </div>
 
