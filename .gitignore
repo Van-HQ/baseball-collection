@@ -1,0 +1,11 @@
+# Generated data — rebuild locally with build_collection.py
+collection_data.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# macOS
+.DS_Store
