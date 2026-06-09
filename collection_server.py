@@ -432,10 +432,31 @@ class Handler(BaseHTTPRequestHandler):
                 # Rebuild HTML so the static DATA snapshot reflects the change
                 result = subprocess.run(
                     [sys.executable, str(HERE / 'build_collection.py')],
-                    capture_output=True, text=True
+                    capture_output=True, text=True, cwd=str(HERE)
                 )
                 if result.returncode == 0:
                     print(f"[REBUILD] OK")
+                    # Push to GitHub so GitHub Pages stays in sync
+                    git = subprocess.run(
+                        ['git', '-C', str(HERE), 'add', 'baseball_collection.html'],
+                        capture_output=True, text=True
+                    )
+                    git = subprocess.run(
+                        ['git', '-C', str(HERE), 'commit', '-m',
+                         f'Auto: update comps for {player} {card_no}'],
+                        capture_output=True, text=True
+                    )
+                    if 'nothing to commit' in git.stdout + git.stderr:
+                        print(f"[GIT] Nothing changed")
+                    else:
+                        push = subprocess.run(
+                            ['git', '-C', str(HERE), 'push'],
+                            capture_output=True, text=True
+                        )
+                        if push.returncode == 0:
+                            print(f"[GIT] Pushed to GitHub")
+                        else:
+                            print(f"[GIT] Push failed: {push.stderr}")
                 else:
                     print(f"[REBUILD] FAILED:\n{result.stderr}")
                 self.send_json(200, {"ok": True})
