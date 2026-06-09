@@ -375,13 +375,63 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", len(body))
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
         self.wfile.write(body)
 
     def do_OPTIONS(self):
         self.send_json(204, {})
+
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        length = int(self.headers.get("Content-Length", 0))
+        body   = json.loads(self.rfile.read(length) or b"{}") if length else {}
+
+        if parsed.path == "/api/update-comps":
+            binder  = body.get("binder", "")
+            player  = body.get("player", "")
+            card_no = body.get("card_no", "")
+            comps   = body.get("comps", [])  # list of up to 5 floats/None
+
+            try:
+                import openpyxl as _xl
+                wb = _xl.load_workbook(XLSX)
+                ws = wb["Bowman"]
+                target = None
+                for row in ws.iter_rows(min_row=3):
+                    rv = row[0].value
+                    # Match by binder slot (most reliable)
+                    if binder and rv is not None:
+                        try:
+                            if abs(float(rv) - float(binder)) < 0.001:
+                                target = row; break
+                        except: pass
+                    # Fallback: player + card_no
+                    if not target and player:
+                        rp = str(row[1].value or "").strip().lower()
+                        rc = str(row[4].value or "").strip().lower()
+                        if rp == player.lower() and rc == card_no.lower():
+                            target = row; break
+
+                if not target:
+                    self.send_json(404, {"ok": False, "message": "Card not found in xlsx"})
+                    wb.close(); return
+
+                # Write comps into columns Q-U (indices 16-20)
+                for i in range(5):
+                    val = comps[i] if i < len(comps) else None
+                    target[16 + i].value = float(val) if val is not None else None
+
+                wb.save(XLSX)
+                wb.close()
+                print(f"[UPDATE] {player} {card_no} comps → {comps}")
+                self.send_json(200, {"ok": True})
+            except Exception as e:
+                self.send_json(500, {"ok": False, "message": str(e)})
+            return
+
+        self.send_json(404, {"error": "not found"})
 
     def do_GET(self):
         parsed = urlparse(self.path)
