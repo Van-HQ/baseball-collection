@@ -828,6 +828,31 @@ function renderTransactions() {
 let cardFilter = 'all', sortCol = 'pl', sortDir = -1;
 let filteredCards = [...DATA.cards];
 
+const SCP_PREFIX_SET = {
+  'BDC':'bowman-draft-chrome','BDN':'bowman-draft-chrome',
+  'BCP':'bowman-chrome','BPA':'bowman-chrome','CPA':'bowman-chrome','BCPA':'bowman-chrome',
+  'BP':'bowman','PP':'bowman-chrome','BTP':'bowman-chrome','BST':'bowman-chrome',
+  'ROY':'bowman-chrome','GL':'bowman-chrome','RR':'bowman-chrome','VIP':'bowman-chrome',
+  'ES':'bowman-chrome','UR':'bowman-chrome','PC':'bowman-chrome',
+  'NT':'topps-chrome-update','LS':'topps-cosmic-chrome','BT':'topps-cosmic-chrome',
+  'BMA':'bowman-chrome',
+};
+function _scpSlugify(s) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,' ').trim().replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+}
+function buildScpUrl(player, parallel, year, cardNo) {
+  const prefix = (cardNo||'').match(/^([A-Za-z]+)/);
+  if (!prefix) return null;
+  const setName = SCP_PREFIX_SET[prefix[1].toUpperCase()];
+  if (!setName) return null;
+  const setSlug      = `baseball-cards-${year}-${setName}`;
+  const parallelSlug = _scpSlugify((parallel||'').replace(/\/\d+/g,''));
+  const playerSlug   = _scpSlugify(player||'');
+  const cardSlug     = cardNo.toLowerCase().replace('#','').trim();
+  const q            = encodeURIComponent(`${player} ${parallel} ${cardNo}`);
+  return `https://www.sportscardspro.com/game/${setSlug}/${playerSlug}-${parallelSlug}-${cardSlug}?q=${q}`;
+}
+
 function renderCardsTable() {
   const search = ($('card-search')||{value:''}).value.toLowerCase();
   filteredCards = DATA.cards.filter(c => {
@@ -848,8 +873,8 @@ function renderCardsTable() {
     const barW = Math.round((Math.abs(c.pl)/maxPL)*80);
     const barCls = c.pl >= 0 ? 'pos' : 'neg';
     const typeCls = (c.type||'').toLowerCase().includes('ripped') ? 'ripped' : 'auction';
-    const scpQ = encodeURIComponent([c.player, c.parallel, c.card_no].filter(Boolean).join(' '));
-    const scpHref = c.scp_url || `https://www.sportscardspro.com/search-products?q=${scpQ}`;
+    const scpHref = buildScpUrl(c.player, c.parallel, c.year, c.card_no)
+      || `https://www.sportscardspro.com/search-products?q=${encodeURIComponent([c.player,c.parallel,c.card_no].filter(Boolean).join(' '))}`;
     const linkStyle = `display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 8px;border-radius:10px;text-decoration:none;transition:all .15s;white-space:nowrap`;
     return `<tr>
       <td style="text-align:center;padding:8px 10px;color:var(--text-muted);font-size:11px;font-weight:600;white-space:nowrap">${c.binder||'—'}</td>
