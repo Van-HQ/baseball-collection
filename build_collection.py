@@ -43,6 +43,7 @@ def parse_bowman(ws):
         if not player:
             continue
         cards.append({
+            'binder':    _str(row[0]),
             'player':    player,
             'year':      int(row[2]) if row[2] else None,
             'parallel':  _str(row[3]),
