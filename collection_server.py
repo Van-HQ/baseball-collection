@@ -8,7 +8,7 @@ Run this once before opening baseball_collection.html:
 Press Ctrl+C to stop.
 """
 
-import json, re, sys, time
+import json, re, sys, time, subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs, quote
 from pathlib import Path
@@ -17,6 +17,7 @@ from playwright.sync_api import sync_playwright
 
 PORT = 5055
 XLSX = Path.home() / 'Downloads' / 'Baseball Collection.xlsx'
+HERE = Path(__file__).parent
 
 # ── Card number prefix → SCP set slug ─────────────────────────────────────────
 # Used to construct a direct card URL (most reliable approach)
@@ -428,6 +429,9 @@ class Handler(BaseHTTPRequestHandler):
                 wb.save(XLSX)
                 wb.close()
                 print(f"[UPDATE] {player} {card_no} comps → {comps}")
+                # Rebuild HTML so the static DATA snapshot reflects the change
+                subprocess.Popen([sys.executable, str(HERE / 'build_collection.py')],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 self.send_json(200, {"ok": True})
             except Exception as e:
                 self.send_json(500, {"ok": False, "message": str(e)})
