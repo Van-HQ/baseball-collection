@@ -92,22 +92,37 @@ def parse_bowman(ws):
         if not player:
             continue
         comps = [round(_float(row[i]), 2) for i in range(16, 21) if row[i] is not None and _float(row[i]) > 0]
+        card_price = round(_float(row[9]),  2)
+        shipping   = round(_float(row[10]), 2)
+        taxes      = round(_float(row[11]), 2)
+        # row[12] is a formula (=card+ship+tax); cache may be stripped by openpyxl —
+        # fall back to computing it from components
+        cost_raw   = _float(row[12])
+        cost       = round(cost_raw if cost_raw else card_price + shipping + taxes, 2)
+        scp_value  = round(_float(row[13]), 2)
+        tmv        = round(_float(row[14]), 2)
+        # row[15] is also a formula; recompute if cache is missing
+        pl_raw     = row[15]
+        if pl_raw is None or isinstance(pl_raw, str):
+            pl = round(((tmv - cost) / cost * 100) if cost else 0.0, 2)
+        else:
+            pl = round(_float(pl_raw), 2)
         cards.append({
-            'binder':    _binder(row[0]),
-            'player':    player,
-            'year':      int(row[2]) if row[2] else None,
-            'parallel':  _str(row[3]),
-            'card_no':   _str(row[4]),
-            'type':      _str(row[8]),
-            'card_price': round(_float(row[9]), 2),
-            'shipping':  round(_float(row[10]), 2),
-            'taxes':     round(_float(row[11]), 2),
-            'cost':      round(_float(row[12]), 2),   # Total
-            'scp_value': round(_float(row[13]), 2),
-            'tmv':       round(_float(row[14]), 2),
-            'pl':        round(_float(row[15]), 2),   # P/L %
-            'comps':     comps,
-            'scp_url':   None,  # filled in below from cache
+            'binder':     _binder(row[0]),
+            'player':     player,
+            'year':       int(row[2]) if row[2] else None,
+            'parallel':   _str(row[3]),
+            'card_no':    _str(row[4]),
+            'type':       _str(row[8]),
+            'card_price': card_price,
+            'shipping':   shipping,
+            'taxes':      taxes,
+            'cost':       cost,
+            'scp_value':  scp_value,
+            'tmv':        tmv,
+            'pl':         pl,
+            'comps':      comps,
+            'scp_url':    None,  # filled in below from cache
         })
     return cards
 
