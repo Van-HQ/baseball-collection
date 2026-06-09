@@ -91,6 +91,7 @@ def parse_bowman(ws):
         player = _str(row[1])
         if not player:
             continue
+        comps = [round(_float(row[i]), 2) for i in range(16, 21) if row[i] is not None and _float(row[i]) > 0]
         cards.append({
             'binder':    _binder(row[0]),
             'player':    player,
@@ -98,10 +99,14 @@ def parse_bowman(ws):
             'parallel':  _str(row[3]),
             'card_no':   _str(row[4]),
             'type':      _str(row[8]),
-            'cost':      round(_float(row[12]), 2),   # Total col
+            'card_price': round(_float(row[9]), 2),
+            'shipping':  round(_float(row[10]), 2),
+            'taxes':     round(_float(row[11]), 2),
+            'cost':      round(_float(row[12]), 2),   # Total
             'scp_value': round(_float(row[13]), 2),
             'tmv':       round(_float(row[14]), 2),
-            'pl':        round(_float(row[15]), 2),
+            'pl':        round(_float(row[15]), 2),   # P/L %
+            'comps':     comps,
             'scp_url':   None,  # filled in below from cache
         })
     return cards
