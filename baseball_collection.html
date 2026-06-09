@@ -397,7 +397,6 @@
                 <th onclick="sortTable('tmv')" style="text-align:right">TMV</th>
                 <th onclick="sortTable('pl')" style="text-align:right">P/L</th>
                 <th style="text-align:center;cursor:default">Active</th>
-                <th style="text-align:center;cursor:default">SCP</th>
               </tr>
             </thead>
             <tbody id="cards-tbody"></tbody>
@@ -882,7 +881,7 @@ function renderCardsTable() {
       <td class="player-name">${c.player}</td>
       <td><span class="year-tag">${c.year||'—'}</span></td>
       <td class="parallel-text">${c.parallel||'—'}</td>
-      <td class="card-no">${c.card_no||'—'}</td>
+      <td class="card-no" onclick="event.stopPropagation()">${scpHref ? `<a href="${scpHref}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(79,142,247,0.5)" onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'">${c.card_no||'—'}</a>` : (c.card_no||'—')}</td>
       <td><span class="type-badge ${typeCls}">${c.type||'—'}</span></td>
       <td class="money">${fmt(c.cost)}</td>
       <td class="money">${fmt(c.scp_value)}</td>
@@ -900,19 +899,13 @@ function renderCardsTable() {
           onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
           onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay ↗</a>
       </td>
-      <td style="text-align:center;padding:8px 10px" onclick="event.stopPropagation()">
-        <a href="${scpHref}" target="_blank" rel="noopener"
-          style="${linkStyle}"
-          onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
-          onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">SCP ↗</a>
-      </td>
     </tr>`;
   }).join('');
   $('card-count').textContent = filteredCards.length + ' cards';
   // Update sort headers
   document.querySelectorAll('#cards-table th').forEach(th => {
     th.classList.remove('sort-asc','sort-desc');
-    const cols = ['binder','player','year','parallel','card_no','type','cost','scp_value','tmv','pl','',''];
+    const cols = ['binder','player','year','parallel','card_no','type','cost','scp_value','tmv','pl',''];
     const col = cols[Array.from(th.parentNode.children).indexOf(th)];
     if (col === sortCol) th.classList.add(sortDir > 0 ? 'sort-asc' : 'sort-desc');
   });
