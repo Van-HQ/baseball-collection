@@ -1008,8 +1008,8 @@ function closeCardDetail() {
 document.addEventListener('keydown', e => {
   if (!_selectedCard) return;
   if (e.key === 'Escape') closeCardDetail();
-  if (e.key === 'ArrowLeft')  navigateCard(-1);
-  if (e.key === 'ArrowRight') navigateCard(1);
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); navigateCard(-1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); navigateCard(1); }
 });
 function filterType(type, el) {
   cardFilter = type;
