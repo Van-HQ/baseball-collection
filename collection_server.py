@@ -11,10 +11,12 @@ Press Ctrl+C to stop.
 import json, re, sys, time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs, quote
+from pathlib import Path
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
 PORT = 5055
+XLSX = Path.home() / 'Downloads' / 'Baseball Collection.xlsx'
 
 # ── Card number prefix → SCP set slug ─────────────────────────────────────────
 # Used to construct a direct card URL (most reliable approach)
