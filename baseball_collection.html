@@ -939,13 +939,13 @@ function openCardDetail(idx) {
   $('cd-meta').innerHTML = [c.year, cardNoHtml, c.type, 'Slot ' + (c.binder||'—')].filter(Boolean).join(' · ');
 
   // Cost breakdown
-  $('cd-card-price').textContent = '$' + (c.card_price||0).toFixed(2);
-  $('cd-shipping').textContent   = '$' + (c.shipping||0).toFixed(2);
-  $('cd-taxes').textContent      = '$' + (c.taxes||0).toFixed(2);
-  $('cd-total').textContent      = '$' + (c.cost||0).toFixed(2);
+  $('cd-card-price').value = '$' + (c.card_price||0).toFixed(2);
+  $('cd-shipping').value   = '$' + (c.shipping||0).toFixed(2);
+  $('cd-taxes').value      = '$' + (c.taxes||0).toFixed(2);
+  $('cd-total').textContent = '$' + (c.cost||0).toFixed(2);
 
   // Market
-  $('cd-scp').textContent = '$' + (c.scp_value||0).toFixed(2);
+  $('cd-scp').value       = '$' + (c.scp_value||0).toFixed(2);
   $('cd-tmv').textContent = '$' + (c.tmv||0).toFixed(2);
   const plEl = $('cd-pl');
   plEl.textContent = (c.pl >= 0 ? '+' : '') + c.pl.toFixed(2) + '%';
@@ -964,6 +964,19 @@ function openCardDetail(idx) {
   requestAnimationFrame(() => ov.classList.add('open'));
 }
 
+function _liveCost() {
+  const card = parseFloat($('cd-card-price').value.replace('$','')) || 0;
+  const ship = parseFloat($('cd-shipping').value.replace('$',''))   || 0;
+  const tax  = parseFloat($('cd-taxes').value.replace('$',''))      || 0;
+  return card + ship + tax;
+}
+
+function recalcCost() {
+  const total = _liveCost();
+  $('cd-total').textContent = '$' + total.toFixed(2);
+  _recalcPL();
+}
+
 function recalcTMV() {
   const vals = [];
   for (let i = 1; i <= 5; i++) {
@@ -973,38 +986,52 @@ function recalcTMV() {
   if (!vals.length) return;
   const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
   $('cd-tmv').textContent = '$' + avg.toFixed(2);
-  if (_selectedCard) {
-    const pl = _selectedCard.cost > 0 ? ((avg - _selectedCard.cost) / _selectedCard.cost) * 100 : 0;
-    const plEl = $('cd-pl');
-    plEl.textContent = (pl >= 0 ? '+' : '') + pl.toFixed(2) + '%';
-    plEl.style.color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--text-muted)';
-  }
+  _recalcPL();
 }
 
-async function saveComps() {
+function _recalcPL() {
+  const cost = _liveCost();
+  const tmv  = parseFloat($('cd-tmv').textContent.replace('$','')) || 0;
+  if (!cost) return;
+  const pl = ((tmv - cost) / cost) * 100;
+  const plEl = $('cd-pl');
+  plEl.textContent = (pl >= 0 ? '+' : '') + pl.toFixed(2) + '%';
+  plEl.style.color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--text-muted)';
+}
+
+async function saveCard() {
   if (!_selectedCard) return;
   const comps = [];
   for (let i = 1; i <= 5; i++) {
     const v = parseFloat($('cd-comp-' + i).value.replace('$', ''));
     comps.push(isNaN(v) ? null : v);
   }
+  const pf = s => { const v = parseFloat((s||'').replace('$','')); return isNaN(v) ? null : v; };
   const status = $('cd-save-status');
   status.textContent = 'Saving…'; status.style.color = 'var(--yellow)';
   try {
-    const r = await fetch('http://localhost:5055/api/update-comps', {
+    const r = await fetch('http://localhost:5055/api/update-card', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        binder:  _selectedCard.binder,
-        player:  _selectedCard.player,
-        card_no: _selectedCard.card_no,
-        comps:   comps.filter(v => v !== null),
+        binder:     _selectedCard.binder,
+        player:     _selectedCard.player,
+        card_no:    _selectedCard.card_no,
+        card_price: pf($('cd-card-price').value),
+        shipping:   pf($('cd-shipping').value),
+        taxes:      pf($('cd-taxes').value),
+        scp_value:  pf($('cd-scp').value),
+        comps:      comps.filter(v => v !== null),
       })
     });
     const data = await r.json();
     if (data.ok) {
-      // Update in-memory card data immediately
-      _selectedCard.comps = comps.filter(v => v !== null);
+      _selectedCard.comps      = comps.filter(v => v !== null);
+      _selectedCard.card_price = pf($('cd-card-price').value) || 0;
+      _selectedCard.shipping   = pf($('cd-shipping').value)   || 0;
+      _selectedCard.taxes      = pf($('cd-taxes').value)      || 0;
+      _selectedCard.scp_value  = pf($('cd-scp').value)        || 0;
+      _selectedCard.cost       = _liveCost();
       status.textContent = '✓ Saved'; status.style.color = 'var(--green)';
       setTimeout(() => { status.textContent = ''; }, 2500);
     } else {
@@ -2027,19 +2054,25 @@ buildEbayLinks();
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Cost Breakdown</div>
         <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:10px;display:flex;align-items:stretch">
-          <div style="flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--border)">
+          <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border)">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Card</div>
-            <div id="cd-card-price" style="font-size:14px;font-weight:700"></div>
+            <input id="cd-card-price" type="text" inputmode="decimal" placeholder="$0.00" style="border:none;outline:none;background:transparent;color:var(--text-primary);font-size:14px;font-weight:700;text-align:center;width:100%;padding:0"
+              onfocus="if(this.value.startsWith('$'))this.value=this.value.slice(1)"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcCost()">
           </div>
-          <div style="flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--border)">
+          <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border)">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Shipping</div>
-            <div id="cd-shipping" style="font-size:14px;font-weight:700"></div>
+            <input id="cd-shipping" type="text" inputmode="decimal" placeholder="$0.00" style="border:none;outline:none;background:transparent;color:var(--text-primary);font-size:14px;font-weight:700;text-align:center;width:100%;padding:0"
+              onfocus="if(this.value.startsWith('$'))this.value=this.value.slice(1)"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcCost()">
           </div>
-          <div style="flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--border)">
+          <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border)">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Taxes</div>
-            <div id="cd-taxes" style="font-size:14px;font-weight:700"></div>
+            <input id="cd-taxes" type="text" inputmode="decimal" placeholder="$0.00" style="border:none;outline:none;background:transparent;color:var(--text-primary);font-size:14px;font-weight:700;text-align:center;width:100%;padding:0"
+              onfocus="if(this.value.startsWith('$'))this.value=this.value.slice(1)"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcCost()">
           </div>
-          <div style="flex:1;padding:12px 14px;text-align:center;background:rgba(79,142,247,0.07);border-radius:0 10px 10px 0">
+          <div style="flex:1;padding:10px 8px;text-align:center;background:rgba(79,142,247,0.07);border-radius:0 10px 10px 0">
             <div style="font-size:10px;color:var(--accent);margin-bottom:4px;font-weight:600">Total</div>
             <div id="cd-total" style="font-size:15px;font-weight:800;color:var(--accent)"></div>
           </div>
@@ -2052,7 +2085,9 @@ buildEbayLinks();
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px">SCP Value</div>
-            <div id="cd-scp" style="font-size:16px;font-weight:700"></div>
+            <input id="cd-scp" type="text" inputmode="decimal" placeholder="$0.00" style="border:none;outline:none;background:transparent;color:var(--text-primary);font-size:16px;font-weight:700;text-align:center;width:100%;padding:0"
+              onfocus="if(this.value.startsWith('$'))this.value=this.value.slice(1)"
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)">
           </div>
           <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px">Avg TMV</div>
@@ -2079,7 +2114,7 @@ buildEbayLinks();
         </div>
         <div style="margin-top:10px;display:flex;align-items:center;justify-content:flex-end;gap:10px">
           <span id="cd-save-status" style="font-size:11px;font-weight:600;transition:color .2s"></span>
-          <button onclick="saveComps()" class="vm-action-btn" style="width:calc(20% - 5px);padding:9px 0;font-size:12px;font-weight:700">Save</button>
+          <button onclick="saveCard()" class="vm-action-btn" style="width:calc(20% - 5px);padding:9px 0;font-size:12px;font-weight:700">Save</button>
         </div>
       </div>
 

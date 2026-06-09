@@ -391,11 +391,15 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         body   = json.loads(self.rfile.read(length) or b"{}") if length else {}
 
-        if parsed.path == "/api/update-comps":
-            binder  = body.get("binder", "")
-            player  = body.get("player", "")
-            card_no = body.get("card_no", "")
-            comps   = body.get("comps", [])  # list of up to 5 floats/None
+        if parsed.path in ("/api/update-comps", "/api/update-card"):
+            binder     = body.get("binder", "")
+            player     = body.get("player", "")
+            card_no    = body.get("card_no", "")
+            comps      = body.get("comps", [])
+            card_price = body.get("card_price")
+            shipping   = body.get("shipping")
+            taxes      = body.get("taxes")
+            scp_value  = body.get("scp_value")
 
             try:
                 import openpyxl as _xl
@@ -421,7 +425,13 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json(404, {"ok": False, "message": "Card not found in xlsx"})
                     wb.close(); return
 
-                # Write comps into columns Q-U (indices 16-20)
+                # Write cost fields (cols J, K, L = indices 9, 10, 11)
+                if card_price is not None: target[9].value  = float(card_price)
+                if shipping   is not None: target[10].value = float(shipping)
+                if taxes      is not None: target[11].value = float(taxes)
+                # SCP value (col N = index 13)
+                if scp_value  is not None: target[13].value = float(scp_value)
+                # Comps (cols Q-U = indices 16-20)
                 for i in range(5):
                     val = comps[i] if i < len(comps) else None
                     target[16 + i].value = float(val) if val is not None else None
