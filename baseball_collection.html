@@ -849,7 +849,7 @@ function renderCardsTable() {
     const barCls = c.pl >= 0 ? 'pos' : 'neg';
     const typeCls = (c.type||'').toLowerCase().includes('ripped') ? 'ripped' : 'auction';
     const scpQ = encodeURIComponent([c.player, c.parallel, c.card_no].filter(Boolean).join(' '));
-    const scpHref = `https://www.sportscardspro.com/search-products?q=${scpQ}`;
+    const scpHref = c.scp_url || `https://www.sportscardspro.com/search-products?q=${scpQ}`;
     const linkStyle = `display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 8px;border-radius:10px;text-decoration:none;transition:all .15s;white-space:nowrap`;
     return `<tr>
       <td style="text-align:center;padding:8px 10px;color:var(--text-muted);font-size:11px;font-weight:600;white-space:nowrap">${c.binder||'—'}</td>

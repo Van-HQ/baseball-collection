@@ -3,21 +3,28 @@
 build_collection.py — Rebuild the baseball collection dashboard from the xlsx.
 
 Usage:
-    python3 build_collection.py
+    python3 build_collection.py               # normal build, uses cached SCP URLs
+    python3 build_collection.py --fetch-scp   # fetch missing SCP URLs then build
+                                              # (requires collection_server.py running)
 
 Reads:  ~/Downloads/Baseball Collection.xlsx
 Writes: collection_data.json  (same folder as this script)
+        scp_url_cache.json    (persisted SCP URL cache, never wiped)
         baseball_collection.html  (updates const DATA = {...} in-place)
 """
 
-import json, re, sys
+import json, re, sys, urllib.request, urllib.parse
 from pathlib import Path
 import openpyxl
 
-XLSX    = Path.home() / 'Downloads' / 'Baseball Collection.xlsx'
-HERE    = Path(__file__).parent
-HTML    = HERE / 'baseball_collection.html'
-JSON_OUT = HERE / 'collection_data.json'
+XLSX      = Path.home() / 'Downloads' / 'Baseball Collection.xlsx'
+HERE      = Path(__file__).parent
+HTML      = HERE / 'baseball_collection.html'
+JSON_OUT  = HERE / 'collection_data.json'
+SCP_CACHE = HERE / 'scp_url_cache.json'
+SCP_PORT  = 5055
+
+FETCH_SCP = '--fetch-scp' in sys.argv
 
 
 def _float(v, default=0.0):
@@ -41,6 +48,40 @@ def _date(v):
     return str(v)
 
 
+# ── SCP URL cache ─────────────────────────────────────────────────────────────
+
+def load_scp_cache():
+    if SCP_CACHE.exists():
+        try: return json.loads(SCP_CACHE.read_text())
+        except: pass
+    return {}
+
+def save_scp_cache(cache):
+    SCP_CACHE.write_text(json.dumps(cache, indent=2))
+
+def scp_cache_key(c):
+    return f"{c['player']}|{c['parallel']}|{c['year']}|{c['card_no']}"
+
+def fetch_scp_url(player, parallel, year, card_no):
+    """Call the local collection_server to get the direct SCP card URL."""
+    params = urllib.parse.urlencode({
+        'player':   player,
+        'parallel': parallel,
+        'year':     year or '',
+        'card_no':  card_no or '',
+    })
+    try:
+        with urllib.request.urlopen(
+            f'http://localhost:{SCP_PORT}/api/scp?{params}', timeout=40
+        ) as r:
+            data = json.loads(r.read())
+            if data.get('ok') and data.get('data', {}).get('url'):
+                return data['data']['url']
+    except Exception as e:
+        print(f'    ✗ request failed: {e}')
+    return None
+
+
 # ── Sheets ────────────────────────────────────────────────────────────────────
 
 def parse_bowman(ws):
@@ -61,6 +102,7 @@ def parse_bowman(ws):
             'scp_value': round(_float(row[13]), 2),
             'tmv':       round(_float(row[14]), 2),
             'pl':        round(_float(row[15]), 2),
+            'scp_url':   None,  # filled in below from cache
         })
     return cards
 
@@ -192,15 +234,48 @@ def build():
     print(f'Reading {XLSX.name} ...')
     wb = openpyxl.load_workbook(XLSX, read_only=True, data_only=True)
 
-    cards       = parse_bowman(wb['Bowman'])
-    fav_players = parse_fav_players(wb['Favorite Players']) if 'Favorite Players' in wb.sheetnames else []
-    watchlist   = parse_watchlist(wb['Watchlist'])
+    cards        = parse_bowman(wb['Bowman'])
+    fav_players  = parse_fav_players(wb['Favorite Players']) if 'Favorite Players' in wb.sheetnames else []
+    watchlist    = parse_watchlist(wb['Watchlist'])
     wax, singles = parse_transactions(wb['Transactions'])
-    rookies     = parse_rookies(wb['Rookies'])
-    cl_2026     = parse_checklist(wb['Bowman 2026'])
-    cl_2025     = parse_checklist(wb['Bowman 2025'])
+    rookies      = parse_rookies(wb['Rookies'])
+    cl_2026      = parse_checklist(wb['Bowman 2026'])
+    cl_2025      = parse_checklist(wb['Bowman 2025'])
     wb.close()
 
+    # ── SCP URL cache ──────────────────────────────────────────────────────────
+    scp_cache = load_scp_cache()
+
+    if FETCH_SCP:
+        # Check server is reachable first
+        try:
+            urllib.request.urlopen(f'http://localhost:{SCP_PORT}/health', timeout=3)
+        except Exception:
+            print(f'✗  collection_server.py not running on :{SCP_PORT}')
+            print(f'   Start it first: python3 collection_server.py')
+            sys.exit(1)
+
+        missing = [c for c in cards if scp_cache_key(c) not in scp_cache]
+        print(f'\nFetching SCP URLs for {len(missing)} uncached cards...')
+        for i, c in enumerate(missing, 1):
+            key = scp_cache_key(c)
+            label = f"{c['player']} {c['parallel']}"
+            print(f'  [{i}/{len(missing)}] {label}')
+            url = fetch_scp_url(c['player'], c['parallel'], c['year'], c['card_no'])
+            scp_cache[key] = url  # store None for misses so we don't retry
+            if url:
+                print(f'    ✓ {url}')
+            else:
+                print(f'    – not found')
+        save_scp_cache(scp_cache)
+        cached_count = sum(1 for v in scp_cache.values() if v)
+        print(f'✓  scp_url_cache.json  ({cached_count} URLs cached)\n')
+
+    # Apply cached URLs to cards
+    for c in cards:
+        c['scp_url'] = scp_cache.get(scp_cache_key(c))
+
+    # ── Summaries ──────────────────────────────────────────────────────────────
     wax_spent     = round(sum(t['price'] for t in wax), 2)
     singles_spent = round(sum(t['price'] for t in singles), 2)
     total_cost    = round(sum(c['cost'] for c in cards), 2)
@@ -247,8 +322,10 @@ def build():
     HTML.write_text(patched)
     print(f'✓  {HTML.name}  (DATA block replaced)')
 
+    urls_in_data = sum(1 for c in cards if c.get('scp_url'))
     print(f'\n{"─"*46}')
     print(f'  Cards        {len(cards):>6}')
+    print(f'  SCP URLs     {urls_in_data:>6} / {len(cards)}')
     print(f'  Total Cost   ${total_cost:>9.2f}')
     print(f'  Total TMV    ${total_tmv:>9.2f}')
     print(f'  P/L          ${total_pl:>+9.2f}')
@@ -257,7 +334,12 @@ def build():
     print(f'  CL 2026      {cl_2026["owned"]:>3}/{cl_2026["total"]}')
     print(f'  CL 2025      {cl_2025["owned"]:>3}/{cl_2025["total"]}')
     print(f'{"─"*46}')
-    print('  Done. Reload baseball_collection.html in your browser.')
+    if FETCH_SCP:
+        print('  Done. Run again without --fetch-scp for faster builds.')
+    else:
+        print('  Done. Reload baseball_collection.html in your browser.')
+        if urls_in_data < len(cards):
+            print(f'  Tip: run with --fetch-scp to fill in {len(cards)-urls_in_data} missing SCP links.')
 
 
 if __name__ == '__main__':
