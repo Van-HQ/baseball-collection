@@ -922,10 +922,13 @@ function filterCards() { renderCardsTable(); }
 // --- CARD DETAIL MODAL ---
 let _selectedCard = null;
 
+let _selectedCardIdx = -1;
+
 function openCardDetail(idx) {
   const c = filteredCards[idx];
   if (!c) return;
   _selectedCard = c;
+  _selectedCardIdx = idx;
 
   $('cd-player').textContent  = c.player;
   $('cd-parallel').textContent = c.parallel || '';
@@ -991,13 +994,23 @@ async function saveComps() {
   }
 }
 
+function navigateCard(dir) {
+  const next = _selectedCardIdx + dir;
+  if (next >= 0 && next < filteredCards.length) openCardDetail(next);
+}
+
 function closeCardDetail() {
   const ov = $('card-detail-overlay');
   ov.classList.remove('open');
-  setTimeout(() => { ov.style.display = 'none'; _selectedCard = null; }, 200);
+  setTimeout(() => { ov.style.display = 'none'; _selectedCard = null; _selectedCardIdx = -1; }, 200);
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && _selectedCard) closeCardDetail(); });
+document.addEventListener('keydown', e => {
+  if (!_selectedCard) return;
+  if (e.key === 'Escape') closeCardDetail();
+  if (e.key === 'ArrowLeft')  navigateCard(-1);
+  if (e.key === 'ArrowRight') navigateCard(1);
+});
 function filterType(type, el) {
   cardFilter = type;
   document.querySelectorAll('.chip[id^="filter-"]').forEach(c=>c.classList.remove('active'));
@@ -1974,7 +1987,7 @@ buildEbayLinks();
   <div class="val-modal" style="max-width:560px;width:100%">
 
     <!-- Header -->
-    <div class="val-modal-hdr" style="padding:20px 24px 16px">
+    <div class="val-modal-hdr" style="padding:20px 20px 16px">
       <div style="flex:1;min-width:0">
         <div id="cd-player" style="font-size:20px;font-weight:800;letter-spacing:-.4px;line-height:1.2"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
@@ -1985,7 +1998,7 @@ buildEbayLinks();
       <button onclick="closeCardDetail()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s;flex-shrink:0" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
     </div>
 
-    <div style="padding:16px 24px 20px;display:flex;flex-direction:column;gap:18px">
+    <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:18px">
 
       <!-- Cost Breakdown -->
       <div>
@@ -2041,9 +2054,13 @@ buildEbayLinks();
           <input id="cd-comp-4" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
           <input id="cd-comp-5" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
         </div>
-        <div style="margin-top:10px;display:flex;align-items:center;justify-content:flex-end;gap:10px">
-          <span id="cd-save-status" style="font-size:11px;font-weight:600;transition:color .2s"></span>
-          <button onclick="saveComps()" class="vm-action-btn" style="padding:7px 20px;font-size:12px">Save</button>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+          <span id="cd-save-status" style="font-size:11px;font-weight:600;transition:color .2s;flex:1"></span>
+          <button onclick="saveComps()" class="vm-action-btn" style="flex:1;padding:9px 0;font-size:13px;font-weight:700">Save</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:14px;opacity:0.3">
+          <button onclick="navigateCard(-1)" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);cursor:pointer;font-size:18px;padding:6px 18px;line-height:1;transition:opacity .15s" onmouseover="this.parentElement.style.opacity='0.7'" onmouseout="this.parentElement.style.opacity='0.3'">←</button>
+          <button onclick="navigateCard(1)"  style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);cursor:pointer;font-size:18px;padding:6px 18px;line-height:1">→</button>
         </div>
       </div>
 
