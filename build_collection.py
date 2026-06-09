@@ -100,7 +100,14 @@ def parse_bowman(ws):
         cost_raw   = _float(row[12])
         cost       = round(cost_raw if cost_raw else card_price + shipping + taxes, 2)
         scp_value  = round(_float(row[13]), 2)
-        tmv        = round(_float(row[14]), 2)
+        # row[14] may be a formula (e.g. AVERAGE of comps); fall back to avg of comps
+        tmv_raw    = _float(row[14])
+        if tmv_raw:
+            tmv = round(tmv_raw, 2)
+        elif comps:
+            tmv = round(sum(comps) / len(comps), 2)
+        else:
+            tmv = 0.0
         # row[15] is also a formula; recompute if cache is missing
         pl_raw     = row[15]
         if pl_raw is None or isinstance(pl_raw, str):
