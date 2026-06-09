@@ -27,6 +27,14 @@ def _float(v, default=0.0):
 def _str(v):
     return str(v).strip() if v is not None else ''
 
+def _binder(v):
+    if v is None: return ''
+    try:
+        f = float(v)
+        return f'{f:.1f}'
+    except:
+        return str(v).strip()
+
 def _date(v):
     if v is None: return ''
     if hasattr(v, 'strftime'): return v.strftime('%Y-%m-%d')
@@ -43,7 +51,7 @@ def parse_bowman(ws):
         if not player:
             continue
         cards.append({
-            'binder':    _str(row[0]),
+            'binder':    _binder(row[0]),
             'player':    player,
             'year':      int(row[2]) if row[2] else None,
             'parallel':  _str(row[3]),
