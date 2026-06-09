@@ -1971,38 +1971,40 @@ buildEbayLinks();
 
 <!-- ── CARD DETAIL MODAL ─────────────────────────────────────────────────── -->
 <div id="card-detail-overlay" class="val-modal-overlay" style="display:none" onclick="if(event.target===this)closeCardDetail()">
-  <div class="val-modal" style="max-width:520px;width:100%">
+  <div class="val-modal" style="max-width:560px;width:100%">
 
     <!-- Header -->
-    <div class="val-modal-hdr">
+    <div class="val-modal-hdr" style="padding-bottom:16px">
       <div style="flex:1;min-width:0">
-        <div id="cd-player" style="font-size:22px;font-weight:800;letter-spacing:-.5px"></div>
-        <div id="cd-parallel" style="font-size:13px;color:var(--text-secondary);margin-top:3px"></div>
-        <div id="cd-meta" style="font-size:11px;color:var(--text-muted);margin-top:4px"></div>
+        <div id="cd-player" style="font-size:20px;font-weight:800;letter-spacing:-.4px;line-height:1.2"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <span id="cd-parallel" style="font-size:11px;font-weight:700;background:rgba(79,142,247,0.15);color:var(--accent);border:1px solid rgba(79,142,247,0.3);border-radius:20px;padding:2px 10px"></span>
+          <span id="cd-meta" style="font-size:11px;color:var(--text-muted)"></span>
+        </div>
       </div>
-      <button onclick="closeCardDetail()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
+      <button onclick="closeCardDetail()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s;flex-shrink:0" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
     </div>
 
-    <div style="padding:20px 0;display:flex;flex-direction:column;gap:20px">
+    <div style="padding:4px 0 16px;display:flex;flex-direction:column;gap:18px">
 
       <!-- Cost Breakdown -->
       <div>
-        <div class="vm-section-title">Cost Breakdown</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:10px">
-          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">Card</div>
-            <div id="cd-card-price" style="font-size:15px;font-weight:700"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Cost Breakdown</div>
+        <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:10px;display:flex;align-items:stretch">
+          <div style="flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Card</div>
+            <div id="cd-card-price" style="font-size:14px;font-weight:700"></div>
           </div>
-          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">Shipping</div>
-            <div id="cd-shipping" style="font-size:15px;font-weight:700"></div>
+          <div style="flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Shipping</div>
+            <div id="cd-shipping" style="font-size:14px;font-weight:700"></div>
           </div>
-          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">Taxes</div>
-            <div id="cd-taxes" style="font-size:15px;font-weight:700"></div>
+          <div style="flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Taxes</div>
+            <div id="cd-taxes" style="font-size:14px;font-weight:700"></div>
           </div>
-          <div style="background:var(--accent-glow);border:1px solid rgba(79,142,247,0.25);border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:10px;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">Total</div>
+          <div style="flex:1;padding:12px 14px;text-align:center;background:rgba(79,142,247,0.07);border-radius:0 10px 10px 0">
+            <div style="font-size:10px;color:var(--accent);margin-bottom:4px;font-weight:600">Total</div>
             <div id="cd-total" style="font-size:15px;font-weight:800;color:var(--accent)"></div>
           </div>
         </div>
@@ -2010,53 +2012,41 @@ buildEbayLinks();
 
       <!-- Market -->
       <div>
-        <div class="vm-section-title">Market</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
-          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">SCP Value</div>
-            <div id="cd-scp" style="font-size:15px;font-weight:700"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Market</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px">SCP Value</div>
+            <div id="cd-scp" style="font-size:16px;font-weight:700"></div>
           </div>
-          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">Avg TMV</div>
-            <div id="cd-tmv" style="font-size:15px;font-weight:700;color:var(--green)"></div>
+          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px">Avg TMV</div>
+            <div id="cd-tmv" style="font-size:16px;font-weight:700;color:var(--green)"></div>
           </div>
-          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">P/L</div>
-            <div id="cd-pl" style="font-size:15px;font-weight:800"></div>
+          <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px">P/L</div>
+            <div id="cd-pl" style="font-size:16px;font-weight:800"></div>
           </div>
         </div>
       </div>
 
       <!-- Comps -->
       <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div class="vm-section-title" style="margin-bottom:0">Last 5 Comps</div>
-          <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px">Last 5 Comps</div>
+          <div style="display:flex;align-items:center;gap:8px">
             <span id="cd-save-status" style="font-size:11px;font-weight:600;transition:color .2s"></span>
-            <button onclick="saveComps()" class="vm-action-btn" style="padding:6px 16px;font-size:12px">Save Comps</button>
+            <button onclick="saveComps()" class="vm-action-btn" style="padding:5px 14px;font-size:11px">Save</button>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
-          <div style="text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">Comp 1</div>
-            <input id="cd-comp-1" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:8px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">Comp 2</div>
-            <input id="cd-comp-2" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:8px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">Comp 3</div>
-            <input id="cd-comp-3" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:8px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">Comp 4</div>
-            <input id="cd-comp-4" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:8px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">Comp 5</div>
-            <input id="cd-comp-5" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:8px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+          <input id="cd-comp-1" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <input id="cd-comp-2" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <input id="cd-comp-3" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <input id="cd-comp-4" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <input id="cd-comp-5" type="number" step="0.01" min="0" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div style="margin-top:10px;text-align:center">
+          <button onclick="saveComps()" class="vm-action-btn" style="padding:7px 28px;font-size:12px">Save</button>
         </div>
       </div>
 
