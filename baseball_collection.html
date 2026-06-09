@@ -549,8 +549,8 @@
         <div class="panel-header">
           <div class="panel-title"><span class="dot purple"></span>Valuation History <span id="sync-status" style="font-size:10px;font-weight:600;margin-left:8px;transition:color .3s"></span></div>
           <div class="panel-actions">
-            <button class="form-btn secondary" onclick="openCloudSettings()" title="Cloud sync settings" style="padding:5px 10px;font-size:11px">☁ Sync</button>
-            <button class="form-btn secondary" onclick="clearValHistory()">Clear All</button>
+            <button class="form-btn secondary" onclick="manualSync()" title="Sync to cloud">☁ Sync</button>
+            <button class="form-btn secondary" onclick="clearValHistory()">Clear</button>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -1088,7 +1088,13 @@ async function _pushToCloud(h) {
   }
 }
 
-// Cloud settings modal helpers
+async function manualSync() {
+  const cfg = getCloudCfg();
+  if (!cfg || !cfg.endpoint) { openCloudSettings(); return; }
+  await _pushToCloud(getValHistory());
+}
+
+// Cloud settings modal helpers (accessible by clicking sync status indicator)
 function openCloudSettings() {
   const cfg = getCloudCfg() || {};
   $('cs-endpoint').value = cfg.endpoint || '';
