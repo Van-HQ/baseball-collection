@@ -430,8 +430,14 @@ class Handler(BaseHTTPRequestHandler):
                 wb.close()
                 print(f"[UPDATE] {player} {card_no} comps → {comps}")
                 # Rebuild HTML so the static DATA snapshot reflects the change
-                subprocess.Popen([sys.executable, str(HERE / 'build_collection.py')],
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                result = subprocess.run(
+                    [sys.executable, str(HERE / 'build_collection.py')],
+                    capture_output=True, text=True
+                )
+                if result.returncode == 0:
+                    print(f"[REBUILD] OK")
+                else:
+                    print(f"[REBUILD] FAILED:\n{result.stderr}")
                 self.send_json(200, {"ok": True})
             except Exception as e:
                 self.send_json(500, {"ok": False, "message": str(e)})
