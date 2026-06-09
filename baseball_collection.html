@@ -825,7 +825,7 @@ function renderTransactions() {
 }
 
 // --- CARDS TABLE ---
-let cardFilter = 'all', sortCol = 'pl', sortDir = -1;
+let cardFilter = 'all', sortCol = 'binder', sortDir = 1;
 let filteredCards = [...DATA.cards];
 
 const SCP_PREFIX_SET = {
@@ -864,7 +864,8 @@ function renderCardsTable() {
     let av = a[sortCol], bv = b[sortCol];
     if (av == null) av = sortDir > 0 ? Infinity : -Infinity;
     if (bv == null) bv = sortDir > 0 ? Infinity : -Infinity;
-    if (typeof av === 'string') av = av.toLowerCase(), bv = (bv||'').toLowerCase();
+    if (sortCol === 'binder') { av = parseFloat(av) || 0; bv = parseFloat(bv) || 0; }
+    else if (typeof av === 'string') { av = av.toLowerCase(); bv = (bv||'').toLowerCase(); }
     return av < bv ? sortDir : av > bv ? -sortDir : 0;
   });
   const maxPL = Math.max(...DATA.cards.map(c=>Math.abs(c.pl)));
