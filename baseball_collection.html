@@ -1036,26 +1036,39 @@ function _setSyncStatus(status, msg) {
 
 async function _loadFromCloud() {
   const cfg = getCloudCfg();
+  const localBackup = (() => { try { return JSON.parse(localStorage.getItem(VAL_STORAGE_KEY) || '[]'); } catch { return []; } })();
+
   if (!cfg || !cfg.endpoint) {
-    // No config — use localStorage backup
-    try { _valHistory = JSON.parse(localStorage.getItem(VAL_STORAGE_KEY) || '[]'); } catch { _valHistory = []; }
+    _valHistory = localBackup;
     _setSyncStatus('local');
     renderValHistory();
     return;
   }
+
   _setSyncStatus('syncing');
   try {
     const r = await fetch(cfg.endpoint);
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    _valHistory = Array.isArray(data) ? data : [];
-    _setSyncStatus('synced');
+    const remote = await r.json();
+    const remoteArr = Array.isArray(remote) ? remote : [];
+
+    if (remoteArr.length === 0 && localBackup.length > 0) {
+      // Cloud is empty but local has data — auto-push local up
+      _valHistory = localBackup;
+      renderValHistory();
+      await _pushToCloud(localBackup);
+    } else {
+      _valHistory = remoteArr;
+      // Keep local backup in sync
+      try { localStorage.setItem(VAL_STORAGE_KEY, JSON.stringify(remoteArr)); } catch {}
+      _setSyncStatus('synced');
+      renderValHistory();
+    }
   } catch(e) {
-    // Fall back to localStorage
-    try { _valHistory = JSON.parse(localStorage.getItem(VAL_STORAGE_KEY) || '[]'); } catch { _valHistory = []; }
+    _valHistory = localBackup;
     _setSyncStatus('error', 'Cloud load failed: ' + e.message + ' — showing local backup');
+    renderValHistory();
   }
-  renderValHistory();
 }
 
 async function _pushToCloud(h) {
