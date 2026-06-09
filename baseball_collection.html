@@ -397,6 +397,7 @@
                 <th onclick="sortTable('tmv')" style="text-align:right">TMV</th>
                 <th onclick="sortTable('pl')" style="text-align:right">P/L</th>
                 <th style="text-align:center;cursor:default">Active</th>
+                <th style="text-align:center;cursor:default">Comps</th>
               </tr>
             </thead>
             <tbody id="cards-tbody"></tbody>
@@ -899,13 +900,19 @@ function renderCardsTable() {
           onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
           onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay ↗</a>
       </td>
+      <td style="text-align:center;padding:8px 10px" onclick="event.stopPropagation()">
+        <a href="https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent([c.player,c.parallel,c.card_no].filter(Boolean).join(' '))}&LH_Complete=1&LH_Sold=1" target="_blank" rel="noopener"
+          style="${linkStyle}"
+          onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
+          onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay ↗</a>
+      </td>
     </tr>`;
   }).join('');
   $('card-count').textContent = filteredCards.length + ' cards';
   // Update sort headers
   document.querySelectorAll('#cards-table th').forEach(th => {
     th.classList.remove('sort-asc','sort-desc');
-    const cols = ['binder','player','year','parallel','card_no','type','cost','scp_value','tmv','pl',''];
+    const cols = ['binder','player','year','parallel','card_no','type','cost','scp_value','tmv','pl','',''];
     const col = cols[Array.from(th.parentNode.children).indexOf(th)];
     if (col === sortCol) th.classList.add(sortDir > 0 ? 'sort-asc' : 'sort-desc');
   });
