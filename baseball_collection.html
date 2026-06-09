@@ -964,6 +964,23 @@ function openCardDetail(idx) {
   requestAnimationFrame(() => ov.classList.add('open'));
 }
 
+function recalcTMV() {
+  const vals = [];
+  for (let i = 1; i <= 5; i++) {
+    const v = parseFloat($('cd-comp-' + i).value.replace('$', ''));
+    if (!isNaN(v) && v > 0) vals.push(v);
+  }
+  if (!vals.length) return;
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+  $('cd-tmv').textContent = '$' + avg.toFixed(2);
+  if (_selectedCard) {
+    const pl = _selectedCard.cost > 0 ? ((avg - _selectedCard.cost) / _selectedCard.cost) * 100 : 0;
+    const plEl = $('cd-pl');
+    plEl.textContent = (pl >= 0 ? '+' : '') + pl.toFixed(2) + '%';
+    plEl.style.color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--text-muted)';
+  }
+}
+
 async function saveComps() {
   if (!_selectedCard) return;
   const comps = [];
@@ -2054,11 +2071,11 @@ buildEbayLinks();
           <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px">Last 5 Comps</div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-          <input id="cd-comp-1" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)">
-          <input id="cd-comp-2" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)">
-          <input id="cd-comp-3" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)">
-          <input id="cd-comp-4" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)">
-          <input id="cd-comp-5" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)">
+          <input id="cd-comp-1" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcTMV()">
+          <input id="cd-comp-2" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcTMV()">
+          <input id="cd-comp-3" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcTMV()">
+          <input id="cd-comp-4" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcTMV()">
+          <input id="cd-comp-5" type="text" inputmode="decimal" placeholder="—" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 4px;text-align:center;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)';if(this.value.startsWith('$'))this.value=this.value.slice(1)" onblur="this.style.borderColor='var(--border)';const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcTMV()">
         </div>
         <div style="margin-top:10px;display:flex;align-items:center;justify-content:flex-end;gap:10px">
           <span id="cd-save-status" style="font-size:11px;font-weight:600;transition:color .2s"></span>
