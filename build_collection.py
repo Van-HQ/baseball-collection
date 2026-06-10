@@ -128,6 +128,7 @@ def parse_bowman(ws):
             'scp_value':  scp_value,
             'tmv':        tmv,
             'pl':         pl,
+            'pl_dollars': round(tmv - cost, 2),
             'comps':      comps,
             'scp_url':    None,  # filled in below from cache
         })

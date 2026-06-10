@@ -953,9 +953,7 @@ function openCardDetail(idx) {
   // Market
   $('cd-scp').value       = '$' + (c.scp_value||0).toFixed(2);
   $('cd-tmv').textContent = '$' + (c.tmv||0).toFixed(2);
-  const plEl = $('cd-pl');
-  plEl.textContent = (c.pl >= 0 ? '+' : '') + c.pl.toFixed(2) + '%';
-  plEl.style.color = c.pl > 0 ? 'var(--green)' : c.pl < 0 ? 'var(--red)' : 'var(--text-muted)';
+  _recalcPL();
 
   // Comps — editable inputs
   const comps = c.comps || [];
