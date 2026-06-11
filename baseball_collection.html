@@ -873,10 +873,10 @@ function renderCostValueChart() {
   const pts = DATA.cards.filter(c => c.cost > 0)
     .map(c => ({ x:c.tmv, y:c.cost, player:c.player, no:c.card_no }));
   const roundUp = (v, step) => Math.ceil(v / step) * step;
-  const rawX = Math.max(20, ...pts.map(p => p.x));
-  const rawY = Math.max(20, ...pts.map(p => p.y));
-  const xMax = roundUp(rawX * 1.12, 20);
-  const yMax = roundUp(rawY * 1.12, 5);
+  const rawX = Math.max(5, ...pts.map(p => p.x));
+  const rawY = Math.max(5, ...pts.map(p => p.y));
+  const xMax = roundUp(rawX * 1.08, 5);
+  const yMax = roundUp(rawY * 1.08, 5);
   const lineMax = Math.min(xMax, yMax);
   const colors = pts.map(p => p.x >= p.y ? 'rgba(34,211,106,0.8)' : 'rgba(242,92,92,0.8)');
   if (_costValueChart) _costValueChart.destroy();
