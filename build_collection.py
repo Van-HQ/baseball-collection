@@ -220,17 +220,17 @@ def parse_rookies(ws):
 # prefixes fall back to the raw prefix string.
 SET_NAMES = {
     'BASE': 'Base Set',
-    'BP':   'Prospects',
+    'BP':   'Paper Prospects',
     'BCP':  'Chrome Prospects',
     'BTP':  'Scouts Top 100',
-    'BST':  'Stars of Tomorrow',
+    'BST':  'Bowman Sterling',
     'ES':   'Electric Sluggers',
-    'UR':   'Up & Rising',
-    'PC':   'Prime Chrome',
+    'UR':   'Under the Radar',
+    'PC':   'Power Chords',
     'ROY':  'ROY Favorites',
-    'GL':   'Going Long',
-    'RR':   'Rising Rookies',
-    'VIP':  'Bowman VIP',
+    'GL':   'Greatness Loading',
+    'RR':   'Rockstar Rookies',
+    'VIP':  'Very Important Prospects',
 }
 
 def parse_checklist(ws):
