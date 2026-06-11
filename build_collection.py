@@ -219,8 +219,7 @@ def parse_rookies(ws):
 # Friendly display names per card-number prefix. Edit freely — unknown
 # prefixes fall back to the raw prefix string.
 SET_NAMES = {
-    'BASE': 'Base Paper',
-    'BASE2': 'Base Chrome',
+    'BASE': 'Base Set',
     'BP':   'Paper Prospects',
     'BCP':  'Chrome Prospects',
     'BTP':  'Scouts Top 100',
@@ -268,6 +267,10 @@ def parse_checklist(ws):
         prefix = None
         for r in rows[1:]:
             if player_col >= len(r) or not r[player_col].value:
+                # A set ends at the first blank row — anything stacked below
+                # (e.g. a second table in the same columns) is not part of it
+                if cards:
+                    break
                 continue
             card_no  = _str(r[no_col].value)
             player   = _str(r[player_col].value)
