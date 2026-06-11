@@ -455,7 +455,7 @@
           <table id="wl-table">
             <thead>
               <tr>
-                <th style="text-align:center;width:90px">Priority</th>
+                <th style="text-align:center;width:90px;cursor:pointer;user-select:none" onclick="toggleWlSort()" id="wl-sort-th">Priority ↓</th>
                 <th>Player</th>
                 <th style="text-align:center;width:80px">AUTO</th>
                 <th style="text-align:center;width:70px">S/N</th>
@@ -997,6 +997,7 @@ function renderTreemap() {
 // --- WATCHLIST (localStorage-backed) ---
 const WL_KEY = 'baseball_watchlist_v2';
 let _wlFilter = 'all';
+let _wlSortDir = 1;  // 1 = high→low, -1 = low→high
 let _wlEditId = null;
 
 function getWatchlist() {
@@ -1056,12 +1057,19 @@ function setWlFilter(f, el) {
   renderWatchlistFull();
 }
 
+function toggleWlSort() {
+  _wlSortDir *= -1;
+  const th = $('wl-sort-th');
+  if (th) th.textContent = 'Priority ' + (_wlSortDir === 1 ? '↓' : '↑');
+  renderWatchlistFull();
+}
+
 function renderWatchlistFull() {
   const tbody = $('wl-tbody');
   if (!tbody) return;
   let list = getWatchlist();
   if (_wlFilter !== 'all') list = list.filter(w => (w.priority||'medium').toLowerCase() === _wlFilter);
-  list.sort((a,b) => { const ord={high:0,medium:1,low:2}; return (ord[a.priority]||1)-(ord[b.priority]||1); });
+  list.sort((a,b) => { const ord={high:0,medium:1,low:2}; return _wlSortDir * ((ord[a.priority]||1)-(ord[b.priority]||1)); });
 
   if (!list.length) {
     tbody.innerHTML = `<tr><td colspan="7" style="padding:28px;text-align:center;color:var(--text-muted);font-size:13px">No players on watchlist${_wlFilter!=='all'?' for this priority':''} — click + Add Player to get started.</td></tr>`;
