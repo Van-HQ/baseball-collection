@@ -441,8 +441,34 @@
     <!-- WATCHLIST PAGE -->
     <div class="page" id="page-watchlist">
       <div class="panel">
-        <div class="panel-header"><div class="panel-title"><span class="dot yellow"></span>Player Watchlist</div></div>
-        <div id="watchlist-full"></div>
+        <div class="panel-header">
+          <div class="panel-title"><span class="dot yellow"></span>Player Watchlist</div>
+          <div class="panel-actions">
+            <span class="chip active" id="wl-f-all" onclick="setWlFilter('all',this)">All</span>
+            <span class="chip" id="wl-f-high" onclick="setWlFilter('high',this)">High</span>
+            <span class="chip" id="wl-f-medium" onclick="setWlFilter('medium',this)">Medium</span>
+            <span class="chip" id="wl-f-low" onclick="setWlFilter('low',this)">Low</span>
+            <button onclick="openAddWatchlist()" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.borderColor='var(--yellow)';this.style.color='var(--yellow)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">+ Add Player</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="wl-table">
+            <thead>
+              <tr>
+                <th style="text-align:center;width:90px">Priority</th>
+                <th>Player</th>
+                <th style="width:60px">Year</th>
+                <th style="width:130px">Team</th>
+                <th style="text-align:center;width:80px">AUTO</th>
+                <th style="text-align:center;width:70px">S/N</th>
+                <th style="text-align:center;width:70px">SCP</th>
+                <th>Notes</th>
+                <th style="width:36px"></th>
+              </tr>
+            </thead>
+            <tbody id="wl-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -970,27 +996,176 @@ function renderTreemap() {
 }
 
 // --- WATCHLIST ---
+// --- WATCHLIST (localStorage-backed) ---
+const WL_KEY = 'baseball_watchlist_v2';
+let _wlFilter = 'all';
+let _wlEditId = null;
+
+function getWatchlist() {
+  try { return JSON.parse(localStorage.getItem(WL_KEY) || '[]'); } catch { return []; }
+}
+function saveWatchlist(list) {
+  localStorage.setItem(WL_KEY, JSON.stringify(list));
+}
+
+(function seedWatchlist() {
+  try {
+    const existing = localStorage.getItem(WL_KEY);
+    if (!existing || JSON.parse(existing).length === 0) {
+      const seeded = (DATA.watchlist || []).map((w, i) => ({
+        id: Date.now() + i,
+        player: w.player,
+        year: null,
+        team: '',
+        priority: (w.price_tier || 'medium').toLowerCase(),
+        notes: '',
+        added: new Date().toISOString().slice(0, 10)
+      }));
+      if (seeded.length) saveWatchlist(seeded);
+    }
+  } catch {}
+})();
+
+function _wlTierStyle(tier) {
+  if (tier === 'high')   return { color:'var(--red)',   bg:'var(--red-bg)',             border:'rgba(242,92,92,0.35)' };
+  if (tier === 'low')    return { color:'var(--teal)',  bg:'rgba(45,212,191,0.1)',       border:'rgba(45,212,191,0.3)' };
+  return                        { color:'var(--yellow)',bg:'var(--yellow-bg)',           border:'rgba(245,200,66,0.35)' };
+}
+
 function renderWatchlistMini() {
   const el = $('watchlist-mini');
-  el.innerHTML = DATA.watchlist.slice(0,8).map(w => {
-    const tier = (w.price_tier||'').toLowerCase();
+  if (!el) return;
+  const list = getWatchlist().sort((a,b) => {
+    const ord = {high:0, medium:1, low:2};
+    return (ord[a.priority]||1) - (ord[b.priority]||1);
+  }).slice(0, 8);
+  const ts = t => _wlTierStyle(t);
+  el.innerHTML = list.map(w => {
+    const t = (w.priority||'medium').toLowerCase(); const s = ts(t);
     return `<div class="watchlist-item">
       <span class="player-name" style="font-size:13px">${w.player}</span>
-      <span class="tier-badge ${tier}">${w.price_tier||'—'}</span>
+      <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid ${s.border};background:${s.bg};color:${s.color}">${t.charAt(0).toUpperCase()+t.slice(1)}</span>
     </div>`;
+  }).join('') || '<div style="padding:10px 16px;color:var(--text-muted);font-size:12px">No players on watchlist</div>';
+}
+
+function setWlFilter(f, el) {
+  _wlFilter = f;
+  ['all','high','medium','low'].forEach(k => {
+    const chip = $('wl-f-' + k);
+    if (chip) chip.classList.toggle('active', k === f);
+  });
+  renderWatchlistFull();
+}
+
+function renderWatchlistFull() {
+  const tbody = $('wl-tbody');
+  if (!tbody) return;
+  let list = getWatchlist();
+  if (_wlFilter !== 'all') list = list.filter(w => (w.priority||'medium').toLowerCase() === _wlFilter);
+  list.sort((a,b) => { const ord={high:0,medium:1,low:2}; return (ord[a.priority]||1)-(ord[b.priority]||1); });
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="padding:28px;text-align:center;color:var(--text-muted);font-size:13px">No players on watchlist${_wlFilter!=='all'?' for this priority':''} — click + Add Player to get started.</td></tr>`;
+    return;
+  }
+
+  const lnk = (href, label, hoverColor) =>
+    `<a href="${href}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
+      style="display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;text-decoration:none;border:1px solid var(--border);color:var(--text-muted);background:var(--bg-hover);white-space:nowrap;transition:all .15s"
+      onmouseover="this.style.color='${hoverColor}';this.style.borderColor='${hoverColor}40'"
+      onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">${label} ↗</a>`;
+
+  tbody.innerHTML = list.map(w => {
+    const tier = (w.priority||'medium').toLowerCase();
+    const s = _wlTierStyle(tier);
+    const yr  = w.year ? String(w.year) : '';
+    const autoQ = encodeURIComponent([w.player, yr, 'bowman chrome auto 1st'].filter(Boolean).join(' '));
+    const snQ   = encodeURIComponent([w.player, yr, 'bowman 1st chrome'].filter(Boolean).join(' '));
+    const scpQ  = encodeURIComponent([w.player, yr ? yr + ' bowman' : 'bowman'].filter(Boolean).join(' '));
+    return `<tr style="cursor:pointer;transition:background .1s"
+      onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''"
+      onclick="openEditWatchlist('${w.id}')">
+      <td style="padding:10px 14px;text-align:center">
+        <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid ${s.border};background:${s.bg};color:${s.color}">${tier.charAt(0).toUpperCase()+tier.slice(1)}</span>
+      </td>
+      <td class="player-name" style="font-size:13.5px">${w.player}</td>
+      <td style="color:var(--text-muted);font-size:12px">${w.year||'—'}</td>
+      <td style="color:var(--text-secondary);font-size:12px">${w.team||'—'}</td>
+      <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+autoQ,'AUTO','#22d36a')}</td>
+      <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+snQ+'&Features=Serial%2520Numbered','S/N','#4f8ef7')}</td>
+      <td style="text-align:center;padding:8px 10px">${lnk('https://www.sportscardspro.com/search-products?q='+scpQ,'SCP','#f5c842')}</td>
+      <td style="color:var(--text-muted);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${w.notes||''}</td>
+      <td style="padding:8px 8px;text-align:center" onclick="event.stopPropagation()">
+        <button onclick="deleteWlEntry('${w.id}')" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:6px;opacity:0.4;transition:all .15s" onmouseover="this.style.opacity='1';this.style.color='var(--red)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--text-muted)'">×</button>
+      </td>
+    </tr>`;
   }).join('');
 }
-function renderWatchlistFull() {
-  $('watchlist-full').innerHTML = DATA.watchlist.map(w => {
-    const tier = (w.price_tier||'').toLowerCase();
-    return `<div class="watchlist-item">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="tier-dot tier-${tier}"></span>
-        <span class="player-name">${w.player}</span>
-      </div>
-      <span class="tier-badge ${tier}">${w.price_tier||'—'}</span>
-    </div>`;
-  }).join('');
+
+function openAddWatchlist() {
+  _wlEditId = null;
+  $('wl-modal-title').textContent = 'Add Player';
+  $('wl-player').value = '';
+  $('wl-year').value   = '';
+  $('wl-team').value   = '';
+  $('wl-notes').value  = '';
+  document.querySelectorAll('.wl-priority-btn').forEach(b => b.classList.toggle('active', b.dataset.p === 'medium'));
+  $('wl-delete-btn').style.display = 'none';
+  $('wl-modal-overlay').style.display = 'flex';
+  setTimeout(() => $('wl-player').focus(), 60);
+}
+
+function openEditWatchlist(id) {
+  const w = getWatchlist().find(x => String(x.id) === String(id));
+  if (!w) return;
+  _wlEditId = id;
+  $('wl-modal-title').textContent = 'Edit Player';
+  $('wl-player').value = w.player || '';
+  $('wl-year').value   = w.year   || '';
+  $('wl-team').value   = w.team   || '';
+  $('wl-notes').value  = w.notes  || '';
+  document.querySelectorAll('.wl-priority-btn').forEach(b => b.classList.toggle('active', b.dataset.p === (w.priority||'medium')));
+  $('wl-delete-btn').style.display = 'inline-flex';
+  $('wl-modal-overlay').style.display = 'flex';
+  setTimeout(() => $('wl-player').focus(), 60);
+}
+
+function closeWlModal() {
+  $('wl-modal-overlay').style.display = 'none';
+  _wlEditId = null;
+}
+
+function setWlPriority(btn) {
+  document.querySelectorAll('.wl-priority-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function saveWlEntry() {
+  const player = ($('wl-player').value || '').trim();
+  if (!player) { $('wl-player').focus(); return; }
+  const priority = (document.querySelector('.wl-priority-btn.active') || {dataset:{p:'medium'}}).dataset.p;
+  const entry = { player, year: parseInt($('wl-year').value)||null, team:($('wl-team').value||'').trim(), priority, notes:($('wl-notes').value||'').trim() };
+  const list = getWatchlist();
+  if (_wlEditId) {
+    const idx = list.findIndex(x => String(x.id) === String(_wlEditId));
+    if (idx !== -1) list[idx] = { ...list[idx], ...entry };
+  } else {
+    list.push({ id: Date.now(), ...entry, added: new Date().toISOString().slice(0,10) });
+  }
+  saveWatchlist(list);
+  closeWlModal();
+  renderWatchlistFull();
+  renderWatchlistMini();
+}
+
+function deleteWlEntry(id) {
+  const w = getWatchlist().find(x => String(x.id) === String(id));
+  if (!w || !confirm(`Remove ${w.player} from watchlist?`)) return;
+  saveWatchlist(getWatchlist().filter(x => String(x.id) !== String(id)));
+  closeWlModal();
+  renderWatchlistFull();
+  renderWatchlistMini();
 }
 
 // --- FAVORITES ---
@@ -2994,5 +3169,48 @@ buildEbayLinks();
   </div>
 </div>
 
+
+<!-- WATCHLIST ADD/EDIT MODAL -->
+<div id="wl-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)closeWlModal()">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:460px;max-width:95vw;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.5)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)">
+      <div id="wl-modal-title" style="font-size:16px;font-weight:700">Add Player</div>
+      <button onclick="closeWlModal()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Player Name</label>
+        <input id="wl-player" class="form-input" type="text" placeholder="e.g. Victor Rodrigues" style="width:100%" onkeydown="if(event.key==='Enter')saveWlEntry()">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Bowman Year</label>
+          <input id="wl-year" class="form-input" type="number" placeholder="2025" style="width:100%">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Team</label>
+          <input id="wl-team" class="form-input" type="text" placeholder="e.g. Yankees" style="width:100%">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:8px">Priority</label>
+        <div style="display:flex;gap:8px">
+          <button class="wl-priority-btn" data-p="low" onclick="setWlPriority(this)" style="flex:1;padding:8px 0;border-radius:8px;border:1px solid rgba(45,212,191,0.35);background:rgba(45,212,191,0.08);color:var(--teal);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">Low</button>
+          <button class="wl-priority-btn active" data-p="medium" onclick="setWlPriority(this)" style="flex:1;padding:8px 0;border-radius:8px;border:1px solid rgba(245,200,66,0.35);background:rgba(245,200,66,0.08);color:var(--yellow);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">Medium</button>
+          <button class="wl-priority-btn" data-p="high" onclick="setWlPriority(this)" style="flex:1;padding:8px 0;border-radius:8px;border:1px solid rgba(242,92,92,0.35);background:rgba(242,92,92,0.08);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">High</button>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>
+        <textarea id="wl-notes" class="form-input" placeholder="e.g. Watch for 1st Chrome auto, targeting under $30…" style="width:100%;height:72px;resize:vertical;font-family:inherit;line-height:1.5"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--border)">
+      <button onclick="saveWlEntry()" class="form-btn" style="flex:1">Save</button>
+      <button id="wl-delete-btn" onclick="deleteWlEntry(_wlEditId)" class="form-btn" style="background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red);display:none">Delete</button>
+      <button onclick="closeWlModal()" class="form-btn secondary">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
