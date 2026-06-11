@@ -2410,7 +2410,10 @@ buildEbayLinks();
       <!-- Type -->
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Type</div>
-        <input id="ac-type" type="text" placeholder="Prospect Auto" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 12px;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <select id="ac-type" style="width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;font-weight:600;padding:9px 12px;outline:none;transition:border-color .15s;cursor:pointer;appearance:none;-webkit-appearance:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <option value="Ripped">Ripped</option>
+          <option value="Auction">Auction</option>
+        </select>
       </div>
 
       <!-- Cost -->
