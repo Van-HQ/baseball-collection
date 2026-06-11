@@ -712,7 +712,7 @@ function renderStats() {
   const plPct = (s.total_pl_pct != null ? s.total_pl_pct : ((s.total_pl / s.total_cost) * 100)).toFixed(1);
   const cards = [
     {label:'Total Cards', val:s.total_cards, cls:'teal', sub:'In collection', color:'teal'},
-    {label:'Purchase Amount', val:'$'+s.total_cost.toFixed(2), cls:'', sub:'Amount invested', color:''},
+    {label:'Total Cost', val:'$'+s.total_cost.toFixed(2), cls:'', sub:'Purchase amount', color:''},
     {label:'Collection Value', val:'$'+s.total_tmv.toFixed(2), cls:'teal', sub:'Estimated market value', color:'teal'},
     {label:'Total P/L', val:(s.total_pl>=0?'+':'-')+'$'+Math.abs(s.total_pl).toFixed(2), cls:s.total_pl>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:s.total_pl>=0?'green':'red'},
     {label:'Wax Spent', val:'$'+s.wax_spent.toFixed(2), cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
