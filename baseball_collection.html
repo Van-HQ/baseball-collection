@@ -417,6 +417,32 @@
     <div class="page active" id="page-overview">
       <div class="stats-row" id="stat-cards"></div>
 
+      <!-- Watch Row: valuation entries marked "watching" -->
+      <div id="watch-val-panel" style="margin-bottom:14px;display:none">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:#2dd4bf"></span>Watching <span id="watch-val-count" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-left:6px"></span></div>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+              <thead>
+                <tr>
+                  <th style="padding:8px 14px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Player</th>
+                  <th style="padding:8px 14px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Card</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Listing</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">TMV</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Discount</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Max Bid</th>
+                  <th style="padding:8px 14px;text-align:center;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Decision</th>
+                  <th style="padding:8px 14px;text-align:center;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Active</th>
+                </tr>
+              </thead>
+              <tbody id="watch-val-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Row 2: Value by Player + Top Movers -->
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 3">
@@ -1269,6 +1295,7 @@ function saveWlEntry() {
   closeWlModal();
   renderWatchlistFull();
   renderWatchlistMini();
+renderWatchRow();
 }
 
 function deleteWlEntry(id) {
@@ -2245,7 +2272,7 @@ async function _loadFromCloud() {
   if (!cfg || !cfg.endpoint) {
     _valHistory = localBackup;
     _setSyncStatus('local');
-    renderValHistory();
+    renderValHistory(); renderWatchRow();
     return;
   }
 
@@ -2259,19 +2286,19 @@ async function _loadFromCloud() {
     if (remoteArr.length === 0 && localBackup.length > 0) {
       // Cloud is empty but local has data — auto-push local up
       _valHistory = localBackup;
-      renderValHistory();
+      renderValHistory(); renderWatchRow();
       await _pushToCloud(localBackup);
     } else {
       _valHistory = remoteArr;
       // Keep local backup in sync
       try { localStorage.setItem(VAL_STORAGE_KEY, JSON.stringify(remoteArr)); } catch {}
       _setSyncStatus('synced');
-      renderValHistory();
+      renderValHistory(); renderWatchRow();
     }
   } catch(e) {
     _valHistory = localBackup;
     _setSyncStatus('error', 'Cloud load failed: ' + e.message + ' — showing local backup');
-    renderValHistory();
+    renderValHistory(); renderWatchRow();
   }
 }
 
@@ -2330,7 +2357,7 @@ async function saveCloudSettings() {
         await _pushToCloud(_valHistory);
       } else {
         _valHistory = remote;
-        renderValHistory();
+        renderValHistory(); renderWatchRow();
       }
       _setSyncStatus('synced');
     }, 1000);
@@ -2345,7 +2372,7 @@ async function importLocalToCloud() {
   status.textContent = `Pushing ${local.length} entries to cloud…`; status.style.color = 'var(--yellow)';
   _valHistory = local;
   await _pushToCloud(local);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
   status.textContent = `✓ Imported ${local.length} entries to cloud.`; status.style.color = 'var(--green)';
 }
 
@@ -2573,19 +2600,19 @@ function saveValuation() {
     h.unshift(entry);
   }
   saveValHistory(h);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
 }
 
 function deleteValEntry(id) {
   const h = getValHistory().filter(e => e.id !== id);
   saveValHistory(h);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
 }
 
 function clearValHistory() {
   if (!confirm('Clear all valuation history?')) return;
   saveValHistory([]);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
 }
 
 function loadValEntry(id) {
@@ -2769,7 +2796,7 @@ function saveValCard() {
   if (idx === -1) return;
   _vmCollectEdits(h, idx);
   saveValHistory(h);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
   closeValCard();
 }
 
@@ -2782,7 +2809,7 @@ function markAsPurchased() {
   h[idx].purchased     = true;
   h[idx].purchaseDate  = date;
   saveValHistory(h);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
   openValCard(_vmId);
 }
 
@@ -2793,7 +2820,7 @@ function unmarkPurchased() {
   h[idx].purchased    = false;
   h[idx].purchaseDate = null;
   saveValHistory(h);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
   openValCard(_vmId);
 }
 
@@ -2808,7 +2835,7 @@ function markAsSold() {
   h[idx].soldPrice = soldPrice;
   h[idx].soldDate  = $('vm-sold-date').value || new Date().toISOString().slice(0,10);
   saveValHistory(h);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
   openValCard(_vmId);
 }
 
@@ -2818,7 +2845,7 @@ function unmarkSold() {
   if (idx === -1) return;
   h[idx].status = null; h[idx].soldPrice = null; h[idx].soldDate = null;
   saveValHistory(h);
-  renderValHistory();
+  renderValHistory(); renderWatchRow();
   openValCard(_vmId);
 }
 
@@ -2831,6 +2858,43 @@ function loadFromModal() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && _vmId) closeValCard(); });
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+function renderWatchRow() {
+  const panel = $('watch-val-panel');
+  const tbody = $('watch-val-tbody');
+  const countEl = $('watch-val-count');
+  if (!panel || !tbody) return;
+  const entries = getValHistory().filter(e => e.holdFlip === 'watching' && e.status !== 'sold');
+  if (!entries.length) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  if (countEl) countEl.textContent = entries.length + ' card' + (entries.length !== 1 ? 's' : '');
+  const chip = (txt, color, bg, border) =>
+    `<span style="font-size:9px;font-weight:700;letter-spacing:.3px;color:${color};background:${bg};border:1px solid ${border};padding:1px 6px;border-radius:10px;margin-left:5px;vertical-align:middle">${txt}</span>`;
+  tbody.innerHTML = entries.map(e => {
+    const discStr   = e.discount !== null ? ((e.discount*100).toFixed(1)+'%') : '—';
+    const discColor = e.discount >= 0.20 ? 'var(--green)' : e.discount >= 0 ? 'var(--yellow)' : 'var(--red)';
+    const decCls    = e.decision === 'BUY' ? 'decision-buy' : e.decision === 'PASS' ? 'decision-pass' : 'decision-pending';
+    const boughtChip = e.purchased ? chip('BOUGHT','var(--accent)','var(--accent-glow)','rgba(79,142,247,0.3)') : '';
+    return `<tr style="border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openValCard(${e.id})">
+      <td style="padding:10px 14px;vertical-align:middle">
+        <div style="font-weight:600;font-size:13px">${e.player}${boughtChip}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${e.date} · ${e.type}</div>
+      </td>
+      <td style="padding:10px 14px;color:var(--text-secondary);font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.parallel || '—'}<br><span style="color:var(--text-muted);font-size:11px">${e.year || ''}</span></td>
+      <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums">${e.listing != null ? '$'+e.listing.toFixed(2) : '—'}</td>
+      <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$${e.tmv.toFixed(2)}</td>
+      <td style="padding:10px 14px;text-align:right;color:${e.discount !== null ? discColor : 'var(--text-muted)'};font-weight:600">${discStr}</td>
+      <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-secondary)">$${e.maxBid.toFixed(2)}</td>
+      <td style="padding:10px 14px;text-align:center"><span class="${decCls}" style="font-weight:700;font-size:13px">${e.decision || '—'}</span></td>
+      <td style="padding:10px 14px;text-align:center" onclick="event.stopPropagation()">
+        <a href="https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent([e.player,e.parallel,e.cardno].filter(Boolean).join(' '))}" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 8px;border-radius:10px;text-decoration:none;transition:all .15s;white-space:nowrap"
+          onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
+          onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay ↗</a>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
 function renderValHistory() {
   const h = getValHistory();
