@@ -407,6 +407,7 @@
                 <th onclick="sortTable('pl')" style="text-align:right">P/L</th>
                 <th style="text-align:center;cursor:default">Active</th>
                 <th style="text-align:center;cursor:default">Comps</th>
+                <th style="cursor:default;width:28px"></th>
               </tr>
             </thead>
             <tbody id="cards-tbody"></tbody>
@@ -922,13 +923,16 @@ function renderCardsTable() {
           onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
           onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay ↗</a>
       </td>
+      <td style="text-align:center;padding:4px 6px" onclick="event.stopPropagation()">
+        <button onclick="deleteCard(${filteredCards.indexOf(c)})" title="Delete card" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:6px;line-height:1;opacity:0.4;transition:all .15s" onmouseover="this.style.opacity='1';this.style.color='var(--red)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--text-muted)'">×</button>
+      </td>
     </tr>`;
   }).join('');
   $('card-count').textContent = filteredCards.length + ' cards';
   // Update sort headers
   document.querySelectorAll('#cards-table th').forEach(th => {
     th.classList.remove('sort-asc','sort-desc');
-    const cols = ['binder','player','status','year','parallel','card_no','type','cost','scp_value','tmv','pl','',''];
+    const cols = ['binder','player','status','year','parallel','card_no','type','cost','scp_value','tmv','pl','','',''];
     const col = cols[Array.from(th.parentNode.children).indexOf(th)];
     if (col === sortCol) th.classList.add(sortDir > 0 ? 'sort-asc' : 'sort-desc');
   });
@@ -1280,21 +1284,48 @@ function editSlot(cell, idx) {
 async function saveSlot(input, idx) {
   const c = filteredCards[idx];
   const cell = input.parentElement;
-  if (input.dataset.cancel === '1') { cell.textContent = c.binder || '—'; return; }
+  if (input.dataset.cancel === '1') { renderCardsTable(); return; }
   const newVal = input.value.trim();
-  if (!newVal || newVal === c.binder) { cell.textContent = c.binder || '—'; return; }
-  cell.textContent = newVal; // optimistic
+  if (!newVal || newVal === String(c.binder)) { renderCardsTable(); return; }
   const oldBinder = c.binder;
   c.binder = newVal;
+  renderCardsTable(); // re-sort immediately
   try {
     const r = await fetch('http://localhost:5055/api/update-card', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ binder: oldBinder, player: c.player, card_no: c.card_no, new_binder: newVal })
+      body: JSON.stringify({ binder: oldBinder, player: c.player, card_no: c.card_no, new_binder: newVal, skip_rebuild: true })
     });
     const data = await r.json();
-    if (!data.ok) { c.binder = oldBinder; renderCards(); }
-    else renderCards(); // re-sort by new slot
-  } catch(e) { c.binder = oldBinder; renderCards(); }
+    if (!data.ok) { c.binder = oldBinder; renderCardsTable(); }
+    else fetch('http://localhost:5055/api/rebuild').catch(()=>{});
+  } catch(e) { c.binder = oldBinder; renderCardsTable(); }
+}
+
+async function deleteCard(idx) {
+  const c = filteredCards[idx];
+  if (!c) return;
+  if (!confirm(`Delete ${c.player} ${c.card_no || ''} from your collection?\nThis cannot be undone.`)) return;
+  // Optimistic remove
+  const dataIdx = DATA.cards.indexOf(c);
+  if (dataIdx !== -1) DATA.cards.splice(dataIdx, 1);
+  renderCardsTable();
+  try {
+    const r = await fetch('http://localhost:5055/api/delete-card', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ binder: c.binder, player: c.player, card_no: c.card_no })
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      // Restore on failure
+      if (dataIdx !== -1) DATA.cards.splice(dataIdx, 0, c);
+      renderCardsTable();
+      alert('Delete failed: ' + (data.message || 'Server error'));
+    }
+  } catch(e) {
+    if (dataIdx !== -1) DATA.cards.splice(dataIdx, 0, c);
+    renderCardsTable();
+    alert('Delete failed: server not running');
+  }
 }
 
 function filterType(type, el) {

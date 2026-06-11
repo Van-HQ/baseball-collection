@@ -485,6 +485,48 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(500, {"ok": False, "message": str(e)})
             return
 
+        if parsed.path == "/api/delete-card":
+            binder  = body.get("binder", "")
+            player  = body.get("player", "").strip()
+            card_no = body.get("card_no", "").strip()
+            try:
+                import openpyxl as _xl
+                wb = _xl.load_workbook(XLSX)
+                ws = wb["Bowman"]
+                target_row = None
+                for row in ws.iter_rows(min_row=3):
+                    rv = row[0].value
+                    if binder and rv is not None:
+                        try:
+                            if abs(float(rv) - float(binder)) < 0.001:
+                                target_row = row[0].row; break
+                        except: pass
+                    if not target_row and player:
+                        rp = str(row[1].value or "").strip().lower()
+                        rc = str(row[4].value or "").strip().lower()
+                        if rp == player.lower() and rc == card_no.lower():
+                            target_row = row[0].row; break
+                if not target_row:
+                    self.send_json(404, {"ok": False, "message": "Card not found"}); wb.close(); return
+                ws.delete_rows(target_row)
+                wb.save(XLSX)
+                wb.close()
+                print(f"[DELETE] Row {target_row}: {player} {card_no}")
+                result = subprocess.run(
+                    [sys.executable, str(HERE / 'build_collection.py')],
+                    capture_output=True, text=True, cwd=str(HERE)
+                )
+                if result.returncode == 0:
+                    git = subprocess.run(['git', '-C', str(HERE), 'add', 'baseball_collection.html'], capture_output=True)
+                    git = subprocess.run(['git', '-C', str(HERE), 'commit', '-m', f'Auto: delete {player} {card_no}'], capture_output=True, text=True)
+                    if 'nothing to commit' not in git.stdout + git.stderr:
+                        subprocess.run(['git', '-C', str(HERE), 'push'], capture_output=True)
+                        print(f"[GIT] Pushed")
+                self.send_json(200, {"ok": True})
+            except Exception as e:
+                self.send_json(500, {"ok": False, "message": str(e)})
+            return
+
         if parsed.path == "/api/add-card":
             player     = body.get("player", "").strip()
             year       = body.get("year")
@@ -517,9 +559,9 @@ class Handler(BaseHTTPRequestHandler):
                 ws.cell(new_row, 4, parallel or None)
                 ws.cell(new_row, 5, card_no or None)
                 ws.cell(new_row, 9, type_ or None)
-                ws.cell(new_row, 10, float(card_price) if card_price else None)
-                ws.cell(new_row, 11, float(shipping) if shipping else None)
-                ws.cell(new_row, 12, float(taxes) if taxes else None)
+                ws.cell(new_row, 10, float(card_price or 0))
+                ws.cell(new_row, 11, float(shipping or 0))
+                ws.cell(new_row, 12, float(taxes or 0))
                 wb.save(XLSX)
                 wb.close()
                 print(f"[ADD] Row {new_row}: {player} {parallel} {card_no}")
