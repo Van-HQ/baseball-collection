@@ -1012,6 +1012,8 @@ function openCardDetail(idx) {
     const inp = $('cd-comp-' + (i+1));
     inp.value = comps[i] != null ? '$' + comps[i].toFixed(2) : '';
   }
+  // Always recalc TMV from displayed comps so it stays in sync with entries
+  if (comps.length) recalcTMV(); else _recalcPL();
   $('cd-save-status').textContent = '';
   // Status buttons
   const curStatus = c.status || '';
