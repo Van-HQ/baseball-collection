@@ -417,32 +417,6 @@
     <div class="page active" id="page-overview">
       <div class="stats-row" id="stat-cards"></div>
 
-      <!-- Watch Row: valuation entries marked "watching" -->
-      <div id="watch-val-panel" style="margin-bottom:14px;display:none">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title"><span class="dot" style="background:#2dd4bf"></span>Watching <span id="watch-val-count" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-left:6px"></span></div>
-          </div>
-          <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-              <thead>
-                <tr>
-                  <th style="padding:8px 14px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Player</th>
-                  <th style="padding:8px 14px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Card</th>
-                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Listing</th>
-                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">TMV</th>
-                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Discount</th>
-                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Max Bid</th>
-                  <th style="padding:8px 14px;text-align:center;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Decision</th>
-                  <th style="padding:8px 14px;text-align:center;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Active</th>
-                </tr>
-              </thead>
-              <tbody id="watch-val-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
       <!-- Row 2: Value by Player + Top Movers -->
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 3">
@@ -475,6 +449,32 @@
         <div class="panel" style="grid-column:span 6">
           <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Portfolio Map <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">size = value · color = P/L</span></div></div>
           <div id="treemap" style="position:relative;height:320px;margin:14px 18px 18px;border-radius:8px;overflow:hidden"></div>
+        </div>
+      </div>
+
+      <!-- Watch Row: valuation entries marked "watching" -->
+      <div id="watch-val-panel" style="margin-bottom:14px;display:none">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:#2dd4bf"></span>Watching <span id="watch-val-count" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-left:6px"></span></div>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+              <thead>
+                <tr>
+                  <th style="padding:8px 14px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Player</th>
+                  <th style="padding:8px 14px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Card</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Listing</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">TMV</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Discount</th>
+                  <th style="padding:8px 14px;text-align:right;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Max Bid</th>
+                  <th style="padding:8px 14px;text-align:center;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Decision</th>
+                  <th style="padding:8px 14px;text-align:center;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)">Active</th>
+                </tr>
+              </thead>
+              <tbody id="watch-val-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
