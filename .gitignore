@@ -1,6 +1,9 @@
 # Generated data — rebuild locally with build_collection.py
 collection_data.json
 
+# Source spreadsheet — keep local, never publish to the public repo
+Baseball Collection.xlsx
+
 # Python
 __pycache__/
 *.pyc

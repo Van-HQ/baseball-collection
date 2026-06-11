@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
 PORT = 5055
-XLSX = Path.home() / 'Downloads' / 'Baseball Collection.xlsx'
+XLSX = Path(__file__).parent / 'Baseball Collection.xlsx'
 HERE = Path(__file__).parent
 
 # ── Card number prefix → SCP set slug ─────────────────────────────────────────

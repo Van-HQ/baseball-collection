@@ -17,7 +17,7 @@ import json, re, sys, urllib.request, urllib.parse
 from pathlib import Path
 import openpyxl
 
-XLSX      = Path.home() / 'Downloads' / 'Baseball Collection.xlsx'
+XLSX      = Path(__file__).parent / 'Baseball Collection.xlsx'
 HERE      = Path(__file__).parent
 HTML      = HERE / 'baseball_collection.html'
 JSON_OUT  = HERE / 'collection_data.json'
