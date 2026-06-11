@@ -619,7 +619,7 @@
       <!-- 2026 Bowman -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot blue"></span>2026 Bowman <span id="cl-2026-prog-badge" class="badge" style="margin-left:8px;font-size:11px"></span></div>
+          <div class="panel-title"><span class="dot blue"></span>2026 Bowman</div>
           <div class="panel-actions" style="gap:8px;align-items:center">
             <span id="cl-2026-sync" style="font-size:11px;font-weight:600"></span>
             <input id="cl-2026-search" class="search-input" placeholder="Search player..." oninput="renderChecklist('2026')" style="width:160px;padding:5px 10px;font-size:12px">
@@ -650,7 +650,7 @@
       <!-- 2025 Bowman -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot green"></span>2025 Bowman <span id="cl-2025-prog-badge" class="badge" style="margin-left:8px;font-size:11px"></span></div>
+          <div class="panel-title"><span class="dot" style="background:#ff7849"></span>2025 Bowman</div>
           <div class="panel-actions" style="gap:8px;align-items:center">
             <span id="cl-2025-sync" style="font-size:11px;font-weight:600"></span>
             <input id="cl-2025-search" class="search-input" placeholder="Search player..." oninput="renderChecklist('2025')" style="width:160px;padding:5px 10px;font-size:12px">
@@ -659,7 +659,7 @@
             <span class="chip"        id="cl-2025-f-missing" onclick="setClFilter('2025','missing',this)">Need</span>
           </div>
         </div>
-        <div id="cl-2025-hero" style="display:flex;align-items:center;gap:28px;padding:20px 24px;background:linear-gradient(120deg,rgba(34,211,106,0.09) 0%,rgba(34,211,106,0.02) 45%,transparent 70%);border-bottom:1px solid var(--border)"></div>
+        <div id="cl-2025-hero" style="display:flex;align-items:center;gap:28px;padding:20px 24px;background:linear-gradient(120deg,rgba(255,120,73,0.10) 0%,rgba(255,120,73,0.02) 45%,transparent 70%);border-bottom:1px solid var(--border)"></div>
         <div style="display:none"><div id="cl-prog-2025"></div></div>
         <div id="cl-2025-sets" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;padding:12px 18px"></div>
         <div style="overflow-x:auto;max-height:480px;overflow-y:auto;border-top:1px solid var(--border)">
@@ -1421,7 +1421,7 @@ function _clRing(pct, size, stroke, color, trackColor) {
 function renderClSets(yr) {
   const cl = DATA.checklist[_clKey(yr)];
   if (!cl || !cl.sets) return;
-  const accent = yr === '2026' ? 'var(--accent)' : 'var(--green)';
+  const accent = yr === '2026' ? 'var(--accent)' : '#ff7849';
 
   // ── Hero ──
   const hero = $('cl-' + yr + '-hero');
@@ -1464,7 +1464,7 @@ function renderClSets(yr) {
     const sel  = i === clState[yr].set;
     const done = pct === 100;
     const ringColor = done ? 'var(--green)' : accent;
-    return `<div onclick="selectClSet('${yr}',${i})" style="cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid ${sel ? ringColor : 'var(--border)'};background:${sel ? (yr==='2026' ? 'rgba(79,142,247,0.09)' : 'rgba(34,211,106,0.09)') : 'var(--bg-base)'};border-radius:12px;padding:10px 12px;transition:all .18s;${sel ? 'box-shadow:0 0 0 1px '+ringColor+', 0 4px 16px rgba(0,0,0,0.25);transform:translateY(-1px)' : ''}"
+    return `<div onclick="selectClSet('${yr}',${i})" style="cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid ${sel ? ringColor : 'var(--border)'};background:${sel ? (yr==='2026' ? 'rgba(79,142,247,0.09)' : 'rgba(255,120,73,0.09)') : 'var(--bg-base)'};border-radius:12px;padding:10px 12px;transition:all .18s;${sel ? 'box-shadow:0 0 0 1px '+ringColor+', 0 4px 16px rgba(0,0,0,0.25);transform:translateY(-1px)' : ''}"
       onmouseover="if(!this.dataset.sel){this.style.borderColor='var(--border-light)';this.style.transform='translateY(-1px)'}"
       onmouseout="if(!this.dataset.sel){this.style.borderColor='var(--border)';this.style.transform=''}"
       ${sel ? 'data-sel="1"' : ''}>
@@ -1481,8 +1481,6 @@ function renderClSets(yr) {
     </div>`;
   }).join('');
 
-  const badge = $('cl-' + yr + '-prog-badge');
-  if (badge) badge.textContent = '';
 }
 
 function selectClSet(yr, i) {
