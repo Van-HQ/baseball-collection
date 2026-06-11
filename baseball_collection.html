@@ -871,13 +871,16 @@ let _costValueChart = null;
 function renderCostValueChart() {
   const pts = DATA.cards.filter(c => c.cost > 0 || c.tmv > 0)
     .map(c => ({ x:c.cost, y:c.tmv, player:c.player, no:c.card_no }));
-  const maxV = Math.max(10, ...pts.map(p => Math.max(p.x, p.y))) * 1.05;
-  const colors = pts.map(p => p.y >= p.x ? 'rgba(34,211,106,0.75)' : 'rgba(242,92,92,0.75)');
+  // Independent axis maxes so cheap cards aren't crammed against the y-axis
+  const xMax = Math.max(5, ...pts.map(p => p.x)) * 1.1;
+  const yMax = Math.max(5, ...pts.map(p => p.y)) * 1.1;
+  const lineMax = Math.min(xMax, yMax);   // break-even y=x within visible bounds
+  const colors = pts.map(p => p.y >= p.x ? 'rgba(34,211,106,0.8)' : 'rgba(242,92,92,0.8)');
   if (_costValueChart) _costValueChart.destroy();
   _costValueChart = new Chart(document.getElementById('costValueChart').getContext('2d'), {
     data:{ datasets:[
-      { type:'line', label:'Break-even', data:[{x:0,y:0},{x:maxV,y:maxV}], borderColor:'rgba(122,156,196,0.45)', borderDash:[6,5], borderWidth:1.5, pointRadius:0, fill:false },
-      { type:'scatter', label:'Cards', data:pts, pointBackgroundColor:colors, pointBorderColor:'transparent', pointRadius:4, pointHoverRadius:6 }
+      { type:'line', label:'Break-even', data:[{x:0,y:0},{x:lineMax,y:lineMax}], borderColor:'rgba(122,156,196,0.45)', borderDash:[6,5], borderWidth:1.5, pointRadius:0, fill:false },
+      { type:'scatter', label:'Cards', data:pts, pointBackgroundColor:colors, pointBorderColor:'rgba(10,15,25,0.7)', pointBorderWidth:1, pointRadius:5, pointHoverRadius:7 }
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
@@ -889,8 +892,8 @@ function renderCostValueChart() {
         }}
       },
       scales:{
-        x:{ min:0, max:maxV, title:{display:true, text:'Cost paid', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } },
-        y:{ min:0, max:maxV, title:{display:true, text:'Market value', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } }
+        x:{ min:0, max:xMax, title:{display:true, text:'Cost paid', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } },
+        y:{ min:0, max:yMax, title:{display:true, text:'Market value', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } }
       }
     }
   });
