@@ -939,13 +939,15 @@ function openCardDetail(idx) {
   $('cd-player').textContent  = c.player;
   $('cd-parallel').textContent = c.parallel || '';
   const ebayQ = encodeURIComponent([c.player, c.parallel, c.card_no].filter(Boolean).join(' '));
-  $('cd-ebay-active').href = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}`;
-  $('cd-ebay-sold').href   = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Complete=1&LH_Sold=1`;
   const scpUrl = buildScpUrl(c.player, c.parallel, c.year, c.card_no);
+  const linkStyle = `color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(79,142,247,0.5)`;
+  const linkHover = `onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'"`;
   const cardNoHtml = (scpUrl && c.card_no)
-    ? `<a href="${scpUrl}" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(79,142,247,0.5)" onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'">${c.card_no}</a>`
+    ? `<a href="${scpUrl}" target="_blank" style="${linkStyle}" ${linkHover}>${c.card_no}</a>`
     : (c.card_no || '');
-  $('cd-meta').innerHTML = [c.year, cardNoHtml, c.type, 'Slot ' + (c.binder||'—')].filter(Boolean).join(' · ');
+  const activeHtml = `<a href="https://www.ebay.com/sch/i.html?_nkw=${ebayQ}" target="_blank" style="${linkStyle}" ${linkHover}>Active</a>`;
+  const soldHtml   = `<a href="https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Complete=1&LH_Sold=1" target="_blank" style="${linkStyle}" ${linkHover}>Sold</a>`;
+  $('cd-meta').innerHTML = [c.year, cardNoHtml, c.type, 'Slot ' + (c.binder||'—'), activeHtml, soldHtml].filter(Boolean).join(' · ');
 
   // Cost breakdown
   $('cd-card-price').value = '$' + (c.card_price||0).toFixed(2);
@@ -1019,8 +1021,8 @@ async function fetchSCP() {
   if (!_selectedCard) return;
   const status = $('cd-save-status');
   const btn    = $('cd-scp-btn');
-  btn.textContent = '…'; btn.disabled = true;
-  status.textContent = 'Fetching SCP (may take ~30s)…'; status.style.color = 'var(--yellow)';
+  btn.disabled = true;
+  status.textContent = 'Retrieving SCP Price…'; status.style.color = 'var(--text-primary)';
   try {
     const params = new URLSearchParams({
       player:   _selectedCard.player,
@@ -1032,7 +1034,7 @@ async function fetchSCP() {
     const data = await r.json();
     if (data.ok && data.data && data.data.ungraded != null) {
       $('cd-scp').value = '$' + data.data.ungraded.toFixed(2);
-      status.textContent = `✓ SCP: $${data.data.ungraded.toFixed(2)} — hit Save to keep it`;
+      status.textContent = `SCP Value: $${data.data.ungraded.toFixed(2)}`;
       status.style.color = 'var(--green)';
     } else {
       status.textContent = 'Not found on SCP — edit manually';
@@ -1042,7 +1044,7 @@ async function fetchSCP() {
     status.textContent = e.name === 'TimeoutError' ? '✗ Timed out' : '✗ Server not running';
     status.style.color = 'var(--red)';
   } finally {
-    btn.textContent = 'SCP'; btn.disabled = false;
+    btn.disabled = false;
     setTimeout(() => { if (status.textContent.startsWith('✓') || status.textContent.startsWith('Not')) status.textContent = ''; }, 4000);
   }
 }
@@ -2091,10 +2093,6 @@ buildEbayLinks();
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
           <span id="cd-parallel" style="font-size:11px;font-weight:700;background:rgba(79,142,247,0.15);color:var(--accent);border:1px solid rgba(79,142,247,0.3);border-radius:20px;padding:2px 10px"></span>
           <span id="cd-meta" style="font-size:11px;color:var(--text-muted)"></span>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:8px">
-          <a id="cd-ebay-active" href="#" target="_blank" rel="noopener" style="font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 10px;border-radius:10px;text-decoration:none;transition:all .15s" onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">Active ↗</a>
-          <a id="cd-ebay-sold" href="#" target="_blank" rel="noopener" style="font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 10px;border-radius:10px;text-decoration:none;transition:all .15s" onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">Sold ↗</a>
         </div>
       </div>
       <button onclick="closeCardDetail()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s;flex-shrink:0" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
