@@ -1089,7 +1089,7 @@ function renderWatchlistFull() {
     const rowHover = tier==='high' ? 'rgba(242,92,92,0.12)' : tier==='low' ? 'rgba(45,212,191,0.1)' : 'rgba(245,200,66,0.09)';
     const autoQ = encodeURIComponent([w.player, 'bowman chrome auto 1st'].join(' '));
     const snQ   = encodeURIComponent([w.player, 'bowman 1st chrome'].join(' '));
-    const scpQ  = encodeURIComponent([w.player, 'bowman'].join(' '));
+    const scpQ  = [w.player, 'bowman'].join(' ').toLowerCase().replace(/\s+/g, '+');
     return `<tr style="cursor:pointer;background:${rowBg};transition:background .1s"
       onmouseover="this.style.background='${rowHover}'" onmouseout="this.style.background='${rowBg}'"
       onclick="openEditWatchlist('${w.id}')">
@@ -1099,7 +1099,7 @@ function renderWatchlistFull() {
       <td class="player-name" style="font-size:13.5px">${w.player}</td>
       <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+autoQ,'AUTO','#22d36a')}</td>
       <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+snQ+'&Features=Serial%2520Numbered','S/N','#4f8ef7')}</td>
-      <td style="text-align:center;padding:8px 10px">${lnk('https://www.sportscardspro.com/search-products?q='+scpQ,'SCP','#f5c842')}</td>
+      <td style="text-align:center;padding:8px 10px">${lnk('https://www.sportscardspro.com/search-products?q='+scpQ+'&type=prices','SCP','#f5c842')}</td>
       <td style="color:var(--text-muted);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${w.notes||''}</td>
       <td style="padding:8px 8px;text-align:center" onclick="event.stopPropagation()">
         <button onclick="deleteWlEntry('${w.id}')" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:6px;opacity:0.4;transition:all .15s" onmouseover="this.style.opacity='1';this.style.color='var(--red)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--text-muted)'">×</button>
