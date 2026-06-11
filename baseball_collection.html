@@ -416,6 +416,8 @@
     <!-- OVERVIEW PAGE -->
     <div class="page active" id="page-overview">
       <div class="stats-row" id="stat-cards"></div>
+
+      <!-- Row 2: Value by Player + Top Movers -->
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 3">
           <div class="panel-header">
@@ -424,6 +426,34 @@
           </div>
           <div class="chart-wrap"><canvas id="plChart"></canvas></div>
         </div>
+        <div class="panel" style="grid-column:span 3">
+          <div class="panel-header"><div class="panel-title"><span class="dot green"></span>Top Movers <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">by P/L $</span></div></div>
+          <div class="chart-wrap" style="height:300px"><canvas id="moversChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Spending Over Time + P/L by Player -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
+        <div class="panel" style="grid-column:span 3">
+          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Spending Over Time</div></div>
+          <div class="chart-wrap" style="height:260px"><canvas id="spendTimeChart"></canvas></div>
+        </div>
+        <div class="panel" style="grid-column:span 3">
+          <div class="panel-header"><div class="panel-title"><span class="dot blue"></span>P/L by Player</div></div>
+          <div class="chart-wrap" style="height:260px;overflow-y:auto"><canvas id="costValueChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 4: Portfolio Map -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
+        <div class="panel" style="grid-column:span 6">
+          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Portfolio Map <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">size = value · color = P/L</span></div></div>
+          <div id="treemap" style="position:relative;height:320px;margin:14px 18px 18px;border-radius:8px;overflow:hidden"></div>
+        </div>
+      </div>
+
+      <!-- Row 5: Set Progress + Recent Singles + Watchlist -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 2">
           <div class="panel-header"><div class="panel-title"><span class="dot green"></span>Set Progress</div></div>
           <div class="progress-wrap">
@@ -441,35 +471,13 @@
             <div class="chart-wrap" style="height:130px"><canvas id="spendChart"></canvas></div>
           </div>
         </div>
-        <div class="panel" style="grid-column:span 1">
-          <div class="panel-header"><div class="panel-title"><span class="dot yellow"></span>Watchlist</div></div>
-          <div id="watchlist-mini"></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 3">
           <div class="panel-header"><div class="panel-title"><span class="dot purple"></span>Recent Singles</div></div>
           <div id="recent-singles"></div>
         </div>
-        <div class="panel" style="grid-column:span 3">
-          <div class="panel-header"><div class="panel-title"><span class="dot green"></span>Top Movers <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">by P/L $</span></div></div>
-          <div class="chart-wrap" style="height:300px"><canvas id="moversChart"></canvas></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
-        <div class="panel" style="grid-column:span 3">
-          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Spending Over Time</div></div>
-          <div class="chart-wrap" style="height:260px"><canvas id="spendTimeChart"></canvas></div>
-        </div>
-        <div class="panel" style="grid-column:span 3">
-          <div class="panel-header"><div class="panel-title"><span class="dot blue"></span>P/L by Player</div></div>
-          <div class="chart-wrap" style="height:260px;overflow-y:auto"><canvas id="costValueChart"></canvas></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
-        <div class="panel" style="grid-column:span 6">
-          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Portfolio Map <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">size = value · color = P/L</span></div></div>
-          <div id="treemap" style="position:relative;height:320px;margin:14px 18px 18px;border-radius:8px;overflow:hidden"></div>
+        <div class="panel" style="grid-column:span 1">
+          <div class="panel-header"><div class="panel-title"><span class="dot yellow"></span>Watchlist</div></div>
+          <div id="watchlist-mini"></div>
         </div>
       </div>
     </div>
