@@ -427,24 +427,28 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json(404, {"ok": False, "message": "Card not found in xlsx"})
                     wb.close(); return
 
-                # Update binder slot (col A = index 0)
+                # Helper: write by 1-based column number (safe even if row is short)
+                def wc(col1, val):
+                    ws.cell(row=target[0].row, column=col1, value=val)
+
+                # Update binder slot (col A = 1)
                 if new_binder is not None:
-                    try:    target[0].value = float(new_binder)
-                    except: target[0].value = new_binder
-                # Write cost fields (cols J, K, L = indices 9, 10, 11)
-                if card_price is not None: target[9].value  = float(card_price)
-                if shipping   is not None: target[10].value = float(shipping)
-                if taxes      is not None: target[11].value = float(taxes)
-                # SCP value (col N = index 13)
-                if scp_value  is not None: target[13].value = float(scp_value)
-                # Status (col V = index 21)
+                    try:    wc(1, float(new_binder))
+                    except: wc(1, new_binder)
+                # Write cost fields (cols J=10, K=11, L=12)
+                if card_price is not None: wc(10, float(card_price))
+                if shipping   is not None: wc(11, float(shipping))
+                if taxes      is not None: wc(12, float(taxes))
+                # SCP value (col N = 14)
+                if scp_value  is not None: wc(14, float(scp_value))
+                # Status (col V = 22)
                 if status is not None:
                     valid = ('sell', 'hold', 'flip')
-                    target[21].value = status if status in valid else None
-                # Comps (cols Q-U = indices 16-20)
+                    wc(22, status if status in valid else None)
+                # Comps (cols Q-U = 17-21)
                 for i in range(5):
                     val = comps[i] if i < len(comps) else None
-                    target[16 + i].value = float(val) if val is not None else None
+                    wc(17 + i, float(val) if val is not None else None)
 
                 wb.save(XLSX)
                 wb.close()
