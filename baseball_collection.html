@@ -457,8 +457,6 @@
               <tr>
                 <th style="text-align:center;width:90px">Priority</th>
                 <th>Player</th>
-                <th style="width:60px">Year</th>
-                <th style="width:130px">Team</th>
                 <th style="text-align:center;width:80px">AUTO</th>
                 <th style="text-align:center;width:70px">S/N</th>
                 <th style="text-align:center;width:70px">SCP</th>
@@ -1066,7 +1064,7 @@ function renderWatchlistFull() {
   list.sort((a,b) => { const ord={high:0,medium:1,low:2}; return (ord[a.priority]||1)-(ord[b.priority]||1); });
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="9" style="padding:28px;text-align:center;color:var(--text-muted);font-size:13px">No players on watchlist${_wlFilter!=='all'?' for this priority':''} — click + Add Player to get started.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:28px;text-align:center;color:var(--text-muted);font-size:13px">No players on watchlist${_wlFilter!=='all'?' for this priority':''} — click + Add Player to get started.</td></tr>`;
     return;
   }
 
@@ -1079,19 +1077,18 @@ function renderWatchlistFull() {
   tbody.innerHTML = list.map(w => {
     const tier = (w.priority||'medium').toLowerCase();
     const s = _wlTierStyle(tier);
-    const yr  = w.year ? String(w.year) : '';
-    const autoQ = encodeURIComponent([w.player, yr, 'bowman chrome auto 1st'].filter(Boolean).join(' '));
-    const snQ   = encodeURIComponent([w.player, yr, 'bowman 1st chrome'].filter(Boolean).join(' '));
-    const scpQ  = encodeURIComponent([w.player, yr ? yr + ' bowman' : 'bowman'].filter(Boolean).join(' '));
-    return `<tr style="cursor:pointer;transition:background .1s"
-      onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''"
+    const rowBg = tier==='high' ? 'rgba(242,92,92,0.06)' : tier==='low' ? 'rgba(45,212,191,0.06)' : 'rgba(245,200,66,0.05)';
+    const rowHover = tier==='high' ? 'rgba(242,92,92,0.12)' : tier==='low' ? 'rgba(45,212,191,0.1)' : 'rgba(245,200,66,0.09)';
+    const autoQ = encodeURIComponent([w.player, 'bowman chrome auto 1st'].join(' '));
+    const snQ   = encodeURIComponent([w.player, 'bowman 1st chrome'].join(' '));
+    const scpQ  = encodeURIComponent([w.player, 'bowman'].join(' '));
+    return `<tr style="cursor:pointer;background:${rowBg};transition:background .1s"
+      onmouseover="this.style.background='${rowHover}'" onmouseout="this.style.background='${rowBg}'"
       onclick="openEditWatchlist('${w.id}')">
       <td style="padding:10px 14px;text-align:center">
         <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid ${s.border};background:${s.bg};color:${s.color}">${tier.charAt(0).toUpperCase()+tier.slice(1)}</span>
       </td>
       <td class="player-name" style="font-size:13.5px">${w.player}</td>
-      <td style="color:var(--text-muted);font-size:12px">${w.year||'—'}</td>
-      <td style="color:var(--text-secondary);font-size:12px">${w.team||'—'}</td>
       <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+autoQ,'AUTO','#22d36a')}</td>
       <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+snQ+'&Features=Serial%2520Numbered','S/N','#4f8ef7')}</td>
       <td style="text-align:center;padding:8px 10px">${lnk('https://www.sportscardspro.com/search-products?q='+scpQ,'SCP','#f5c842')}</td>
@@ -1107,8 +1104,7 @@ function openAddWatchlist() {
   _wlEditId = null;
   $('wl-modal-title').textContent = 'Add Player';
   $('wl-player').value = '';
-  $('wl-year').value   = '';
-  $('wl-team').value   = '';
+
   $('wl-notes').value  = '';
   document.querySelectorAll('.wl-priority-btn').forEach(b => b.classList.toggle('active', b.dataset.p === 'medium'));
   $('wl-delete-btn').style.display = 'none';
@@ -1122,8 +1118,7 @@ function openEditWatchlist(id) {
   _wlEditId = id;
   $('wl-modal-title').textContent = 'Edit Player';
   $('wl-player').value = w.player || '';
-  $('wl-year').value   = w.year   || '';
-  $('wl-team').value   = w.team   || '';
+
   $('wl-notes').value  = w.notes  || '';
   document.querySelectorAll('.wl-priority-btn').forEach(b => b.classList.toggle('active', b.dataset.p === (w.priority||'medium')));
   $('wl-delete-btn').style.display = 'inline-flex';
@@ -1145,7 +1140,7 @@ function saveWlEntry() {
   const player = ($('wl-player').value || '').trim();
   if (!player) { $('wl-player').focus(); return; }
   const priority = (document.querySelector('.wl-priority-btn.active') || {dataset:{p:'medium'}}).dataset.p;
-  const entry = { player, year: parseInt($('wl-year').value)||null, team:($('wl-team').value||'').trim(), priority, notes:($('wl-notes').value||'').trim() };
+  const entry = { player, priority, notes:($('wl-notes').value||'').trim() };
   const list = getWatchlist();
   if (_wlEditId) {
     const idx = list.findIndex(x => String(x.id) === String(_wlEditId));
@@ -3182,16 +3177,7 @@ buildEbayLinks();
         <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Player Name</label>
         <input id="wl-player" class="form-input" type="text" placeholder="e.g. Victor Rodrigues" style="width:100%" onkeydown="if(event.key==='Enter')saveWlEntry()">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div>
-          <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Bowman Year</label>
-          <input id="wl-year" class="form-input" type="number" placeholder="2025" style="width:100%">
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Team</label>
-          <input id="wl-team" class="form-input" type="text" placeholder="e.g. Yankees" style="width:100%">
-        </div>
-      </div>
+
       <div>
         <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:8px">Priority</label>
         <div style="display:flex;gap:8px">
