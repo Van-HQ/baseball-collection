@@ -444,6 +444,7 @@ class Handler(BaseHTTPRequestHandler):
                 wb.save(XLSX)
                 wb.close()
                 print(f"[UPDATE] {player} {card_no} comps → {comps}")
+                if body.get("skip_rebuild"): self.send_json(200, {"ok": True}); return
                 # Rebuild HTML so the static DATA snapshot reflects the change
                 result = subprocess.run(
                     [sys.executable, str(HERE / 'build_collection.py')],
@@ -487,6 +488,22 @@ class Handler(BaseHTTPRequestHandler):
 
         if parsed.path == "/health":
             self.send_json(200, {"status": "ok", "port": PORT})
+            return
+
+        if parsed.path == "/api/rebuild":
+            result = subprocess.run(
+                [sys.executable, str(HERE / 'build_collection.py')],
+                capture_output=True, text=True, cwd=str(HERE)
+            )
+            if result.returncode != 0:
+                self.send_json(500, {"ok": False, "message": result.stderr})
+                return
+            git = subprocess.run(['git', '-C', str(HERE), 'add', 'baseball_collection.html'], capture_output=True)
+            git = subprocess.run(['git', '-C', str(HERE), 'commit', '-m', 'Auto: bulk SCP update'], capture_output=True, text=True)
+            if 'nothing to commit' not in git.stdout + git.stderr:
+                subprocess.run(['git', '-C', str(HERE), 'push'], capture_output=True)
+            print("[REBUILD] Done via /api/rebuild")
+            self.send_json(200, {"ok": True})
             return
 
         if parsed.path == "/api/scp":
