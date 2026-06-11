@@ -178,7 +178,7 @@ def parse_transactions(ws):
     Row 4+: individual transactions
     """
     wax, singles = [], []
-    for row in ws.iter_rows(min_row=3, values_only=True):
+    for xlsx_row, row in enumerate(ws.iter_rows(min_row=3, values_only=True), start=3):
         if _str(row[0]).lower() == 'total':
             continue  # skip totals row; we sum dynamically below
         if row[0] and row[1] is not None:
@@ -186,6 +186,7 @@ def parse_transactions(ws):
                 'product': _str(row[0]),
                 'price':   round(_float(row[1]), 2),
                 'date':    _date(row[2]),
+                '_row':    xlsx_row,
             })
         if row[3] and row[5] is not None:
             singles.append({
@@ -193,6 +194,7 @@ def parse_transactions(ws):
                 'product': _str(row[4]),
                 'price':   round(_float(row[5]), 2),
                 'date':    _date(row[6]),
+                '_row':    xlsx_row,
             })
     return wax, singles
 

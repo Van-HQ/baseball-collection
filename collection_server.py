@@ -633,6 +633,66 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(500, {"ok": False, "message": str(e)})
             return
 
+        if parsed.path in ("/api/update-transaction", "/api/delete-transaction"):
+            is_delete = parsed.path.endswith("delete-transaction")
+            ttype   = body.get("type", "").strip()
+            row     = body.get("row")
+            player  = body.get("player", "").strip()
+            product = body.get("product", "").strip()
+            price   = body.get("price")
+            date    = body.get("date", "").strip()
+            if ttype not in ("wax", "single") or not row:
+                self.send_json(400, {"ok": False, "message": "bad params"}); return
+            try:
+                import openpyxl as _xl
+                from datetime import datetime as _dt
+                wb = _xl.load_workbook(XLSX)
+                ws = wb["Transactions"]
+                row = int(row)
+                # wax → cols 1,2,3 ; single → cols 4,5,6,7
+                cols = (1, 2, 3) if ttype == "wax" else (4, 5, 6, 7)
+                if is_delete:
+                    for c in cols:
+                        ws.cell(row, c, None)
+                    label = f"{ttype} row {row}"
+                else:
+                    dt = None
+                    if date:
+                        try: dt = _dt.strptime(date, "%Y-%m-%d")
+                        except: dt = date
+                    if ttype == "wax":
+                        ws.cell(row, 1, product)
+                        ws.cell(row, 2, float(price) if price is not None else None)
+                        ws.cell(row, 3, dt)
+                        if isinstance(dt, _dt): ws.cell(row, 3).number_format = 'yyyy-mm-dd'
+                    else:
+                        ws.cell(row, 4, player)
+                        ws.cell(row, 5, product or None)
+                        ws.cell(row, 6, float(price) if price is not None else None)
+                        ws.cell(row, 7, dt)
+                        if isinstance(dt, _dt): ws.cell(row, 7).number_format = 'yyyy-mm-dd'
+                    label = f"{ttype} row {row}"
+                wb.save(XLSX)
+                wb.close()
+                print(f"[{'DEL-TXN' if is_delete else 'UPD-TXN'}] {label}")
+                result = subprocess.run(
+                    [sys.executable, str(HERE / 'build_collection.py')],
+                    capture_output=True, text=True, cwd=str(HERE)
+                )
+                if result.returncode == 0:
+                    print("[REBUILD] OK")
+                    subprocess.run(['git', '-C', str(HERE), 'add', 'baseball_collection.html'], capture_output=True)
+                    git = subprocess.run(['git', '-C', str(HERE), 'commit', '-m', f'Auto: {"delete" if is_delete else "update"} {label}'], capture_output=True, text=True)
+                    if 'nothing to commit' not in git.stdout + git.stderr:
+                        push = subprocess.run(['git', '-C', str(HERE), 'push'], capture_output=True, text=True)
+                        print(f"[GIT] {'Pushed' if push.returncode==0 else 'Push failed: '+push.stderr}")
+                else:
+                    print(f"[REBUILD] FAILED:\n{result.stderr}")
+                self.send_json(200, {"ok": True})
+            except Exception as e:
+                self.send_json(500, {"ok": False, "message": str(e)})
+            return
+
         if parsed.path == "/api/add-card":
             player     = body.get("player", "").strip()
             year       = body.get("year")
