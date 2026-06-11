@@ -628,7 +628,8 @@
             <span class="chip"        id="cl-2026-f-missing" onclick="setClFilter('2026','missing',this)">Need</span>
           </div>
         </div>
-        <div style="padding:12px 18px 2px"><div class="progress-bg"><div class="progress-fill blue" id="cl-prog-2026" style="width:0%"></div></div></div>
+        <div id="cl-2026-hero" style="display:flex;align-items:center;gap:28px;padding:20px 24px;background:linear-gradient(120deg,rgba(79,142,247,0.09) 0%,rgba(79,142,247,0.02) 45%,transparent 70%);border-bottom:1px solid var(--border)"></div>
+        <div style="display:none"><div id="cl-prog-2026"></div></div>
         <div id="cl-2026-sets" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;padding:12px 18px"></div>
         <div style="overflow-x:auto;max-height:480px;overflow-y:auto;border-top:1px solid var(--border)">
           <table style="width:100%;border-collapse:collapse;font-size:12.5px">
@@ -658,7 +659,8 @@
             <span class="chip"        id="cl-2025-f-missing" onclick="setClFilter('2025','missing',this)">Need</span>
           </div>
         </div>
-        <div style="padding:12px 18px 2px"><div class="progress-bg"><div class="progress-fill green" id="cl-prog-2025" style="width:0%"></div></div></div>
+        <div id="cl-2025-hero" style="display:flex;align-items:center;gap:28px;padding:20px 24px;background:linear-gradient(120deg,rgba(34,211,106,0.09) 0%,rgba(34,211,106,0.02) 45%,transparent 70%);border-bottom:1px solid var(--border)"></div>
+        <div style="display:none"><div id="cl-prog-2025"></div></div>
         <div id="cl-2025-sets" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;padding:12px 18px"></div>
         <div style="overflow-x:auto;max-height:480px;overflow-y:auto;border-top:1px solid var(--border)">
           <table style="width:100%;border-collapse:collapse;font-size:12.5px">
@@ -1391,10 +1393,12 @@ function renderProgress() {
   $('cl-2025-sub').textContent = 'of '+cl.bowman_2025.total+' total ('+p25+'%)';
   $('cl-total').textContent = cl.bowman_2026.total + cl.bowman_2025.total;
   $('cl-total-sub').textContent = (cl.bowman_2026.owned + cl.bowman_2025.owned)+' owned across both sets';
-  $('cl-prog-2026').style.width = p26+'%';
-  $('cl-prog-2025').style.width = p25+'%';
-  $('cl-prog-2026-label').textContent = p26+'%';
-  $('cl-prog-2025-label').textContent = p25+'%';
+  const _setW = (id, w) => { const el = $(id); if (el) el.style.width = w; };
+  const _setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
+  _setW('cl-prog-2026', p26+'%');
+  _setW('cl-prog-2025', p25+'%');
+  _setT('cl-prog-2026-label', p26+'%');
+  _setT('cl-prog-2025-label', p25+'%');
   renderClSets('2026');  renderChecklist('2026');
   renderClSets('2025');  renderChecklist('2025');
 }
@@ -1406,29 +1410,79 @@ let _clRebuildTimer = null;
 function _clKey(yr)   { return yr === '2026' ? 'bowman_2026' : 'bowman_2025'; }
 function _clSheet(yr) { return yr === '2026' ? 'Bowman 2026' : 'Bowman 2025'; }
 
+function _clRing(pct, size, stroke, color, trackColor) {
+  const r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform:rotate(-90deg);display:block">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${trackColor||'rgba(255,255,255,0.06)'}" stroke-width="${stroke}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - pct/100)).toFixed(1)}" style="transition:stroke-dashoffset .5s ease"/>
+  </svg>`;
+}
+
 function renderClSets(yr) {
   const cl = DATA.checklist[_clKey(yr)];
   if (!cl || !cl.sets) return;
+  const accent = yr === '2026' ? 'var(--accent)' : 'var(--green)';
+
+  // ── Hero ──
+  const hero = $('cl-' + yr + '-hero');
+  if (hero) {
+    const pctAll = cl.total ? (cl.owned / cl.total * 100) : 0;
+    const setsDone = cl.sets.filter(s => s.owned === s.total && s.total > 0).length;
+    hero.innerHTML = `
+      <div style="position:relative;width:96px;height:96px;flex-shrink:0">
+        ${_clRing(pctAll, 96, 7, accent)}
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <span style="font-size:21px;font-weight:800;letter-spacing:-.5px">${pctAll.toFixed(1)}%</span>
+          <span style="font-size:8.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-top:1px">complete</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font-size:24px;font-weight:800;letter-spacing:-.5px">${cl.owned.toLocaleString()} <span style="font-size:14px;font-weight:600;color:var(--text-muted)">/ ${cl.total.toLocaleString()} cards</span></div>
+        <div style="font-size:12px;color:var(--text-muted)">${(cl.total - cl.owned).toLocaleString()} left to collect</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px">
+          <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:${setsDone ? 'rgba(34,211,106,0.12)' : 'rgba(255,255,255,0.05)'};border:1px solid ${setsDone ? 'rgba(34,211,106,0.3)' : 'var(--border)'};color:${setsDone ? 'var(--green)' : 'var(--text-muted)'}">${setsDone} / ${cl.sets.length} sets complete</span>
+        </div>
+      </div>
+      <div style="flex:1"></div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:170px">
+        ${cl.sets.slice().sort((a,b) => (b.owned/b.total) - (a.owned/a.total)).slice(0,3).map(s => {
+          const p = s.total ? Math.round(s.owned/s.total*100) : 0;
+          return `<div style="display:flex;align-items:center;gap:8px;width:100%">
+            <span style="font-size:10px;color:var(--text-muted);flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
+            <div style="width:64px;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${p}%;background:${p===100?'var(--green)':accent};border-radius:2px"></div></div>
+            <span style="font-size:10px;font-weight:700;color:${p===100?'var(--green)':'var(--text-secondary)'};width:30px;flex-shrink:0">${p}%</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+  }
+
+  // ── Set selector cards ──
   const wrap = $('cl-' + yr + '-sets');
   if (!wrap) return;
   wrap.innerHTML = cl.sets.map((s, i) => {
     const pct  = s.total ? Math.round(s.owned / s.total * 100) : 0;
     const sel  = i === clState[yr].set;
     const done = pct === 100;
-    return `<div onclick="selectClSet('${yr}',${i})" style="cursor:pointer;border:1px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'rgba(79,142,247,0.08)' : 'var(--bg-base)'};border-radius:10px;padding:10px 12px;transition:all .15s" onmouseover="if(!${sel})this.style.borderColor='var(--border-light)'" onmouseout="if(!${sel})this.style.borderColor='var(--border)'">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:6px">
-        <span style="font-size:11.5px;font-weight:700;color:${sel ? 'var(--accent)' : 'var(--text-primary)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</span>
-        <span style="font-size:10px;font-weight:700;color:${done ? 'var(--green)' : 'var(--text-muted)'};flex-shrink:0">${pct}%</span>
+    const ringColor = done ? 'var(--green)' : accent;
+    return `<div onclick="selectClSet('${yr}',${i})" style="cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid ${sel ? ringColor : 'var(--border)'};background:${sel ? (yr==='2026' ? 'rgba(79,142,247,0.09)' : 'rgba(34,211,106,0.09)') : 'var(--bg-base)'};border-radius:12px;padding:10px 12px;transition:all .18s;${sel ? 'box-shadow:0 0 0 1px '+ringColor+', 0 4px 16px rgba(0,0,0,0.25);transform:translateY(-1px)' : ''}"
+      onmouseover="if(!this.dataset.sel){this.style.borderColor='var(--border-light)';this.style.transform='translateY(-1px)'}"
+      onmouseout="if(!this.dataset.sel){this.style.borderColor='var(--border)';this.style.transform=''}"
+      ${sel ? 'data-sel="1"' : ''}>
+      <div style="position:relative;width:40px;height:40px;flex-shrink:0">
+        ${_clRing(pct, 40, 3.5, ringColor)}
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          ${done ? `<span style="font-size:14px;color:var(--green)">✓</span>` : `<span style="font-size:9.5px;font-weight:800;color:${sel ? ringColor : 'var(--text-secondary)'}">${pct}%</span>`}
+        </div>
       </div>
-      <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px">${s.owned} / ${s.total}</div>
-      <div style="height:4px;background:var(--bg-hover);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${done ? 'var(--green)' : 'var(--accent)'};border-radius:2px;transition:width .3s"></div></div>
+      <div style="min-width:0">
+        <div style="font-size:11.5px;font-weight:700;color:${sel ? ringColor : 'var(--text-primary)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${s.owned} / ${s.total}</div>
+      </div>
     </div>`;
   }).join('');
-  const pctAll = cl.total ? (cl.owned / cl.total * 100) : 0;
-  const bar = $('cl-prog-' + yr);
-  if (bar) bar.style.width = pctAll.toFixed(1) + '%';
+
   const badge = $('cl-' + yr + '-prog-badge');
-  if (badge) badge.textContent = cl.owned + ' / ' + cl.total + ' (' + pctAll.toFixed(1) + '%)';
+  if (badge) badge.textContent = '';
 }
 
 function selectClSet(yr, i) {
@@ -1474,12 +1528,15 @@ function renderChecklist(yr) {
   }
 
   tbody.innerHTML = items.map(({c, idx}, i) => {
-    const row_bg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015)';
-    return `<tr style="${row_bg}">
-      <td style="padding:6px 14px;text-align:center"><input type="checkbox" ${c.owned ? 'checked' : ''} onchange="toggleClOwn('${yr}',${setIdx},${idx},this)" style="width:15px;height:15px;cursor:pointer;accent-color:var(--green)"></td>
-      <td style="padding:7px 14px;color:var(--text-muted);font-size:12px;white-space:nowrap">${c.no || '—'}</td>
-      <td style="padding:7px 14px;color:${c.owned ? 'var(--green)' : 'var(--text-primary)'};font-size:13px;font-weight:500">${c.player}</td>
-      <td style="padding:7px 14px;color:var(--text-muted);font-size:12px">${c.team || '—'}</td>
+    const owned_bg = c.owned ? 'background:rgba(34,211,106,0.045)' : (i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015)');
+    return `<tr style="${owned_bg};cursor:pointer;transition:background .12s"
+      onmouseover="this.style.background='rgba(255,255,255,0.04)'"
+      onmouseout="this.style.background='${c.owned ? 'rgba(34,211,106,0.045)' : (i % 2 === 0 ? '' : 'rgba(255,255,255,0.015)')}'"
+      onclick="if(event.target.tagName!=='INPUT'){const cb=this.querySelector('input');cb.checked=!cb.checked;cb.dispatchEvent(new Event('change'))}">
+      <td style="padding:6px 14px;text-align:center"><input type="checkbox" ${c.owned ? 'checked' : ''} onchange="toggleClOwn('${yr}',${setIdx},${idx},this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)"></td>
+      <td style="padding:8px 14px;font-size:11.5px;white-space:nowrap;font-weight:600;color:${c.owned ? 'var(--green)' : 'var(--text-muted)'};font-family:ui-monospace,monospace">${c.no || '—'}</td>
+      <td style="padding:8px 14px;color:${c.owned ? 'var(--green)' : 'var(--text-primary)'};font-size:13px;font-weight:${c.owned ? '600' : '500'}">${c.player}${c.owned ? ' <span style="font-size:10px;opacity:.6">✓</span>' : ''}</td>
+      <td style="padding:8px 14px;color:var(--text-muted);font-size:12px">${c.team || '—'}</td>
     </tr>`;
   }).join('');
 
@@ -1503,6 +1560,7 @@ async function toggleClOwn(yr, setIdx, cardIdx, box) {
     });
     const data = await r.json();
     if (!data.ok) throw new Error(data.message || 'save failed');
+    renderChecklist(yr);
     _scheduleClRebuild(yr);
   } catch(e) {
     c.owned    = !newVal;
