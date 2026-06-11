@@ -219,7 +219,8 @@ def parse_rookies(ws):
 # Friendly display names per card-number prefix. Edit freely — unknown
 # prefixes fall back to the raw prefix string.
 SET_NAMES = {
-    'BASE': 'Base Set',
+    'BASE': 'Base Paper',
+    'BASE2': 'Base Chrome',
     'BP':   'Paper Prospects',
     'BCP':  'Chrome Prospects',
     'BTP':  'Scouts Top 100',
@@ -261,6 +262,7 @@ def parse_checklist(ws):
             i += 1
 
     sets = []
+    seen_prefixes = {}
     for gi, (no_col, player_col, team_col, own_col) in enumerate(groups):
         cards  = []
         prefix = None
@@ -287,10 +289,13 @@ def parse_checklist(ws):
             continue
         if prefix is None:
             prefix = f'SET{gi+1}'
+        # Repeated prefixes get numbered (BASE → BASE2 = Base Chrome, etc.)
+        seen_prefixes[prefix] = seen_prefixes.get(prefix, 0) + 1
+        name_key = prefix if seen_prefixes[prefix] == 1 else f'{prefix}{seen_prefixes[prefix]}'
         sets.append({
             'key':    f'{prefix}_{gi}',
             'prefix': prefix,
-            'name':   SET_NAMES.get(prefix, prefix),
+            'name':   SET_NAMES.get(name_key, name_key),
             'total':  len(cards),
             'owned':  sum(1 for c in cards if c['owned']),
             'cards':  cards,
