@@ -117,7 +117,7 @@ def parse_bowman(ws):
         # Status: column V (index 21) — hold / flip / watching / ''
         status_raw = row[21] if len(row) > 21 else None
         status = _str(status_raw).lower() if status_raw else ''
-        if status not in ('hold', 'flip', 'watching'):
+        if status not in ('sell', 'hold', 'flip'):
             status = ''
         cards.append({
             'binder':     _binder(row[0]),

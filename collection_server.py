@@ -439,7 +439,7 @@ class Handler(BaseHTTPRequestHandler):
                 if scp_value  is not None: target[13].value = float(scp_value)
                 # Status (col V = index 21)
                 if status is not None:
-                    valid = ('hold', 'flip', 'watching')
+                    valid = ('sell', 'hold', 'flip')
                     target[21].value = status if status in valid else None
                 # Comps (cols Q-U = indices 16-20)
                 for i in range(5):

@@ -265,9 +265,9 @@
   .vm-input:focus{border-color:var(--accent)}
   .vm-hf-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:11px;font-weight:500;padding:5px 11px;border-radius:6px;cursor:pointer;transition:all .15s}
   .cd-hf-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;padding:3px 9px;border-radius:6px;cursor:pointer;transition:all .15s}
+  .cd-hf-btn[data-hf="sell"].active{background:rgba(74,222,128,0.12);border-color:rgba(74,222,128,0.4);color:var(--green)}
   .cd-hf-btn[data-hf="hold"].active{background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red)}
   .cd-hf-btn[data-hf="flip"].active{background:var(--yellow-bg);border-color:rgba(245,200,66,0.35);color:var(--yellow)}
-  .cd-hf-btn[data-hf="watching"].active{background:rgba(45,212,191,0.1);border-color:rgba(45,212,191,0.35);color:#2dd4bf}
   .cd-hf-btn:hover:not(.active){color:var(--text-secondary);border-color:var(--border-light)}
   .vm-hf-btn[data-hf="hold"].active{background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red)}
   .vm-hf-btn[data-hf="flip"].active{background:var(--yellow-bg);border-color:rgba(245,200,66,0.35);color:var(--yellow)}
@@ -939,9 +939,9 @@ function filterCards() { renderCardsTable(); }
 function _statusChip(status) {
   if (!status) return '';
   const map = {
-    hold:     'background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red)',
-    flip:     'background:var(--yellow-bg);border-color:rgba(245,200,66,0.35);color:var(--yellow)',
-    watching: 'background:rgba(45,212,191,0.1);border-color:rgba(45,212,191,0.35);color:#2dd4bf',
+    sell: 'background:rgba(74,222,128,0.12);border-color:rgba(74,222,128,0.4);color:var(--green)',
+    hold: 'background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red)',
+    flip: 'background:var(--yellow-bg);border-color:rgba(245,200,66,0.35);color:var(--yellow)',
   };
   const s = map[status]; if (!s) return '';
   return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap;cursor:pointer;${s}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>`;
@@ -949,7 +949,7 @@ function _statusChip(status) {
 
 async function cycleStatus(idx) {
   const c = filteredCards[idx]; if (!c) return;
-  const order = ['', 'watching', 'hold', 'flip'];
+  const order = ['', 'sell', 'hold', 'flip'];
   c.status = order[(order.indexOf(c.status || '') + 1) % order.length];
   renderCardsTable();
   try {
@@ -1129,6 +1129,7 @@ async function saveCard() {
       _selectedCard.scp_value  = pf($('cd-scp').value)        || 0;
       _selectedCard.cost       = _liveCost();
       _selectedCard.status     = document.querySelector('.cd-hf-btn.active')?.dataset.hf || '';
+      renderCardsTable();
       status.textContent = '✓ Saved'; status.style.color = 'var(--green)';
       setTimeout(() => { status.textContent = ''; }, 2500);
     } else {
@@ -2276,17 +2277,15 @@ buildEbayLinks();
     <!-- Header -->
     <div class="val-modal-hdr" style="padding:20px 20px 16px">
       <div style="flex:1;min-width:0">
-        <div id="cd-player" style="font-size:20px;font-weight:800;letter-spacing:-.4px;line-height:1.2"></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div id="cd-player" style="font-size:20px;font-weight:800;letter-spacing:-.4px;line-height:1.2"></div>
+          <button class="cd-hf-btn" data-hf="sell" onclick="setCdStatus(this)">Sell</button>
+          <button class="cd-hf-btn" data-hf="hold" onclick="setCdStatus(this)">Hold</button>
+          <button class="cd-hf-btn" data-hf="flip" onclick="setCdStatus(this)">Flip</button>
+        </div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
           <span id="cd-parallel" style="font-size:11px;font-weight:700;background:rgba(79,142,247,0.15);color:var(--accent);border:1px solid rgba(79,142,247,0.3);border-radius:20px;padding:2px 10px"></span>
           <span id="cd-meta" style="font-size:11px;color:var(--text-muted)"></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-          <button class="cd-hf-btn" data-hf="watching" onclick="setCdStatus(this)">Watching</button>
-          <button class="cd-hf-btn" data-hf="hold"     onclick="setCdStatus(this)">Hold</button>
-          <button class="cd-hf-btn" data-hf="flip"     onclick="setCdStatus(this)">Flip</button>
-        </div>
-        <div style="display:none"><!-- spacer close --></div
         </div>
       </div>
       <button onclick="closeCardDetail()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s;flex-shrink:0" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
