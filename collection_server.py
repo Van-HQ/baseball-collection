@@ -395,6 +395,7 @@ class Handler(BaseHTTPRequestHandler):
             binder     = body.get("binder", "")
             player     = body.get("player", "")
             card_no    = body.get("card_no", "")
+            xlsx_row   = body.get("_row")
             comps      = body.get("comps")        # None = not provided, [] = clear
             card_price = body.get("card_price")
             shipping   = body.get("shipping")
@@ -410,14 +411,19 @@ class Handler(BaseHTTPRequestHandler):
                 ws = wb["Bowman"]
                 target = None
                 for row in ws.iter_rows(min_row=3):
+                    # Primary: exact xlsx row number (never ambiguous)
+                    if xlsx_row is not None:
+                        if row[0].row == int(xlsx_row):
+                            target = row; break
+                        continue
                     rv = row[0].value
-                    # Match by binder slot (most reliable)
+                    # Fallback 1: binder slot
                     if binder and rv is not None:
                         try:
                             if abs(float(rv) - float(binder)) < 0.001:
                                 target = row; break
                         except: pass
-                    # Fallback: player + card_no
+                    # Fallback 2: player + card_no
                     if not target and player:
                         rp = str(row[1].value or "").strip().lower()
                         rc = str(row[4].value or "").strip().lower()
@@ -494,15 +500,20 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if parsed.path == "/api/delete-card":
-            binder  = body.get("binder", "")
-            player  = body.get("player", "").strip()
-            card_no = body.get("card_no", "").strip()
+            binder   = body.get("binder", "")
+            player   = body.get("player", "").strip()
+            card_no  = body.get("card_no", "").strip()
+            xlsx_row = body.get("_row")
             try:
                 import openpyxl as _xl
                 wb = _xl.load_workbook(XLSX)
                 ws = wb["Bowman"]
                 target_row = None
                 for row in ws.iter_rows(min_row=3):
+                    if xlsx_row is not None:
+                        if row[0].row == int(xlsx_row):
+                            target_row = row[0].row; break
+                        continue
                     rv = row[0].value
                     if binder and rv is not None:
                         try:

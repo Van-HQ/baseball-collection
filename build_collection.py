@@ -87,7 +87,7 @@ def fetch_scp_url(player, parallel, year, card_no):
 def parse_bowman(ws):
     """Row 1 = merged title, Row 2 = headers, Row 3+ = card data."""
     cards = []
-    for row in ws.iter_rows(min_row=3, values_only=True):
+    for xlsx_row, row in enumerate(ws.iter_rows(min_row=3, values_only=True), start=3):
         player = _str(row[1])
         if not player:
             continue
@@ -136,6 +136,7 @@ def parse_bowman(ws):
             'pl_dollars': round(tmv - cost, 2),
             'comps':      comps,
             'status':     status,
+            '_row':       xlsx_row,   # exact xlsx row number for reliable matching
             'scp_url':    None,  # filled in below from cache
         })
     return cards
