@@ -312,9 +312,10 @@ def build():
     # ── Summaries ──────────────────────────────────────────────────────────────
     wax_spent     = round(sum(t['price'] for t in wax), 2)
     singles_spent = round(sum(t['price'] for t in singles), 2)
-    total_cost    = round(sum(c['cost'] for c in cards), 2)
-    total_tmv     = round(sum(c['tmv']  for c in cards), 2)
-    total_pl      = round(sum(c['pl']   for c in cards), 2)
+    total_cost    = round(sum(c['cost']       for c in cards), 2)
+    total_tmv     = round(sum(c['tmv']        for c in cards), 2)
+    total_pl      = round(sum(c['pl_dollars'] for c in cards), 2)
+    total_pl_pct  = round(((total_tmv - total_cost) / total_cost * 100) if total_cost else 0.0, 1)
 
     data = {
         'summary': {
@@ -322,6 +323,7 @@ def build():
             'total_cost':    total_cost,
             'total_tmv':     total_tmv,
             'total_pl':      total_pl,
+            'total_pl_pct':  total_pl_pct,
             'wax_spent':     wax_spent,
             'singles_spent': singles_spent,
         },
