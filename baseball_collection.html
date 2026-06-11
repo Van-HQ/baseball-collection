@@ -370,6 +370,26 @@
           <div class="panel-header"><div class="panel-title"><span class="dot purple"></span>Recent Singles</div></div>
           <div id="recent-singles"></div>
         </div>
+        <div class="panel" style="grid-column:span 3">
+          <div class="panel-header"><div class="panel-title"><span class="dot green"></span>Top Movers <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">by P/L $</span></div></div>
+          <div class="chart-wrap" style="height:300px"><canvas id="moversChart"></canvas></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
+        <div class="panel" style="grid-column:span 3">
+          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Spending Over Time</div></div>
+          <div class="chart-wrap" style="height:260px"><canvas id="spendTimeChart"></canvas></div>
+        </div>
+        <div class="panel" style="grid-column:span 3">
+          <div class="panel-header"><div class="panel-title"><span class="dot blue"></span>Cost vs Value <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">above line = profit</span></div></div>
+          <div class="chart-wrap" style="height:260px"><canvas id="costValueChart"></canvas></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
+        <div class="panel" style="grid-column:span 6">
+          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Portfolio Map <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">size = value · color = P/L</span></div></div>
+          <div id="treemap" style="position:relative;height:320px;margin:14px 18px 18px;border-radius:8px;overflow:hidden"></div>
+        </div>
       </div>
     </div>
 
@@ -780,6 +800,162 @@ function renderSpendChart() {
       cutout:'65%'
     }
   });
+}
+
+// --- TOP MOVERS ---
+let _moversChart = null;
+function renderMoversChart() {
+  const priced = DATA.cards.filter(c => c.cost > 0);
+  const sorted = [...priced].sort((a,b) => b.pl_dollars - a.pl_dollars);
+  const top = sorted.slice(0, 7);
+  const bot = sorted.slice(-5).filter(c => c.pl_dollars < 0 && !top.includes(c));
+  const movers = [...top, ...bot];
+  const label = c => { const p = c.player.split(' '); return (p[p.length-1] || c.player).slice(0,12); };
+  const labels = movers.map(label);
+  const vals   = movers.map(c => +c.pl_dollars.toFixed(2));
+  const colors = vals.map(v => v >= 0 ? 'rgba(34,211,106,0.8)' : 'rgba(242,92,92,0.8)');
+  if (_moversChart) _moversChart.destroy();
+  _moversChart = new Chart(document.getElementById('moversChart').getContext('2d'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data:vals, backgroundColor:colors, borderRadius:4, borderSkipped:false }] },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+        title:items => movers[items[0].dataIndex].player,
+        label:c => (c.raw>=0?'+$':'-$') + Math.abs(c.raw).toFixed(2)
+      }}},
+      scales:{
+        x:{ ticks:{ color:'#4a6480', font:{size:10}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } },
+        y:{ ticks:{ color:'#7a9cc4', font:{size:10.5, weight:'600'} }, grid:{ display:false } }
+      }
+    }
+  });
+}
+
+// --- SPENDING OVER TIME ---
+let _spendTimeChart = null;
+function renderSpendTimeChart() {
+  const wax  = DATA.wax_transactions.filter(t => t.date).map(t => ({date:t.date, price:t.price, k:'w'}));
+  const sing = DATA.singles_transactions.filter(t => t.date).map(t => ({date:t.date, price:t.price, k:'s'}));
+  const all  = [...wax, ...sing];
+  const dates = [...new Set(all.map(t => t.date))].sort();
+  let cw = 0, cs = 0;
+  const waxCum = [], singCum = [];
+  dates.forEach(d => {
+    all.filter(t => t.date === d).forEach(t => { if (t.k === 'w') cw += t.price; else cs += t.price; });
+    waxCum.push(+cw.toFixed(2)); singCum.push(+cs.toFixed(2));
+  });
+  if (_spendTimeChart) _spendTimeChart.destroy();
+  _spendTimeChart = new Chart(document.getElementById('spendTimeChart').getContext('2d'), {
+    type:'line',
+    data:{ labels:dates, datasets:[
+      { label:'Singles', data:singCum, borderColor:'rgba(34,211,106,0.9)', backgroundColor:'rgba(34,211,106,0.15)', fill:true, tension:.25, pointRadius:0, borderWidth:2, stack:'s' },
+      { label:'Wax', data:waxCum, borderColor:'rgba(167,139,250,0.9)', backgroundColor:'rgba(167,139,250,0.15)', fill:true, tension:.25, pointRadius:0, borderWidth:2, stack:'s' }
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{ position:'bottom', labels:{ color:'#7a9cc4', font:{size:11}, padding:12, boxWidth:10 } },
+        tooltip:{ callbacks:{ label:c => ' ' + c.dataset.label + ': $' + c.raw.toFixed(2) } }
+      },
+      scales:{
+        x:{ stacked:true, ticks:{ color:'#4a6480', font:{size:9}, maxTicksLimit:8 }, grid:{ color:'#1e2d45' } },
+        y:{ stacked:true, ticks:{ color:'#4a6480', font:{size:10}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } }
+      }
+    }
+  });
+}
+
+// --- COST vs VALUE SCATTER ---
+let _costValueChart = null;
+function renderCostValueChart() {
+  const pts = DATA.cards.filter(c => c.cost > 0 || c.tmv > 0)
+    .map(c => ({ x:c.cost, y:c.tmv, player:c.player, no:c.card_no }));
+  const maxV = Math.max(10, ...pts.map(p => Math.max(p.x, p.y))) * 1.05;
+  const colors = pts.map(p => p.y >= p.x ? 'rgba(34,211,106,0.75)' : 'rgba(242,92,92,0.75)');
+  if (_costValueChart) _costValueChart.destroy();
+  _costValueChart = new Chart(document.getElementById('costValueChart').getContext('2d'), {
+    data:{ datasets:[
+      { type:'line', label:'Break-even', data:[{x:0,y:0},{x:maxV,y:maxV}], borderColor:'rgba(122,156,196,0.45)', borderDash:[6,5], borderWidth:1.5, pointRadius:0, fill:false },
+      { type:'scatter', label:'Cards', data:pts, pointBackgroundColor:colors, pointBorderColor:'transparent', pointRadius:4, pointHoverRadius:6 }
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ filter:item => item.datasetIndex === 1, callbacks:{
+          title:items => { const p = items[0].raw; return p.player + (p.no ? ' · ' + p.no : ''); },
+          label:c => { const p = c.raw; return ['Cost: $'+p.x.toFixed(2), 'Value: $'+p.y.toFixed(2), 'P/L: '+(p.y-p.x>=0?'+':'-')+'$'+Math.abs(p.y-p.x).toFixed(2)]; }
+        }}
+      },
+      scales:{
+        x:{ min:0, max:maxV, title:{display:true, text:'Cost paid', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } },
+        y:{ min:0, max:maxV, title:{display:true, text:'Market value', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } }
+      }
+    }
+  });
+}
+
+// --- PORTFOLIO TREEMAP ---
+function _squarify(items, X, Y, W, H) {
+  const total = items.reduce((s,d) => s + d.value, 0) || 1;
+  const scale = (W * H) / total;
+  let remaining = items.map(d => ({ d, v: d.value * scale }));
+  const out = [];
+  const worst = (row, side) => {
+    const sum = row.reduce((s,r) => s + r.v, 0);
+    const mx = Math.max(...row.map(r => r.v)), mn = Math.min(...row.map(r => r.v));
+    const s2 = sum * sum;
+    return Math.max((side*side*mx)/s2, s2/(side*side*mn));
+  };
+  while (remaining.length) {
+    const vertical = W < H;
+    const side = vertical ? W : H;
+    let row = [remaining[0]], best = worst(row, side), k = 1;
+    while (k < remaining.length) {
+      const test = row.concat(remaining[k]);
+      const r = worst(test, side);
+      if (r > best) break;
+      row = test; best = r; k++;
+    }
+    const rowArea = row.reduce((s,r) => s + r.v, 0);
+    const thick = rowArea / side;
+    let off = 0;
+    row.forEach(r => {
+      const len = r.v / thick;
+      if (vertical) out.push({ d:r.d, x:X+off, y:Y, w:len, h:thick });
+      else          out.push({ d:r.d, x:X, y:Y+off, w:thick, h:len });
+      off += len;
+    });
+    if (vertical) { Y += thick; H -= thick; } else { X += thick; W -= thick; }
+    remaining = remaining.slice(k);
+  }
+  return out;
+}
+function renderTreemap() {
+  const box = document.getElementById('treemap');
+  if (!box) return;
+  const W = box.clientWidth || 900, H = box.clientHeight || 320;
+  const items = DATA.cards.filter(c => c.tmv > 0)
+    .map(c => ({ player:c.player, tmv:c.tmv, pl:c.pl_dollars, no:c.card_no, value:c.tmv }))
+    .sort((a,b) => b.value - a.value);
+  const tiles = _squarify(items, 0, 0, W, H);
+  box.innerHTML = tiles.map(t => {
+    const d = t.d;
+    const pl = d.pl || 0;
+    const mag = Math.min(1, Math.abs(pl) / 30);
+    const op = (0.22 + mag * 0.55).toFixed(2);
+    const bg = pl > 0 ? `rgba(34,211,106,${op})` : pl < 0 ? `rgba(242,92,92,${op})` : 'rgba(122,156,196,0.25)';
+    const showLabel = t.w > 54 && t.h > 28;
+    const last = d.player.split(' ').pop();
+    const label = showLabel
+      ? `<div style="font-size:${t.w>90?11:9.5}px;font-weight:700;color:#fff;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.5)">${last}</div>
+         <div style="font-size:${t.w>90?10:8.5}px;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.5)">$${d.tmv.toFixed(0)}</div>`
+      : '';
+    return `<div title="${d.player}${d.no?' · '+d.no:''}\nValue $${d.tmv.toFixed(2)} · P/L ${pl>=0?'+':'-'}$${Math.abs(pl).toFixed(2)}"
+      style="position:absolute;left:${t.x}px;top:${t.y}px;width:${t.w}px;height:${t.h}px;background:${bg};border:1px solid rgba(10,15,25,0.6);box-sizing:border-box;padding:4px 5px;overflow:hidden;cursor:default;transition:filter .12s"
+      onmouseover="this.style.filter='brightness(1.25)'" onmouseout="this.style.filter=''">${label}</div>`;
+  }).join('');
 }
 
 // --- WATCHLIST ---
@@ -2422,6 +2598,11 @@ function renderValHistory() {
 renderStats();
 renderPLChart(true);
 renderSpendChart();
+renderMoversChart();
+renderSpendTimeChart();
+renderCostValueChart();
+renderTreemap();
+window.addEventListener('resize', () => { clearTimeout(window._tmT); window._tmT = setTimeout(renderTreemap, 200); });
 renderWatchlistMini();
 renderWatchlistFull();
 renderRecentSingles();
