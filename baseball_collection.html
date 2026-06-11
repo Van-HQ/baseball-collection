@@ -938,6 +938,9 @@ function openCardDetail(idx) {
 
   $('cd-player').textContent  = c.player;
   $('cd-parallel').textContent = c.parallel || '';
+  const ebayQ = encodeURIComponent([c.player, c.parallel, c.card_no].filter(Boolean).join(' '));
+  $('cd-ebay-active').href = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}`;
+  $('cd-ebay-sold').href   = `https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Complete=1&LH_Sold=1`;
   const scpUrl = buildScpUrl(c.player, c.parallel, c.year, c.card_no);
   const cardNoHtml = (scpUrl && c.card_no)
     ? `<a href="${scpUrl}" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(79,142,247,0.5)" onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'">${c.card_no}</a>`
@@ -966,6 +969,13 @@ function openCardDetail(idx) {
   const ov = $('card-detail-overlay');
   ov.style.display = 'flex';
   requestAnimationFrame(() => ov.classList.add('open'));
+}
+
+function autoTax() {
+  const card = parseFloat($('cd-card-price').value.replace('$','')) || 0;
+  const ship = parseFloat($('cd-shipping').value.replace('$',''))   || 0;
+  const tax  = parseFloat(((card + ship) * 0.10).toFixed(2));
+  $('cd-taxes').value = '$' + tax.toFixed(2);
 }
 
 function _liveCost() {
@@ -2050,6 +2060,10 @@ buildEbayLinks();
           <span id="cd-parallel" style="font-size:11px;font-weight:700;background:rgba(79,142,247,0.15);color:var(--accent);border:1px solid rgba(79,142,247,0.3);border-radius:20px;padding:2px 10px"></span>
           <span id="cd-meta" style="font-size:11px;color:var(--text-muted)"></span>
         </div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <a id="cd-ebay-active" href="#" target="_blank" rel="noopener" style="font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 10px;border-radius:10px;text-decoration:none;transition:all .15s" onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay Active ↗</a>
+          <a id="cd-ebay-sold" href="#" target="_blank" rel="noopener" style="font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 10px;border-radius:10px;text-decoration:none;transition:all .15s" onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'" onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay Sold ↗</a>
+        </div>
       </div>
       <button onclick="closeCardDetail()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s;flex-shrink:0" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
     </div>
@@ -2064,13 +2078,13 @@ buildEbayLinks();
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Card</div>
             <input id="cd-card-price" type="text" inputmode="decimal" placeholder="$0.00" style="border:none;outline:none;background:transparent;color:var(--text-primary);font-size:14px;font-weight:700;text-align:center;width:100%;padding:0"
               onfocus="if(this.value.startsWith('$'))this.value=this.value.slice(1)"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcCost()">
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="autoTax();recalcCost()">
           </div>
           <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border)">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Shipping</div>
             <input id="cd-shipping" type="text" inputmode="decimal" placeholder="$0.00" style="border:none;outline:none;background:transparent;color:var(--text-primary);font-size:14px;font-weight:700;text-align:center;width:100%;padding:0"
               onfocus="if(this.value.startsWith('$'))this.value=this.value.slice(1)"
-              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcCost()">
+              onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="autoTax();recalcCost()">
           </div>
           <div style="flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border)">
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Taxes</div>
