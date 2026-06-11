@@ -400,6 +400,7 @@ class Handler(BaseHTTPRequestHandler):
             shipping   = body.get("shipping")
             taxes      = body.get("taxes")
             scp_value  = body.get("scp_value")
+            new_binder = body.get("new_binder")
 
             try:
                 import openpyxl as _xl
@@ -425,6 +426,10 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json(404, {"ok": False, "message": "Card not found in xlsx"})
                     wb.close(); return
 
+                # Update binder slot (col A = index 0)
+                if new_binder is not None:
+                    try:    target[0].value = float(new_binder)
+                    except: target[0].value = new_binder
                 # Write cost fields (cols J, K, L = indices 9, 10, 11)
                 if card_price is not None: target[9].value  = float(card_price)
                 if shipping   is not None: target[10].value = float(shipping)
