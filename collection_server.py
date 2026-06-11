@@ -499,6 +499,26 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(500, {"ok": False, "message": str(e)})
             return
 
+        if parsed.path == "/api/checklist-own":
+            sheet = body.get("sheet", "")
+            row   = body.get("row")
+            col   = body.get("col")
+            owned = bool(body.get("owned"))
+            if sheet not in ("Bowman 2026", "Bowman 2025") or not row or not col:
+                self.send_json(400, {"ok": False, "message": "bad params"}); return
+            try:
+                import openpyxl as _xl
+                wb = _xl.load_workbook(XLSX)
+                ws = wb[sheet]
+                ws.cell(row=int(row), column=int(col), value=bool(owned))
+                wb.save(XLSX)
+                wb.close()
+                print(f"[CHECKLIST] {sheet} R{row}C{col} → {owned}")
+                self.send_json(200, {"ok": True})
+            except Exception as e:
+                self.send_json(500, {"ok": False, "message": str(e)})
+            return
+
         if parsed.path == "/api/delete-card":
             binder   = body.get("binder", "")
             player   = body.get("player", "").strip()

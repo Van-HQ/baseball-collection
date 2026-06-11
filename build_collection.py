@@ -216,17 +216,35 @@ def parse_rookies(ws):
     return rookies
 
 
+# Friendly display names per card-number prefix. Edit freely — unknown
+# prefixes fall back to the raw prefix string.
+SET_NAMES = {
+    'BASE': 'Base Set',
+    'BP':   'Prospects',
+    'BCP':  'Chrome Prospects',
+    'BTP':  'Scouts Top 100',
+    'BST':  'Stars of Tomorrow',
+    'ES':   'Electric Sluggers',
+    'UR':   'Up & Rising',
+    'PC':   'Prime Chrome',
+    'ROY':  'ROY Favorites',
+    'GL':   'Going Long',
+    'RR':   'Rising Rookies',
+    'VIP':  'Bowman VIP',
+}
+
 def parse_checklist(ws):
     """
     Multi-column layout with repeating groups of (#, Player, Team, [Year,] Own, spacer).
-    Returns total/owned counts and individual card list.
+    Each column group is one insert set (Base, BP, BCP, ES, ...).
+    Returns per-set breakdown with exact xlsx cell coordinates for live editing.
     """
-    rows = list(ws.iter_rows(values_only=True))
+    rows = list(ws.iter_rows())
     if not rows:
-        return {'total': 0, 'owned': 0, 'cards': []}
+        return {'total': 0, 'owned': 0, 'sets': []}
 
-    headers = rows[0]
-    groups  = []  # (no_col, player_col, team_col, own_col)
+    headers = [c.value for c in rows[0]]
+    groups  = []  # (no_col, player_col, team_col, own_col)  all 0-based
 
     i = 0
     while i < len(headers):
@@ -242,21 +260,45 @@ def parse_checklist(ws):
         else:
             i += 1
 
-    total = owned = 0
-    cards = []
-    for row in rows[1:]:
-        for no_col, player_col, team_col, own_col in groups:
-            if player_col >= len(row) or not row[player_col]:
+    sets = []
+    for gi, (no_col, player_col, team_col, own_col) in enumerate(groups):
+        cards  = []
+        prefix = None
+        for r in rows[1:]:
+            if player_col >= len(r) or not r[player_col].value:
                 continue
-            card_no  = _str(row[no_col])
-            player   = _str(row[player_col])
-            team     = _str(row[team_col]) if team_col and team_col < len(row) else ''
-            is_owned = bool(row[own_col]) if own_col < len(row) and row[own_col] is not None else False
-            total += 1
-            if is_owned: owned += 1
-            cards.append({'no': card_no, 'player': player, 'team': team, 'owned': is_owned})
+            card_no  = _str(r[no_col].value)
+            player   = _str(r[player_col].value)
+            team     = _str(r[team_col].value) if team_col is not None and team_col < len(r) else ''
+            own_cell = r[own_col] if own_col < len(r) else None
+            is_owned = bool(own_cell.value) if own_cell is not None and own_cell.value is not None else False
+            if prefix is None and card_no:
+                m = re.match(r'^([A-Za-z]+)-', card_no)
+                prefix = m.group(1).upper() if m else 'BASE'
+            cards.append({
+                'no':     card_no,
+                'player': player,
+                'team':   team,
+                'owned':  is_owned,
+                'row':    r[no_col].row,   # xlsx row (1-based)
+                'col':    own_col + 1,     # xlsx Own column (1-based)
+            })
+        if not cards:
+            continue
+        if prefix is None:
+            prefix = f'SET{gi+1}'
+        sets.append({
+            'key':    f'{prefix}_{gi}',
+            'prefix': prefix,
+            'name':   SET_NAMES.get(prefix, prefix),
+            'total':  len(cards),
+            'owned':  sum(1 for c in cards if c['owned']),
+            'cards':  cards,
+        })
 
-    return {'total': total, 'owned': owned, 'cards': cards}
+    total = sum(s['total'] for s in sets)
+    owned = sum(s['owned'] for s in sets)
+    return {'total': total, 'owned': owned, 'sets': sets}
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
