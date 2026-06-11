@@ -401,6 +401,7 @@ class Handler(BaseHTTPRequestHandler):
             taxes      = body.get("taxes")
             scp_value  = body.get("scp_value")
             new_binder = body.get("new_binder")
+            status     = body.get("status")
 
             try:
                 import openpyxl as _xl
@@ -436,6 +437,10 @@ class Handler(BaseHTTPRequestHandler):
                 if taxes      is not None: target[11].value = float(taxes)
                 # SCP value (col N = index 13)
                 if scp_value  is not None: target[13].value = float(scp_value)
+                # Status (col V = index 21)
+                if status is not None:
+                    valid = ('hold', 'flip', 'watching')
+                    target[21].value = status if status in valid else None
                 # Comps (cols Q-U = indices 16-20)
                 for i in range(5):
                     val = comps[i] if i < len(comps) else None
@@ -473,6 +478,63 @@ class Handler(BaseHTTPRequestHandler):
                             print(f"[GIT] Pushed to GitHub")
                         else:
                             print(f"[GIT] Push failed: {push.stderr}")
+                else:
+                    print(f"[REBUILD] FAILED:\n{result.stderr}")
+                self.send_json(200, {"ok": True})
+            except Exception as e:
+                self.send_json(500, {"ok": False, "message": str(e)})
+            return
+
+        if parsed.path == "/api/add-card":
+            player     = body.get("player", "").strip()
+            year       = body.get("year")
+            parallel   = body.get("parallel", "").strip()
+            card_no    = body.get("card_no", "").strip()
+            type_      = body.get("type", "").strip()
+            binder     = body.get("binder", "").strip()
+            card_price = body.get("card_price", 0)
+            shipping   = body.get("shipping", 0)
+            taxes      = body.get("taxes", 0)
+            if not player:
+                self.send_json(400, {"ok": False, "message": "player is required"}); return
+            try:
+                import openpyxl as _xl
+                wb = _xl.load_workbook(XLSX)
+                ws = wb["Bowman"]
+                # Find last data row
+                last_row = 2
+                for row in ws.iter_rows(min_row=3):
+                    if any(c.value is not None for c in row):
+                        last_row = row[0].row
+                new_row = last_row + 1
+                # Col A=binder(0), B=player(1), C=year(2), D=parallel(3), E=card_no(4),
+                # I=type(8), J=card_price(9), K=shipping(10), L=taxes(11)
+                try: binder_val = float(binder) if binder else None
+                except: binder_val = binder or None
+                ws.cell(new_row, 1, binder_val)
+                ws.cell(new_row, 2, player)
+                ws.cell(new_row, 3, int(year) if year else None)
+                ws.cell(new_row, 4, parallel or None)
+                ws.cell(new_row, 5, card_no or None)
+                ws.cell(new_row, 9, type_ or None)
+                ws.cell(new_row, 10, float(card_price) if card_price else None)
+                ws.cell(new_row, 11, float(shipping) if shipping else None)
+                ws.cell(new_row, 12, float(taxes) if taxes else None)
+                wb.save(XLSX)
+                wb.close()
+                print(f"[ADD] Row {new_row}: {player} {parallel} {card_no}")
+                # Rebuild + push
+                result = subprocess.run(
+                    [sys.executable, str(HERE / 'build_collection.py')],
+                    capture_output=True, text=True, cwd=str(HERE)
+                )
+                if result.returncode == 0:
+                    print(f"[REBUILD] OK")
+                    git = subprocess.run(['git', '-C', str(HERE), 'add', 'baseball_collection.html'], capture_output=True)
+                    git = subprocess.run(['git', '-C', str(HERE), 'commit', '-m', f'Auto: add {player} {card_no}'], capture_output=True, text=True)
+                    if 'nothing to commit' not in git.stdout + git.stderr:
+                        push = subprocess.run(['git', '-C', str(HERE), 'push'], capture_output=True, text=True)
+                        print(f"[GIT] {'Pushed' if push.returncode==0 else 'Push failed: '+push.stderr}")
                 else:
                     print(f"[REBUILD] FAILED:\n{result.stderr}")
                 self.send_json(200, {"ok": True})

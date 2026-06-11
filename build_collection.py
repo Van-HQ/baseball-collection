@@ -114,6 +114,11 @@ def parse_bowman(ws):
             pl = round(((tmv - cost) / cost * 100) if cost else 0.0, 2)
         else:
             pl = round(_float(pl_raw), 2)
+        # Status: column V (index 21) — hold / flip / watching / ''
+        status_raw = row[21] if len(row) > 21 else None
+        status = _str(status_raw).lower() if status_raw else ''
+        if status not in ('hold', 'flip', 'watching'):
+            status = ''
         cards.append({
             'binder':     _binder(row[0]),
             'player':     player,
@@ -130,6 +135,7 @@ def parse_bowman(ws):
             'pl':         pl,
             'pl_dollars': round(tmv - cost, 2),
             'comps':      comps,
+            'status':     status,
             'scp_url':    None,  # filled in below from cache
         })
     return cards
