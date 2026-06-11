@@ -395,11 +395,12 @@ class Handler(BaseHTTPRequestHandler):
             binder     = body.get("binder", "")
             player     = body.get("player", "")
             card_no    = body.get("card_no", "")
-            comps      = body.get("comps", [])
+            comps      = body.get("comps")        # None = not provided, [] = clear
             card_price = body.get("card_price")
             shipping   = body.get("shipping")
             taxes      = body.get("taxes")
             scp_value  = body.get("scp_value")
+            tmv        = body.get("tmv")
             new_binder = body.get("new_binder")
             status     = body.get("status")
 
@@ -441,18 +442,21 @@ class Handler(BaseHTTPRequestHandler):
                 if taxes      is not None: wc(12, float(taxes))
                 # SCP value (col N = 14)
                 if scp_value  is not None: wc(14, float(scp_value))
+                # TMV (col O = 15) — save explicitly to survive formula-cache stripping
+                if tmv is not None: wc(15, float(tmv) if float(tmv) > 0 else None)
                 # Status (col V = 22)
                 if status is not None:
                     valid = ('sell', 'hold', 'flip')
                     wc(22, status if status in valid else None)
-                # Comps (cols Q-U = 17-21)
-                for i in range(5):
-                    val = comps[i] if i < len(comps) else None
-                    wc(17 + i, float(val) if val is not None else None)
+                # Comps (cols Q-U = 17-21) — only write if comps were explicitly provided
+                if comps is not None:
+                    for i in range(5):
+                        val = comps[i] if i < len(comps) else None
+                        wc(17 + i, float(val) if val is not None else None)
 
                 wb.save(XLSX)
                 wb.close()
-                print(f"[UPDATE] {player} {card_no} comps → {comps}")
+                print(f"[UPDATE] {player} {card_no}{' comps→'+str(comps) if comps is not None else ''}")
                 if body.get("skip_rebuild"): self.send_json(200, {"ok": True}); return
                 # Rebuild HTML so the static DATA snapshot reflects the change
                 result = subprocess.run(

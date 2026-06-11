@@ -1106,28 +1106,33 @@ async function saveCard() {
     const v = parseFloat($('cd-comp-' + i).value.replace('$', ''));
     comps.push(isNaN(v) ? null : v);
   }
+  const filteredComps = comps.filter(v => v !== null);
+  const hasComps = filteredComps.length > 0;
   const pf = s => { const v = parseFloat((s||'').replace('$','')); return isNaN(v) ? null : v; };
+  const curTMV = parseFloat($('cd-tmv').textContent.replace('$','')) || 0;
   const status = $('cd-save-status');
   status.textContent = 'Saving…'; status.style.color = 'var(--yellow)';
   try {
+    const body = {
+      binder:     _selectedCard.binder,
+      player:     _selectedCard.player,
+      card_no:    _selectedCard.card_no,
+      card_price: pf($('cd-card-price').value),
+      shipping:   pf($('cd-shipping').value),
+      taxes:      pf($('cd-taxes').value),
+      scp_value:  pf($('cd-scp').value),
+      tmv:        curTMV,
+      status:     (_selectedCard.status || ''),
+    };
+    // Only send comps if user has values entered — prevents clearing existing comp data
+    if (hasComps) body.comps = filteredComps;
     const r = await fetch('http://localhost:5055/api/update-card', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        binder:     _selectedCard.binder,
-        player:     _selectedCard.player,
-        card_no:    _selectedCard.card_no,
-        card_price: pf($('cd-card-price').value),
-        shipping:   pf($('cd-shipping').value),
-        taxes:      pf($('cd-taxes').value),
-        scp_value:  pf($('cd-scp').value),
-        comps:      comps.filter(v => v !== null),
-        status:     (_selectedCard.status || ''),
-      })
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
     });
     const data = await r.json();
     if (data.ok) {
-      _selectedCard.comps      = comps.filter(v => v !== null);
+      if (hasComps) _selectedCard.comps = filteredComps;
       _selectedCard.card_price = pf($('cd-card-price').value) || 0;
       _selectedCard.shipping   = pf($('cd-shipping').value)   || 0;
       _selectedCard.taxes      = pf($('cd-taxes').value)      || 0;
