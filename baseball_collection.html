@@ -869,15 +869,16 @@ function renderSpendTimeChart() {
 let _costValueChart = null;
 function renderCostValueChart() {
   // Only cards with a real cost — ripped ($0 cost) cards stack at x=0 and are not meaningful here
+  // x = market value, y = cost paid (flipped so value spreads across the wide axis)
   const pts = DATA.cards.filter(c => c.cost > 0)
-    .map(c => ({ x:c.cost, y:c.tmv, player:c.player, no:c.card_no }));
+    .map(c => ({ x:c.tmv, y:c.cost, player:c.player, no:c.card_no }));
   const roundUp = (v, step) => Math.ceil(v / step) * step;
   const rawX = Math.max(20, ...pts.map(p => p.x));
   const rawY = Math.max(20, ...pts.map(p => p.y));
-  const xMax = roundUp(rawX * 1.12, 5);
-  const yMax = roundUp(rawY * 1.12, 20);
+  const xMax = roundUp(rawX * 1.12, 20);
+  const yMax = roundUp(rawY * 1.12, 5);
   const lineMax = Math.min(xMax, yMax);
-  const colors = pts.map(p => p.y >= p.x ? 'rgba(34,211,106,0.8)' : 'rgba(242,92,92,0.8)');
+  const colors = pts.map(p => p.x >= p.y ? 'rgba(34,211,106,0.8)' : 'rgba(242,92,92,0.8)');
   if (_costValueChart) _costValueChart.destroy();
   _costValueChart = new Chart(document.getElementById('costValueChart').getContext('2d'), {
     data:{ datasets:[
@@ -890,12 +891,12 @@ function renderCostValueChart() {
         legend:{ display:false },
         tooltip:{ filter:item => item.datasetIndex === 1, callbacks:{
           title:items => { const p = items[0].raw; return p.player + (p.no ? ' · ' + p.no : ''); },
-          label:c => { const p = c.raw; return ['Cost: $'+p.x.toFixed(2), 'Value: $'+p.y.toFixed(2), 'P/L: '+(p.y-p.x>=0?'+':'')+'$'+(p.y-p.x).toFixed(2)]; }
+          label:c => { const p = c.raw; return ['Value: $'+p.x.toFixed(2), 'Cost: $'+p.y.toFixed(2), 'P/L: '+(p.x-p.y>=0?'+':'')+'$'+(p.x-p.y).toFixed(2)]; }
         }}
       },
       scales:{
-        x:{ min:0, max:xMax, title:{display:true, text:'Cost paid', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, stepSize:5, callback:v => '$'+v }, grid:{ color:'#1e2d45' } },
-        y:{ min:0, max:yMax, title:{display:true, text:'Market value', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, stepSize:20, callback:v => '$'+v }, grid:{ color:'#1e2d45' } }
+        x:{ min:0, max:xMax, title:{display:true, text:'Market value', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, stepSize:20, callback:v => '$'+v }, grid:{ color:'#1e2d45' } },
+        y:{ min:0, max:yMax, title:{display:true, text:'Cost paid', color:'#4a6480', font:{size:10}}, ticks:{ color:'#4a6480', font:{size:9}, stepSize:5, callback:v => '$'+v }, grid:{ color:'#1e2d45' } }
       }
     }
   });
