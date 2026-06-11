@@ -566,6 +566,73 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(500, {"ok": False, "message": str(e)})
             return
 
+        if parsed.path == "/api/add-transaction":
+            ttype   = body.get("type", "").strip()        # 'wax' | 'single'
+            player  = body.get("player", "").strip()
+            product = body.get("product", "").strip()
+            price   = body.get("price")
+            date    = body.get("date", "").strip()        # YYYY-MM-DD
+            if ttype not in ("wax", "single"):
+                self.send_json(400, {"ok": False, "message": "bad type"}); return
+            if ttype == "single" and not player:
+                self.send_json(400, {"ok": False, "message": "player required"}); return
+            if ttype == "wax" and not product:
+                self.send_json(400, {"ok": False, "message": "product required"}); return
+            if price is None:
+                self.send_json(400, {"ok": False, "message": "price required"}); return
+            try:
+                import openpyxl as _xl
+                from datetime import datetime as _dt
+                wb = _xl.load_workbook(XLSX)
+                ws = wb["Transactions"]
+                dt = None
+                if date:
+                    try: dt = _dt.strptime(date, "%Y-%m-%d")
+                    except: dt = date
+                if ttype == "wax":
+                    # Cols A=product, B=price, C=date; rows 4+ (row 3 = Total)
+                    new_row = 4
+                    for r in range(4, ws.max_row + 2):
+                        if ws.cell(r, 1).value in (None, ""):
+                            new_row = r; break
+                    ws.cell(new_row, 1, product)
+                    ws.cell(new_row, 2, float(price))
+                    if dt is not None: ws.cell(new_row, 3, dt)
+                    if isinstance(dt, _dt): ws.cell(new_row, 3).number_format = 'yyyy-mm-dd'
+                    label = f"wax: {product}"
+                else:
+                    # Cols D=player, E=product, F=price, G=date; rows 4+
+                    new_row = 4
+                    for r in range(4, ws.max_row + 2):
+                        if ws.cell(r, 4).value in (None, ""):
+                            new_row = r; break
+                    ws.cell(new_row, 4, player)
+                    ws.cell(new_row, 5, product or None)
+                    ws.cell(new_row, 6, float(price))
+                    if dt is not None: ws.cell(new_row, 7, dt)
+                    if isinstance(dt, _dt): ws.cell(new_row, 7).number_format = 'yyyy-mm-dd'
+                    label = f"single: {player}"
+                wb.save(XLSX)
+                wb.close()
+                print(f"[ADD-TXN] Row {new_row} {label} ${price}")
+                result = subprocess.run(
+                    [sys.executable, str(HERE / 'build_collection.py')],
+                    capture_output=True, text=True, cwd=str(HERE)
+                )
+                if result.returncode == 0:
+                    print("[REBUILD] OK")
+                    subprocess.run(['git', '-C', str(HERE), 'add', 'baseball_collection.html'], capture_output=True)
+                    git = subprocess.run(['git', '-C', str(HERE), 'commit', '-m', f'Auto: add {label}'], capture_output=True, text=True)
+                    if 'nothing to commit' not in git.stdout + git.stderr:
+                        push = subprocess.run(['git', '-C', str(HERE), 'push'], capture_output=True, text=True)
+                        print(f"[GIT] {'Pushed' if push.returncode==0 else 'Push failed: '+push.stderr}")
+                else:
+                    print(f"[REBUILD] FAILED:\n{result.stderr}")
+                self.send_json(200, {"ok": True})
+            except Exception as e:
+                self.send_json(500, {"ok": False, "message": str(e)})
+            return
+
         if parsed.path == "/api/add-card":
             player     = body.get("player", "").strip()
             year       = body.get("year")
