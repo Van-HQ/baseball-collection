@@ -26,6 +26,7 @@
     --yellow:#f5c842;
     --yellow-bg:rgba(245,200,66,0.1);
     --purple:#7dd3fc;
+    --teal:#2dd4bf;
     --purple-bg:rgba(125,211,252,0.1);
     --sidebar-w:220px;
   }
@@ -65,13 +66,15 @@
   .stat-card.red .stat-accent{background:var(--red)}
   .stat-card.yellow .stat-accent{background:var(--yellow)}
   .stat-card.purple .stat-accent{background:var(--purple)}
-  .stat-card:not(.blue):not(.green):not(.red):not(.yellow):not(.purple) .stat-accent{background:var(--border-light)}
+  .stat-card.teal .stat-accent{background:var(--teal)}
+  .stat-card:not(.blue):not(.green):not(.red):not(.yellow):not(.purple):not(.teal) .stat-accent{background:var(--border-light)}
   .stat-label{font-size:10px;color:var(--text-muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
   .stat-value{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
   .stat-value.green{color:var(--green)}
   .stat-value.red{color:var(--red)}
   .stat-value.yellow{color:var(--yellow)}
   .stat-value.accent{color:var(--accent)}
+  .stat-value.teal{color:var(--teal)}
   .stat-sub{font-size:11px;color:var(--text-muted)}
   
   /* GRID LAYOUT */
@@ -708,9 +711,9 @@ function renderStats() {
   const s = DATA.summary;
   const plPct = (s.total_pl_pct != null ? s.total_pl_pct : ((s.total_pl / s.total_cost) * 100)).toFixed(1);
   const cards = [
-    {label:'Total Cards', val:s.total_cards, cls:'blue accent', sub:'In collection', color:'blue'},
-    {label:'Total Cost', val:'$'+s.total_cost.toFixed(2), cls:'', sub:'Amount invested', color:''},
-    {label:'Collection TMV', val:'$'+s.total_tmv.toFixed(2), cls:'accent', sub:'True market value', color:'blue'},
+    {label:'Total Cards', val:s.total_cards, cls:'teal', sub:'In collection', color:'teal'},
+    {label:'Purchase Amount', val:'$'+s.total_cost.toFixed(2), cls:'', sub:'Amount invested', color:''},
+    {label:'Collection Value', val:'$'+s.total_tmv.toFixed(2), cls:'teal', sub:'Estimated market value', color:'teal'},
     {label:'Total P/L', val:(s.total_pl>=0?'+':'-')+'$'+Math.abs(s.total_pl).toFixed(2), cls:s.total_pl>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:s.total_pl>=0?'green':'red'},
     {label:'Wax Spent', val:'$'+s.wax_spent.toFixed(2), cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
     {label:'Singles Spent', val:'$'+s.singles_spent.toFixed(2), cls:'', sub:DATA.singles_transactions.length+' cards bought', color:'purple'},
