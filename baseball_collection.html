@@ -335,7 +335,7 @@
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 3">
           <div class="panel-header">
-            <div class="panel-title"><span class="dot blue"></span>P/L by Player</div>
+            <div class="panel-title"><span class="dot blue"></span>Value by Player (TMV)</div>
             <div class="panel-actions"><span class="chip active" id="plToggle" onclick="togglePLChart()">Top 10</span></div>
           </div>
           <div class="chart-wrap"><canvas id="plChart"></canvas></div>
@@ -723,19 +723,18 @@ function renderPLChart(top10only) {
   const grouped = {};
   DATA.cards.forEach(c => {
     if (!grouped[c.player]) grouped[c.player] = 0;
-    grouped[c.player] += c.pl;
+    grouped[c.player] += c.tmv;
   });
-  let entries = Object.entries(grouped).map(([k,v])=>({player:k,pl:parseFloat(v.toFixed(2))}));
-  entries.sort((a,b)=>b.pl-a.pl);
+  let entries = Object.entries(grouped).map(([k,v])=>({player:k,val:parseFloat(v.toFixed(2))}));
+  entries.sort((a,b)=>b.val-a.val);
   if (top10only) entries = entries.slice(0,10);
   const labels = entries.map(e=>e.player.split(' ').pop());
-  const vals = entries.map(e=>e.pl);
-  const colors = vals.map(v=>v>=0?'rgba(34,211,106,0.75)':'rgba(242,92,92,0.75)');
+  const vals = entries.map(e=>e.val);
   if (plChartObj) plChartObj.destroy();
   const ctx = document.getElementById('plChart').getContext('2d');
   plChartObj = new Chart(ctx, {
     type:'bar',
-    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+    data:{labels,datasets:[{data:vals,backgroundColor:'rgba(79,142,247,0.7)',borderRadius:4,borderSkipped:false}]},
     options:{
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)}}},
