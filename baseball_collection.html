@@ -1197,6 +1197,52 @@ function closeDateModal() {
 }
 function closeModal(id) { $(id).classList.remove('open'); }
 
+// ── CHART POLISH SHARED ──
+const _xhPlugin = {
+  id: 'xh',
+  afterDraw(c) {
+    if (c._xhX == null) return;
+    const { ctx, chartArea: { top, bottom } } = c;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(c._xhX, top);
+    ctx.lineTo(c._xhX, bottom);
+    ctx.strokeStyle = 'rgba(212,168,67,0.22)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  },
+  beforeEvent(c, { event: e }) {
+    if (e.type === 'mousemove') { c._xhX = e.x; c.draw(); }
+    else if (e.type === 'mouseout') { c._xhX = null; c.draw(); }
+  }
+};
+const _ttStyle = {
+  backgroundColor: 'rgba(5,5,5,0.97)',
+  borderColor: '#282828',
+  borderWidth: 1,
+  padding: { x: 13, y: 10 },
+  titleColor: '#fff',
+  titleFont: { weight: '800', size: 12, family: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' },
+  bodyColor: '#666',
+  bodyFont: { size: 11, family: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' },
+  displayColors: false,
+  cornerRadius: 10,
+  caretSize: 5,
+  caretPadding: 6
+};
+function _yGrid() { return { color: 'rgba(255,255,255,0.045)', drawTicks: false, lineWidth: 1 }; }
+function _axT(extra={}) { return { color: '#484848', font: { size: 9.5 }, ...extra }; }
+function _lineGrad(ctx, h, r, g, b) {
+  const gr = ctx.createLinearGradient(0, 0, 0, h);
+  gr.addColorStop(0,   `rgba(${r},${g},${b},0.38)`);
+  gr.addColorStop(0.45,`rgba(${r},${g},${b},0.14)`);
+  gr.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+  return gr;
+}
+
 function renderPortfolioValueChart() {
   const panel = $('portfolio-value-panel');
   const hist = getValHistory().filter(e => e.tmv != null && e.date);
@@ -1224,35 +1270,41 @@ function renderPortfolioValueChart() {
   const ctx = document.getElementById('portfolioValueChart').getContext('2d');
   if (_pvChart) _pvChart.destroy();
 
-  const grad = ctx.createLinearGradient(0, 0, 0, 220);
-  grad.addColorStop(0, 'rgba(212,168,67,0.2)');
-  grad.addColorStop(1, 'rgba(212,168,67,0)');
-
   _pvChart = new Chart(ctx, {
     type: 'line',
+    plugins: [_xhPlugin],
     data: { labels: dates, datasets: [{
       label: 'Portfolio Value',
       data: vals,
-      borderColor: 'rgba(212,168,67,0.9)',
-      backgroundColor: grad,
+      borderColor: 'rgba(212,168,67,0.95)',
+      backgroundColor: _lineGrad(ctx, 240, 212, 168, 67),
       fill: true,
-      tension: .35,
-      pointRadius: vals.length > 10 ? 3 : 5,
-      pointHoverRadius: vals.length > 10 ? 5 : 7,
-      pointBackgroundColor: 'var(--accent)',
-      borderWidth: 2.5
+      tension: 0.42,
+      pointRadius: vals.length > 10 ? 0 : 4,
+      pointHoverRadius: vals.length > 10 ? 6 : 7,
+      pointBackgroundColor: '#d4a843',
+      pointBorderColor: 'rgba(212,168,67,0.3)',
+      pointBorderWidth: 3,
+      borderWidth: 2
     }]},
     options: {
       responsive: true, maintainAspectRatio: false,
-      animation: { duration: 900, easing: 'easeOutQuart' },
+      animation: { duration: 1000, easing: 'easeOutQuart' },
+      interaction: { mode: 'index', intersect: false },
       onClick: (evt, els) => { if (els.length) openDateModal(els[0].index); },
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => ' $' + c.raw.toFixed(2) }}
+        datalabels: { display: false },
+        tooltip: { ..._ttStyle,
+          callbacks: {
+            title: items => items[0].label,
+            label: c => ' $' + c.raw.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})
+          }
+        }
       },
       scales: {
-        x: { ticks: { color:'#555', font:{size:9}, maxTicksLimit:8 }, grid:{display:false}, border:{display:true,color:'#2d2d2d',width:1} },
-        y: { ticks: { color:'#555', font:{size:10}, callback: v => '$'+v }, grid:{display:false}, border:{display:true,color:'#2d2d2d',width:1} }
+        x: { ticks: { ..._axT(), maxTicksLimit: 8 }, grid: { display: false }, border: { display: false } },
+        y: { ticks: { ..._axT(), callback: v => '$' + v }, grid: _yGrid(), border: { display: false } }
       }
     }
   });
@@ -1379,16 +1431,33 @@ function renderPLChart(top10only) {
   const vals = entries.map(e=>e.val);
   if (plChartObj) plChartObj.destroy();
   const ctx = document.getElementById('plChart').getContext('2d');
+  const gradBar = ctx.createLinearGradient(0, 0, 0, 300);
+  gradBar.addColorStop(0, 'rgba(212,168,67,1)');
+  gradBar.addColorStop(1, 'rgba(212,168,67,0.28)');
   plChartObj = new Chart(ctx, {
     type:'bar',
-    data:{labels,datasets:[{data:vals,backgroundColor:'rgba(212,168,67,0.75)',borderRadius:4,borderSkipped:false}]},
+    data:{labels,datasets:[{
+      data:vals,
+      backgroundColor: gradBar,
+      borderColor: 'rgba(212,168,67,0.9)',
+      borderWidth: { top:1.5, left:0, right:0, bottom:0 },
+      borderRadius: 6,
+      borderSkipped: false
+    }]},
     options:{
-      responsive:true,maintainAspectRatio:false,
-      animation:{duration:800,easing:'easeOutQuart'},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)}}},
+      responsive:true, maintainAspectRatio:false,
+      animation:{duration:900, easing:'easeOutQuart'},
+      plugins:{
+        legend:{display:false},
+        datalabels:{display:false},
+        tooltip:{ ..._ttStyle, callbacks:{
+          title: items => entries[items[0].dataIndex].player,
+          label: c => ' $' + c.raw.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})
+        }}
+      },
       scales:{
-        x:{ticks:{color:'#555',font:{size:10}},grid:{display:false},border:{display:true,color:'#2d2d2d',width:1}},
-        y:{ticks:{color:'#555',font:{size:10},callback:v=>'$'+v},grid:{display:false},border:{display:true,color:'#2d2d2d',width:1}}
+        x:{ ticks:{..._axT({font:{size:10}})}, grid:{display:false}, border:{display:false} },
+        y:{ ticks:{..._axT({font:{size:10}}), callback:v=>'$'+v}, grid:_yGrid(), border:{display:false} }
       },
       onClick:(evt,els)=>{ if(els.length) openPlayerModal(entries[els[0].index].player); },
       onHover:(evt,els)=>{ evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; }
@@ -1455,16 +1524,20 @@ function renderSpendChart() {
     plugins:[_outerLabelPlugin],
     data:{
       labels:['Wax','Singles'],
-      datasets:[{data:[DATA.summary.wax_spent,DATA.summary.singles_spent],backgroundColor:['rgba(212,168,67,0.85)','rgba(34,211,106,0.85)'],borderWidth:0,hoverOffset:4}]
+      datasets:[{data:[DATA.summary.wax_spent,DATA.summary.singles_spent],backgroundColor:['rgba(212,168,67,0.88)','rgba(34,211,106,0.88)'],borderWidth:0,hoverOffset:6}]
     },
     options:{
-      responsive:true,maintainAspectRatio:false,
+      responsive:true, maintainAspectRatio:false,
       layout:{ padding:{ top:30, bottom:10, left:50, right:50 } },
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)+' ('+(c.raw/_total*100).toFixed(1)+'%)'}}
+        datalabels:{display:false},
+        tooltip:{ ..._ttStyle, callbacks:{
+          title: items => items[0].label,
+          label: c=>' $'+c.raw.toFixed(2)+' ('+(c.raw/_total*100).toFixed(1)+'%)'
+        }}
       },
-      cutout:'62%'
+      cutout:'64%'
     }
   });
 }
@@ -1482,18 +1555,37 @@ function renderMoversChart() {
   const vals   = movers.map(c => +c.pl_dollars.toFixed(2));
   const colors = vals.map(v => v >= 0 ? 'rgba(34,211,106,0.8)' : 'rgba(242,92,92,0.8)');
   if (_moversChart) _moversChart.destroy();
-  _moversChart = new Chart(document.getElementById('moversChart').getContext('2d'), {
+  const mCtx = document.getElementById('moversChart').getContext('2d');
+  _moversChart = new Chart(mCtx, {
     type:'bar',
-    data:{ labels, datasets:[{ data:vals, backgroundColor:colors, borderRadius:4, borderSkipped:false }] },
+    data:{ labels, datasets:[{
+      data: vals,
+      backgroundColor: function(ctx) {
+        const v = vals[ctx.dataIndex];
+        const {chartArea} = ctx.chart;
+        if (!chartArea) return v >= 0 ? 'rgba(34,211,106,0.75)' : 'rgba(242,92,92,0.75)';
+        if (v >= 0) {
+          const g = mCtx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+          g.addColorStop(0, 'rgba(34,211,106,0.08)'); g.addColorStop(1, 'rgba(34,211,106,0.9)'); return g;
+        } else {
+          const g = mCtx.createLinearGradient(chartArea.right, 0, chartArea.left, 0);
+          g.addColorStop(0, 'rgba(242,92,92,0.08)'); g.addColorStop(1, 'rgba(242,92,92,0.9)'); return g;
+        }
+      },
+      borderRadius: 5, borderSkipped: false
+    }]},
     options:{
-      indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:{duration:700,easing:'easeOutQuart'},
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{
-        title:items => movers[items[0].dataIndex].player,
-        label:c => (c.raw>=0?'+$':'-$') + Math.abs(c.raw).toFixed(2)
-      }}},
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      animation:{duration:800, easing:'easeOutQuart'},
+      plugins:{ legend:{display:false}, datalabels:{display:false},
+        tooltip:{ ..._ttStyle, callbacks:{
+          title: items => movers[items[0].dataIndex].player,
+          label: c => (c.raw>=0?' +$':' -$') + Math.abs(c.raw).toFixed(2)
+        }}
+      },
       scales:{
-        x:{ ticks:{ color:'#555', font:{size:10}, callback:v => '$'+v }, grid:{ display:false }, border:{ display:true, color:'#2d2d2d', width:1 } },
-        y:{ ticks:{ color:'#999', font:{size:10.5, weight:'600'} }, grid:{ display:false }, border:{ display:false } }
+        x:{ ticks:{..._axT(), callback:v=>'$'+v}, grid:_yGrid(), border:{display:false} },
+        y:{ ticks:{color:'#888', font:{size:10.5, weight:'600'}}, grid:{display:false}, border:{display:false} }
       },
       onClick:(evt,els)=>{ if(els.length) openPlayerModal(movers[els[0].index].player); },
       onHover:(evt,els)=>{ evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; }
@@ -1515,21 +1607,35 @@ function renderSpendTimeChart() {
     waxCum.push(+cw.toFixed(2)); singCum.push(+cs.toFixed(2));
   });
   if (_spendTimeChart) _spendTimeChart.destroy();
-  _spendTimeChart = new Chart(document.getElementById('spendTimeChart').getContext('2d'), {
+  const stCtx = document.getElementById('spendTimeChart').getContext('2d');
+  const gradSing = _lineGrad(stCtx, 220, 34, 211, 106);
+  const gradWax  = _lineGrad(stCtx, 220, 212, 168, 67);
+  _spendTimeChart = new Chart(stCtx, {
     type:'line',
+    plugins:[_xhPlugin],
     data:{ labels:dates, datasets:[
-      { label:'Singles', data:singCum, borderColor:'rgba(34,211,106,0.9)', backgroundColor:'rgba(34,211,106,0.15)', fill:true, tension:.25, pointRadius:0, borderWidth:2, stack:'s' },
-      { label:'Wax', data:waxCum, borderColor:'rgba(212,168,67,0.9)', backgroundColor:'rgba(212,168,67,0.12)', fill:true, tension:.25, pointRadius:0, borderWidth:2, stack:'s' }
+      { label:'Singles', data:singCum, borderColor:'rgba(34,211,106,0.9)', backgroundColor:gradSing,
+        fill:true, tension:0.38, pointRadius:0, pointHoverRadius:5, pointBackgroundColor:'#22d36a', borderWidth:2 },
+      { label:'Wax', data:waxCum, borderColor:'rgba(212,168,67,0.9)', backgroundColor:gradWax,
+        fill:true, tension:0.38, pointRadius:0, pointHoverRadius:5, pointBackgroundColor:'#d4a843', borderWidth:2 }
     ]},
     options:{
       responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+      animation:{duration:900, easing:'easeOutQuart'},
       plugins:{
-        legend:{ position:'bottom', labels:{ color:'#7a9cc4', font:{size:11}, padding:12, boxWidth:10 } },
-        tooltip:{ callbacks:{ label:c => ' ' + c.dataset.label + ': $' + c.raw.toFixed(2) } }
+        datalabels:{display:false},
+        legend:{ position:'bottom', labels:{
+          color:'#888', font:{size:11, weight:'600'}, padding:16,
+          boxWidth:8, boxHeight:8, useBorderRadius:true, borderRadius:4
+        }},
+        tooltip:{ ..._ttStyle, callbacks:{
+          title: items => items[0].label,
+          label: c => ' ' + c.dataset.label + ': $' + c.raw.toFixed(2)
+        }}
       },
       scales:{
-        x:{ stacked:true, ticks:{ color:'#555', font:{size:9}, maxTicksLimit:8 }, grid:{ display:false }, border:{ display:true, color:'#2d2d2d', width:1 } },
-        y:{ stacked:true, ticks:{ color:'#555', font:{size:10}, callback:v => '$'+v }, grid:{ display:false }, border:{ display:true, color:'#2d2d2d', width:1 } }
+        x:{ ticks:{..._axT(), maxTicksLimit:8}, grid:{display:false}, border:{display:false} },
+        y:{ ticks:{..._axT(), callback:v=>'$'+v}, grid:_yGrid(), border:{display:false} }
       }
     }
   });
@@ -1553,26 +1659,43 @@ function renderCostValueChart() {
   const canvas = document.getElementById('costValueChart');
   canvas.height = Math.max(260, rows.length * 22);
   if (_costValueChart) _costValueChart.destroy();
-  _costValueChart = new Chart(canvas.getContext('2d'), {
+  const cvCtx = canvas.getContext('2d');
+  _costValueChart = new Chart(cvCtx, {
     type: 'bar',
-    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 3, barThickness: 14 }] },
+    data: { labels, datasets: [{
+      data: values,
+      backgroundColor: function(ctx) {
+        const v = values[ctx.dataIndex];
+        const {chartArea} = ctx.chart;
+        if (!chartArea) return v >= 0 ? 'rgba(34,211,106,0.75)' : 'rgba(242,92,92,0.75)';
+        if (v >= 0) {
+          const g = cvCtx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+          g.addColorStop(0, 'rgba(34,211,106,0.08)'); g.addColorStop(1, 'rgba(34,211,106,0.88)'); return g;
+        } else {
+          const g = cvCtx.createLinearGradient(chartArea.right, 0, chartArea.left, 0);
+          g.addColorStop(0, 'rgba(242,92,92,0.08)'); g.addColorStop(1, 'rgba(242,92,92,0.88)'); return g;
+        }
+      },
+      borderRadius: 4, barThickness: 14
+    }]},
     options: {
       indexAxis: 'y',
       responsive: true, maintainAspectRatio: false,
-      animation: { duration: 750, easing: 'easeOutQuart' },
+      animation: { duration: 850, easing: 'easeOutQuart' },
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: {
+        datalabels: { display: false },
+        tooltip: { ..._ttStyle, callbacks: {
           title: items => items[0].label,
           label: c => {
             const r = rows[c.dataIndex];
-            return ['P/L: ' + (c.raw >= 0 ? '+' : '') + '$' + c.raw.toFixed(2), 'Cards: ' + r.cards];
+            return [' P/L: ' + (c.raw >= 0 ? '+$' : '-$') + Math.abs(c.raw).toFixed(2), ' Cards: ' + r.cards];
           }
         }}
       },
       scales: {
-        x: { ticks: { color: '#555', font: { size: 9 }, callback: v => '$' + v }, grid: { display: false }, border: { display: true, color: '#2d2d2d', width: 1 } },
-        y: { ticks: { color: '#999', font: { size: 10 } }, grid: { display: false }, border: { display: false } }
+        x: { ticks: { ..._axT(), callback: v => '$' + v }, grid: _yGrid(), border: { display: false } },
+        y: { ticks: { color: '#888', font: { size: 10 } }, grid: { display: false }, border: { display: false } }
       }
     }
   });
