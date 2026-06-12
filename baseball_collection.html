@@ -318,6 +318,23 @@
   .pm-card-name{font-size:12px;font-weight:600;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .pm-card-year{font-size:11px;color:var(--text-muted)}
   .pm-val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+
+  /* DATE SNAPSHOT MODAL */
+  #date-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  #date-modal-backdrop.open{display:flex}
+  #date-modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:14px;width:min(580px,94vw);max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6)}
+  #date-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-left:3px solid var(--accent)}
+  #date-modal-title{font-size:15px;font-weight:800;letter-spacing:-.3px}
+  #date-modal-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:6px}
+  #date-modal-close:hover{color:var(--text-primary);background:var(--bg-hover)}
+  #date-modal-body{overflow-y:auto;flex:1}
+  .dm-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;border-bottom:1px solid var(--border);padding:10px 20px;align-items:center;transition:background .1s;cursor:pointer}
+  .dm-row:last-child{border-bottom:none}
+  .dm-row:hover{background:var(--bg-hover)}
+  .dm-player{font-size:12px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dm-parallel{font-size:10px;color:var(--text-muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #date-modal-summary{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:20px;flex-shrink:0;background:var(--bg-base)}
+
   #player-modal-summary{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:20px;flex-shrink:0;background:var(--bg-base)}
   .pm-sum-item{display:flex;flex-direction:column;gap:2px}
   .pm-sum-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted)}
@@ -546,7 +563,7 @@
             <div class="panel-title">Portfolio Value Over Time</div>
             <div class="panel-actions"><span id="pv-card-count" style="font-size:11px;color:var(--text-muted)"></span></div>
           </div>
-          <div class="chart-wrap" style="height:220px"><canvas id="portfolioValueChart"></canvas></div>
+          <div class="chart-wrap" style="height:220px"><canvas id="portfolioValueChart" style="cursor:pointer"></canvas></div>
         </div>
       </div>
 
@@ -1122,6 +1139,62 @@ function showToast(msg, type='success') {
 
 // ── PORTFOLIO VALUE OVER TIME ──
 let _pvChart = null;
+
+// ── DATE SNAPSHOT MODAL ──
+let _pvDates = [], _pvHist = [];
+function openDateModal(dateIdx) {
+  const date = _pvDates[dateIdx];
+  if (!date) return;
+  const upTo = _pvHist.filter(e => e.date <= date);
+  const byId = {};
+  upTo.forEach(e => { if (!byId[e.id] || e.date > byId[e.id].date) byId[e.id] = e; });
+  const snap = Object.values(byId).filter(e => e.tmv > 0).sort((a,b) => b.tmv - a.tmv);
+  const totalVal = snap.reduce((s,e) => s + (e.tmv||0), 0);
+
+  // delta from previous date
+  let delta = null;
+  if (dateIdx > 0) {
+    const prevDate = _pvDates[dateIdx - 1];
+    const prevUpTo = _pvHist.filter(e => e.date <= prevDate);
+    const prevById = {};
+    prevUpTo.forEach(e => { if (!prevById[e.id] || e.date > prevById[e.id].date) prevById[e.id] = e; });
+    const prevVal = Object.values(prevById).reduce((s,e) => s + (e.tmv||0), 0);
+    delta = totalVal - prevVal;
+  }
+
+  $('date-modal-title').textContent = 'Snapshot · ' + date;
+  $('date-modal-body').innerHTML = snap.map(e => {
+    const card = DATA.cards.find(c => c.id === e.id) || {};
+    const pl = e.tmv - (card.cost||0);
+    const plColor = pl >= 0 ? 'var(--green)' : 'var(--red)';
+    const plStr = (pl >= 0 ? '+$' : '-$') + Math.abs(pl).toFixed(2);
+    return `<div class="dm-row" onclick="closeModal('date-modal-backdrop');openPlayerModal('${(e.player||'').replace(/'/g,"\'")}')">
+      <div>
+        <div class="dm-player">${e.player||'—'}</div>
+        <div class="dm-parallel">${[e.parallel, e.card_no ? '#'+e.card_no : null].filter(Boolean).join(' · ') || '—'}</div>
+      </div>
+      <div class="pm-val" style="color:var(--text-primary)">$${e.tmv.toFixed(2)}</div>
+      <div class="pm-val" style="color:${plColor}">${plStr}</div>
+    </div>`;
+  }).join('');
+
+  let deltaBit = '';
+  if (delta !== null) {
+    const dc = delta >= 0 ? 'var(--green)' : 'var(--red)';
+    deltaBit = `<div class="pm-sum-item"><div class="pm-sum-label">vs Prev</div><div class="pm-sum-val" style="color:${dc}">${delta>=0?'+':'-'}$${Math.abs(delta).toFixed(2)}</div></div>`;
+  }
+  $('date-modal-summary').innerHTML = `
+    <div class="pm-sum-item"><div class="pm-sum-label">Cards</div><div class="pm-sum-val">${snap.length}</div></div>
+    <div class="pm-sum-item"><div class="pm-sum-label">Total Value</div><div class="pm-sum-val">$${totalVal.toFixed(2)}</div></div>
+    ${deltaBit}
+  `;
+  $('date-modal-backdrop').classList.add('open');
+}
+function closeDateModal() {
+  $('date-modal-backdrop').classList.remove('open');
+}
+function closeModal(id) { $(id).classList.remove('open'); }
+
 function renderPortfolioValueChart() {
   const panel = $('portfolio-value-panel');
   const hist = getValHistory().filter(e => e.tmv != null && e.date);
@@ -1129,6 +1202,8 @@ function renderPortfolioValueChart() {
   if (panel) panel.style.display = '';
 
   const dates = [...new Set(hist.map(e => e.date))].sort();
+  _pvDates = dates;
+  _pvHist = hist;
   const vals = dates.map(d => {
     const upTo = hist.filter(e => e.date <= d);
     const byId = {};
@@ -1160,13 +1235,15 @@ function renderPortfolioValueChart() {
       backgroundColor: grad,
       fill: true,
       tension: .35,
-      pointRadius: vals.length > 10 ? 0 : 4,
+      pointRadius: vals.length > 10 ? 3 : 5,
+      pointHoverRadius: vals.length > 10 ? 5 : 7,
       pointBackgroundColor: 'var(--accent)',
       borderWidth: 2.5
     }]},
     options: {
       responsive: true, maintainAspectRatio: false,
       animation: { duration: 900, easing: 'easeOutQuart' },
+      onClick: (evt, els) => { if (els.length) openDateModal(els[0].index); },
       plugins: {
         legend: { display: false },
         tooltip: { callbacks: { label: c => ' $' + c.raw.toFixed(2) }}
@@ -4007,6 +4084,17 @@ buildEbayLinks();
     </div>
     <div id="player-modal-body"></div>
     <div id="player-modal-summary"></div>
+  </div>
+</div>
+
+<div id="date-modal-backdrop" onclick="if(event.target===this)closeDateModal()">
+  <div id="date-modal">
+    <div id="date-modal-header">
+      <div id="date-modal-title"></div>
+      <button id="date-modal-close" onclick="closeDateModal()">×</button>
+    </div>
+    <div id="date-modal-body"></div>
+    <div id="date-modal-summary"></div>
   </div>
 </div>
 
