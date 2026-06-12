@@ -1632,9 +1632,10 @@ function renderTreemap() {
       ? `<div style="font-size:${t.w>90?11:9.5}px;font-weight:700;color:#fff;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.5)">${last}</div>
          <div style="font-size:${t.w>90?10:8.5}px;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.5)">$${d.tmv.toFixed(0)}</div>`
       : '';
+    const safeName = d.player.replace(/'/g, "\\'");
     return `<div title="${d.player}${d.no?' · '+d.no:''}\nValue $${d.tmv.toFixed(2)} · P/L ${pl>=0?'+':'-'}$${Math.abs(pl).toFixed(2)}"
       style="position:absolute;left:${t.x}px;top:${t.y}px;width:${t.w}px;height:${t.h}px;background:${bg};border:1px solid rgba(10,15,25,0.6);box-sizing:border-box;padding:4px 5px;overflow:hidden;cursor:pointer;transition:filter .12s"
-      onclick="openPlayerModal('${d.player.replace(/'/g,'\\'')}')" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">${label}</div>`;
+      onclick="openPlayerModal('${safeName}')" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">${label}</div>`;
   }).join('');
 }
 
