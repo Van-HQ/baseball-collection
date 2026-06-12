@@ -8,17 +8,17 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --bg-base:#0b1120;
-    --bg-card:#131e2e;
-    --bg-hover:#1a2740;
-    --bg-active:#1e3052;
-    --border:#1e2d45;
-    --border-light:#263650;
-    --text-primary:#e8f0fe;
-    --text-secondary:#7a9cc4;
-    --text-muted:#4a6480;
-    --accent:#4f8ef7;
-    --accent-glow:rgba(79,142,247,0.15);
+    --bg-base:#000;
+    --bg-card:#0d0d0d;
+    --bg-hover:#1a1a1a;
+    --bg-active:#222;
+    --border:#1e1e1e;
+    --border-light:#2d2d2d;
+    --text-primary:#fff;
+    --text-secondary:#999;
+    --text-muted:#555;
+    --accent:#d4a843;
+    --accent-glow:rgba(212,168,67,0.12);
     --green:#22d36a;
     --green-bg:rgba(34,211,106,0.1);
     --red:#f25c5c;
@@ -29,6 +29,8 @@
     --teal:#2dd4bf;
     --purple-bg:rgba(125,211,252,0.1);
     --sidebar-w:220px;
+    --gold:#d4a843;
+    --gold-dim:rgba(212,168,67,0.08);
   }
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg-base);color:var(--text-primary);display:flex;height:100vh;overflow:hidden}
   
@@ -36,14 +38,14 @@
   .sidebar{width:var(--sidebar-w);background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:10;transition:width .22s cubic-bezier(.4,0,.2,1);overflow:hidden}
   .sidebar.collapsed{width:0;min-width:0;border-right:none}
   .sidebar-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);white-space:nowrap}
-  .sidebar-logo .icon{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .sidebar-logo .icon{width:34px;height:34px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
   .sidebar-logo .title{font-size:13px;font-weight:700;color:var(--text-primary);letter-spacing:.3px}
   .sidebar-logo .sub{font-size:11px;color:var(--text-secondary)}
   .sidebar-nav{padding:12px 10px;flex:1;overflow-y:auto;white-space:nowrap}
   .nav-section{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.8px;text-transform:uppercase;padding:10px 8px 6px}
   .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px}
   .nav-item:hover{background:var(--bg-hover);color:var(--text-primary)}
-  .nav-item.active{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(79,142,247,0.2)}
+  .nav-item.active{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(212,168,67,0.25)}
   .nav-item .icon{width:18px;text-align:center;font-size:14px;flex-shrink:0}
   .sidebar-footer{padding:14px 14px;border-top:1px solid var(--border);white-space:nowrap}
   .sidebar-footer .meta{font-size:11px;color:var(--text-muted)}
@@ -74,7 +76,7 @@
     /* Stats row: 2 cols */
     .stats-row{grid-template-columns:repeat(2,1fr) !important;gap:8px;margin-bottom:12px}
     .stat-card{padding:14px 14px}
-    .stat-value{font-size:22px !important}
+    .stat-value{font-size:22px !important;font-weight:900 !important}
 
     /* Collapse all 6-col inline grids to 1 col */
     div[style*="repeat(6,1fr)"]{grid-template-columns:1fr !important;gap:10px !important}
@@ -124,18 +126,18 @@
   
   /* MAIN */
   .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-  .topbar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .topbar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border)}
   .topbar-title{font-size:15px;font-weight:600}
   .topbar-right{display:flex;align-items:center;gap:12px}
-  .badge{background:var(--accent-glow);color:var(--accent);font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;border:1px solid rgba(79,142,247,0.25)}
+  .badge{background:var(--accent-glow);color:var(--accent);font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;border:1px solid rgba(212,168,67,0.3)}
   
   .content{flex:1;overflow-y:auto;padding:24px}
   
   /* STAT CARDS */
   .stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:24px}
-  .stat-card{background:var(--bg-card);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;box-shadow:0 0 0 1px var(--border);transition:box-shadow .2s}
-  .stat-card:hover{box-shadow:0 0 0 1px var(--border-light)}
-  .stat-card .stat-accent{height:3px;border-radius:2px;width:28px;margin-bottom:4px}
+  .stat-card{background:var(--bg-card);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;box-shadow:0 0 0 1px var(--border);transition:box-shadow .2s,transform .15s}
+  .stat-card:hover{box-shadow:0 0 0 1px var(--border-light);transform:translateY(-1px)}
+  .stat-card .stat-accent{height:2px;border-radius:1px;width:36px;margin-bottom:6px}
   .stat-card.blue .stat-accent{background:var(--accent)}
   .stat-card.green .stat-accent{background:var(--green)}
   .stat-card.red .stat-accent{background:var(--red)}
@@ -143,14 +145,14 @@
   .stat-card.purple .stat-accent{background:var(--purple)}
   .stat-card.teal .stat-accent{background:var(--teal)}
   .stat-card:not(.blue):not(.green):not(.red):not(.yellow):not(.purple):not(.teal) .stat-accent{background:var(--border-light)}
-  .stat-label{font-size:10px;color:var(--text-muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
-  .stat-value{font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+  .stat-label{font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+  .stat-value{font-size:28px;font-weight:900;letter-spacing:-1px;line-height:1}
   .stat-value.green{color:var(--green)}
   .stat-value.red{color:var(--red)}
   .stat-value.yellow{color:var(--yellow)}
   .stat-value.accent{color:var(--accent)}
   .stat-value.teal{color:var(--teal)}
-  .stat-sub{font-size:11px;color:var(--text-muted)}
+  .stat-sub{font-size:11px;color:var(--text-muted);font-weight:500}
   
   /* GRID LAYOUT */
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
@@ -158,21 +160,21 @@
   
   /* PANEL */
   .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-  .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;border-left:2px solid var(--accent)}
   .panel-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
   .panel-title .dot{width:8px;height:8px;border-radius:50%}
-  .panel-title .dot.blue{background:var(--accent)}
+  .panel-title .dot.blue{background:var(--gold)}
   .panel-title .dot.green{background:var(--green)}
   .panel-title .dot.yellow{background:var(--yellow)}
   .panel-title .dot.purple{background:var(--purple)}
   .panel-actions{display:flex;align-items:center;gap:8px}
   .chip{background:var(--bg-hover);border:1px solid var(--border-light);color:var(--text-secondary);font-size:11px;padding:3px 9px;border-radius:20px;cursor:pointer;transition:all .15s}
-  .chip:hover,.chip.active{background:var(--accent-glow);color:var(--accent);border-color:rgba(79,142,247,0.3)}
+  .chip:hover,.chip.active{background:var(--accent-glow);color:var(--accent);border-color:rgba(212,168,67,0.35)}
   
   /* TABLE */
   .table-wrap{overflow-x:auto}
   table{width:100%;border-collapse:collapse;font-size:12.5px}
-  thead th{padding:9px 14px;text-align:left;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base);white-space:nowrap;cursor:pointer;user-select:none}
+  thead th{padding:9px 14px;text-align:left;color:var(--text-muted);font-weight:700;font-size:10px;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base);white-space:nowrap;cursor:pointer;user-select:none}
   thead th:hover{color:var(--text-secondary)}
   thead th.sort-asc::after{content:" ↑";color:var(--accent)}
   thead th.sort-desc::after{content:" ↓";color:var(--accent)}
@@ -236,7 +238,7 @@
   .progress-label span:last-child{color:var(--text-secondary)}
   .progress-bg{background:var(--bg-hover);border-radius:4px;height:6px;overflow:hidden}
   .progress-fill{height:100%;border-radius:4px;transition:width .5s}
-  .progress-fill.blue{background:var(--accent)}
+  .progress-fill.blue{background:var(--gold)}
   .progress-fill.green{background:var(--green)}
   .progress-fill.yellow{background:var(--yellow)}
   
@@ -255,8 +257,8 @@
   /* SCROLLBAR */
   ::-webkit-scrollbar{width:5px;height:5px}
   ::-webkit-scrollbar-track{background:var(--bg-base)}
-  ::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:#555}
   
   @media(max-width:1200px){.stats-row{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
@@ -287,7 +289,7 @@
   .comp-field:focus{border-color:var(--accent)}
   .comp-field[type=number]::-webkit-inner-spin-button,.comp-field[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
   /* Buttons */
-  .form-btn{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;letter-spacing:.1px;white-space:nowrap}
+  .form-btn{background:var(--accent);color:#000;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;letter-spacing:.1px;white-space:nowrap}
   .form-btn:hover{opacity:.85}
   .form-btn.secondary{background:var(--bg-hover);color:var(--text-secondary);border:1px solid var(--border-light)}
   .form-btn.secondary:hover{color:var(--text-primary)}
@@ -790,7 +792,7 @@
             <span class="chip"        id="cl-2026-f-missing" onclick="setClFilter('2026','missing',this)">Need</span>
           </div>
         </div>
-        <div id="cl-2026-hero" style="display:flex;align-items:center;gap:28px;padding:20px 24px;background:linear-gradient(120deg,rgba(79,142,247,0.09) 0%,rgba(79,142,247,0.02) 45%,transparent 70%);border-bottom:1px solid var(--border)"></div>
+        <div id="cl-2026-hero" style="display:flex;align-items:center;gap:28px;padding:20px 24px;background:linear-gradient(120deg,rgba(212,168,67,0.08) 0%,rgba(212,168,67,0.02) 45%,transparent 70%);border-bottom:1px solid var(--border)"></div>
         <div style="display:none"><div id="cl-prog-2026"></div></div>
         <div id="cl-2026-sets" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;padding:12px 18px"></div>
         <div style="overflow-x:auto;max-height:480px;overflow-y:auto;border-top:1px solid var(--border)">
@@ -923,7 +925,7 @@ function renderPLChart(top10only) {
   const ctx = document.getElementById('plChart').getContext('2d');
   plChartObj = new Chart(ctx, {
     type:'bar',
-    data:{labels,datasets:[{data:vals,backgroundColor:'rgba(79,142,247,0.7)',borderRadius:4,borderSkipped:false}]},
+    data:{labels,datasets:[{data:vals,backgroundColor:'rgba(212,168,67,0.75)',borderRadius:4,borderSkipped:false}]},
     options:{
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)}}},
@@ -1233,7 +1235,7 @@ function renderWatchlistFull() {
       </td>
       <td class="player-name" style="font-size:13.5px">${w.player}</td>
       <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+autoQ,'AUTO','#22d36a')}</td>
-      <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+snQ+'&Features=Serial%2520Numbered','S/N','#4f8ef7')}</td>
+      <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+snQ+'&Features=Serial%2520Numbered','S/N','#d4a843')}</td>
       <td style="text-align:center;padding:8px 10px">${lnk('https://www.sportscardspro.com/search-products?q='+scpQ+'&type=prices','SCP','#f5c842')}</td>
       <td style="color:var(--text-muted);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${w.notes||''}</td>
       <td style="padding:8px 8px;text-align:center" onclick="event.stopPropagation()">
@@ -1512,7 +1514,7 @@ function renderCardsTable() {
       <td style="text-align:center;padding:6px 8px" onclick="event.stopPropagation();cycleStatus(${filteredCards.indexOf(c)})">${_statusChip(c.status)}</td>
       <td><span class="year-tag">${c.year||'—'}</span></td>
       <td class="parallel-text">${c.parallel||'—'}</td>
-      <td class="card-no" onclick="event.stopPropagation()">${scpHref ? `<a href="${scpHref}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(79,142,247,0.5)" onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'">${c.card_no||'—'}</a>` : (c.card_no||'—')}</td>
+      <td class="card-no" onclick="event.stopPropagation()">${scpHref ? `<a href="${scpHref}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(212,168,67,0.4)" onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'">${c.card_no||'—'}</a>` : (c.card_no||'—')}</td>
       <td><span class="type-badge ${typeCls}">${c.type||'—'}</span></td>
       <td class="money">${fmt(c.cost)}</td>
       <td class="money">${fmt(c.scp_value)}</td>
@@ -1605,7 +1607,7 @@ function openCardDetail(idx) {
   $('cd-parallel').textContent = c.parallel || '';
   const ebayQ = encodeURIComponent([c.player, c.parallel, c.card_no].filter(Boolean).join(' '));
   const scpUrl = buildScpUrl(c.player, c.parallel, c.year, c.card_no);
-  const linkStyle = `color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(79,142,247,0.5)`;
+  const linkStyle = `color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(212,168,67,0.4)`;
   const linkHover = `onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'"`;
   const cardNoHtml = (scpUrl && c.card_no)
     ? `<a href="${scpUrl}" target="_blank" style="${linkStyle}" ${linkHover}>${c.card_no}</a>`
@@ -2078,7 +2080,7 @@ function renderClSets(yr) {
     const sel  = i === clState[yr].set;
     const done = pct === 100;
     const ringColor = done ? 'var(--green)' : accent;
-    return `<div onclick="selectClSet('${yr}',${i})" style="cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid ${sel ? ringColor : 'var(--border)'};background:${sel ? (yr==='2026' ? 'rgba(79,142,247,0.09)' : 'rgba(255,120,73,0.09)') : 'var(--bg-base)'};border-radius:12px;padding:10px 12px;transition:all .18s;${sel ? 'box-shadow:0 0 0 1px '+ringColor+', 0 4px 16px rgba(0,0,0,0.25);transform:translateY(-1px)' : ''}"
+    return `<div onclick="selectClSet('${yr}',${i})" style="cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid ${sel ? ringColor : 'var(--border)'};background:${sel ? (yr==='2026' ? 'rgba(212,168,67,0.08)' : 'rgba(255,120,73,0.09)') : 'var(--bg-base)'};border-radius:12px;padding:10px 12px;transition:all .18s;${sel ? 'box-shadow:0 0 0 1px '+ringColor+', 0 4px 16px rgba(0,0,0,0.25);transform:translateY(-1px)' : ''}"
       onmouseover="if(!this.dataset.sel){this.style.borderColor='var(--border-light)';this.style.transform='translateY(-1px)'}"
       onmouseout="if(!this.dataset.sel){this.style.borderColor='var(--border)';this.style.transform=''}"
       ${sel ? 'data-sel="1"' : ''}>
@@ -2715,7 +2717,7 @@ function openValCard(id) {
         <div style="font-size:14px;font-weight:700">$${c.toFixed(2)}</div>
       </div>`
     ).join('') +
-    `<div style="background:var(--accent-glow);border:1px solid rgba(79,142,247,0.25);border-radius:8px;padding:8px 12px;text-align:center;min-width:72px">
+    `<div style="background:var(--accent-glow);border:1px solid rgba(212,168,67,0.25);border-radius:8px;padding:8px 12px;text-align:center;min-width:72px">
       <div style="font-size:10px;color:var(--accent);margin-bottom:3px">Avg TMV</div>
       <div style="font-size:14px;font-weight:700;color:var(--accent)">$${e.tmv.toFixed(2)}</div>
     </div>`;
@@ -2755,7 +2757,7 @@ function openValCard(id) {
     $('vm-bought-form').style.display = 'none';
     $('vm-bought-display').style.display = 'block';
     $('vm-bought-display').innerHTML = `
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-glow);border:1px solid rgba(79,142,247,0.25);padding:6px 12px;border-radius:8px">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-glow);border:1px solid rgba(212,168,67,0.25);padding:6px 12px;border-radius:8px">
         <span style="font-size:13px;font-weight:700;color:var(--accent)">✓ Purchased${e.purchaseDate ? ' · ' + e.purchaseDate : ''}</span>
         <button onclick="unmarkPurchased()" style="background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;padding:0 0 0 4px">Undo</button>
       </div>`;
@@ -2874,7 +2876,7 @@ function renderWatchRow() {
     const discStr   = e.discount !== null ? ((e.discount*100).toFixed(1)+'%') : '—';
     const discColor = e.discount >= 0.20 ? 'var(--green)' : e.discount >= 0 ? 'var(--yellow)' : 'var(--red)';
     const decCls    = e.decision === 'BUY' ? 'decision-buy' : e.decision === 'PASS' ? 'decision-pass' : 'decision-pending';
-    const boughtChip = e.purchased ? chip('BOUGHT','var(--accent)','var(--accent-glow)','rgba(79,142,247,0.3)') : '';
+    const boughtChip = e.purchased ? chip('BOUGHT','var(--accent)','var(--accent-glow)','rgba(212,168,67,0.3)') : '';
     return `<tr style="border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openValCard(${e.id})">
       <td style="padding:10px 14px;vertical-align:middle">
         <div style="font-weight:600;font-size:13px">${e.player}${boughtChip}</div>
@@ -2917,7 +2919,7 @@ function renderValHistory() {
     const chip = (txt, color, bg, border) =>
       `<span style="font-size:9px;font-weight:700;letter-spacing:.3px;color:${color};background:${bg};border:1px solid ${border};padding:1px 6px;border-radius:10px;margin-left:5px;vertical-align:middle">${txt}</span>`;
     const boughtChip = e.purchased && !isSold
-      ? chip('BOUGHT','var(--accent)','var(--accent-glow)','rgba(79,142,247,0.3)') : '';
+      ? chip('BOUGHT','var(--accent)','var(--accent-glow)','rgba(212,168,67,0.3)') : '';
     const intentDot = isSold ? '' :
         e.holdFlip === 'flip'     ? chip('FLIP',   'var(--yellow)', 'var(--yellow-bg)',           'rgba(245,200,66,0.25)')
       : e.holdFlip === 'watching' ? chip('WATCH',  '#2dd4bf',       'rgba(45,212,191,0.1)',       'rgba(45,212,191,0.25)')
@@ -3049,7 +3051,7 @@ buildEbayLinks();
           <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Date Purchased</label>
           <input id="vm-bought-date" type="date" class="vm-input" style="font-size:12px;font-weight:400">
         </div>
-        <button onclick="markAsPurchased()" style="background:var(--accent-glow);border:1px solid rgba(79,142,247,0.3);color:var(--accent);margin-bottom:1px" class="vm-action-btn">Mark Purchased ✓</button>
+        <button onclick="markAsPurchased()" style="background:var(--accent-glow);border:1px solid rgba(212,168,67,0.3);color:var(--accent);margin-bottom:1px" class="vm-action-btn">Mark Purchased ✓</button>
       </div>
       <div id="vm-bought-display" style="display:none;margin-bottom:14px"></div>
 
@@ -3074,7 +3076,7 @@ buildEbayLinks();
 
     <!-- Footer -->
     <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <button onclick="loadFromModal()" style="background:var(--accent-glow);border:1px solid rgba(79,142,247,0.3);color:var(--accent)" class="vm-action-btn">↑ Load into Form</button>
+      <button onclick="loadFromModal()" style="background:var(--accent-glow);border:1px solid rgba(212,168,67,0.3);color:var(--accent)" class="vm-action-btn">↑ Load into Form</button>
       <div style="display:flex;gap:8px">
         <button onclick="closeValCard()" style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary)" class="vm-action-btn">Cancel</button>
         <button onclick="saveValCard()" style="background:#1e2d45;border:1px solid var(--border-light);color:var(--text-primary)" class="vm-action-btn">Save Changes</button>
@@ -3098,7 +3100,7 @@ buildEbayLinks();
     <div style="padding:20px 0;display:flex;flex-direction:column;gap:16px">
 
       <!-- How to set up npoint -->
-      <div style="background:var(--accent-glow);border:1px solid rgba(79,142,247,0.2);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--text-secondary);line-height:1.6">
+      <div style="background:var(--accent-glow);border:1px solid rgba(212,168,67,0.2);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--text-secondary);line-height:1.6">
         <strong style="color:var(--accent)">Setup (one time, no account needed):</strong><br>
         1. Go to <a href="https://www.npoint.io" target="_blank" style="color:var(--accent)">npoint.io</a><br>
         2. Paste <code style="background:var(--bg-hover);padding:1px 5px;border-radius:4px">[]</code> in the editor and click <strong>Save</strong><br>
@@ -3137,7 +3139,7 @@ buildEbayLinks();
           <button class="cd-hf-btn" data-hf="flip" onclick="setCdStatus(this)">Flip</button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
-          <span id="cd-parallel" style="font-size:11px;font-weight:700;background:rgba(79,142,247,0.15);color:var(--accent);border:1px solid rgba(79,142,247,0.3);border-radius:20px;padding:2px 10px"></span>
+          <span id="cd-parallel" style="font-size:11px;font-weight:700;background:rgba(212,168,67,0.12);color:var(--accent);border:1px solid rgba(212,168,67,0.3);border-radius:20px;padding:2px 10px"></span>
           <span id="cd-meta" style="font-size:11px;color:var(--text-muted)"></span>
         </div>
       </div>
@@ -3168,7 +3170,7 @@ buildEbayLinks();
               onfocus="if(this.value.startsWith('$'))this.value=this.value.slice(1)"
               onblur="const v=parseFloat(this.value);if(!isNaN(v))this.value='$'+v.toFixed(2)" oninput="recalcCost()">
           </div>
-          <div style="flex:1;padding:10px 8px;text-align:center;background:rgba(79,142,247,0.07);border-radius:0 10px 10px 0">
+          <div style="flex:1;padding:10px 8px;text-align:center;background:rgba(212,168,67,0.07);border-radius:0 10px 10px 0">
             <div style="font-size:10px;color:var(--accent);margin-bottom:4px;font-weight:600">Total</div>
             <div id="cd-total" style="font-size:15px;font-weight:800;color:var(--accent)"></div>
           </div>
@@ -3285,7 +3287,7 @@ buildEbayLinks();
             <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Taxes</div>
             <input id="ac-taxes" type="number" inputmode="decimal" placeholder="0.00" step="0.01" style="border:none;outline:none;background:transparent;color:var(--text-primary);font-size:14px;font-weight:700;text-align:center;width:100%;padding:0" oninput="acRecalcTotal()">
           </div>
-          <div style="flex:1;padding:10px 8px;text-align:center;background:rgba(79,142,247,0.07);border-radius:0 10px 10px 0">
+          <div style="flex:1;padding:10px 8px;text-align:center;background:rgba(212,168,67,0.07);border-radius:0 10px 10px 0">
             <div style="font-size:10px;color:var(--accent);margin-bottom:4px;font-weight:600">Total</div>
             <div id="ac-total" style="font-size:15px;font-weight:800;color:var(--accent)">$0.00</div>
           </div>
