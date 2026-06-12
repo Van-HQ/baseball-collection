@@ -38,17 +38,18 @@
   /* SIDEBAR */
   .sidebar{width:var(--sidebar-w);background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:10;transition:width .22s cubic-bezier(.4,0,.2,1);overflow:hidden}
   .sidebar.collapsed{width:0;min-width:0;border-right:none}
-  .sidebar-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);white-space:nowrap}
+  .sidebar.collapsed .sidebar-logo,.sidebar.collapsed .sidebar-nav,.sidebar.collapsed .sidebar-footer{opacity:0}
+  .sidebar-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);white-space:nowrap;transition:opacity .18s}
   .sidebar-logo .icon{width:34px;height:34px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
   .sidebar-logo .title{font-size:13px;font-weight:700;color:var(--text-primary);letter-spacing:.3px}
   .sidebar-logo .sub{font-size:11px;color:var(--text-secondary)}
-  .sidebar-nav{padding:12px 10px;flex:1;overflow-y:auto;white-space:nowrap}
+  .sidebar-nav{padding:12px 10px;flex:1;overflow-y:auto;white-space:nowrap;transition:opacity .18s}
   .nav-section{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.8px;text-transform:uppercase;padding:10px 8px 6px}
   .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px}
   .nav-item:hover{background:var(--bg-hover);color:var(--text-primary)}
   .nav-item.active{background:rgba(212,168,67,0.07);color:var(--accent);border:none;border-left:2px solid var(--accent);padding-left:8px;box-shadow:inset 0 0 24px rgba(212,168,67,0.05);position:relative}
   .nav-item .icon{width:18px;text-align:center;font-size:14px;flex-shrink:0}
-  .sidebar-footer{padding:14px 14px;border-top:1px solid var(--border);white-space:nowrap}
+  .sidebar-footer{padding:14px 14px;border-top:1px solid var(--border);white-space:nowrap;transition:opacity .18s}
   .sidebar-footer .meta{font-size:11px;color:var(--text-muted)}
   /* Hamburger */
   .hamburger{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:8px;border-radius:8px;display:flex;flex-direction:column;gap:5px;transition:color .15s;flex-shrink:0}
@@ -176,7 +177,7 @@
   /* TABLE */
   .table-wrap{overflow-x:auto}
   table{width:100%;border-collapse:collapse;font-size:12.5px}
-  thead th{padding:9px 14px;text-align:left;color:var(--text-muted);font-weight:700;font-size:10px;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base);white-space:nowrap;cursor:pointer;user-select:none}
+  thead th{padding:9px 14px;text-align:left;color:var(--text-muted);font-weight:700;font-size:10px;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:10}
   thead th:hover{color:var(--text-secondary)}
   thead th.sort-asc::after{content:" ↑";color:var(--accent)}
   thead th.sort-desc::after{content:" ↓";color:var(--accent)}
@@ -325,6 +326,16 @@
 
   /* GRAIN OVERLAY */
   body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px}
+
+
+  /* TOASTS */
+  #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:10001;pointer-events:none}
+  .toast{background:rgba(10,10,10,0.96);border:1px solid #2d2d2d;border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:#fff;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:toastIn .28s cubic-bezier(.25,.46,.45,.94) both;pointer-events:auto;min-width:210px;max-width:300px}
+  .toast.out{animation:toastOut .22s ease forwards}
+  @keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes toastOut{to{opacity:0;transform:translateX(16px)}}
+  .toast-icon{font-size:13px;font-weight:700;flex-shrink:0}
+  @media(max-width:767px){#toast-container{bottom:70px;right:12px;left:12px}}
 
   /* SCROLLBAR */
   ::-webkit-scrollbar{width:5px;height:5px}
@@ -513,6 +524,17 @@
         <div class="panel" style="grid-column:span 3">
           <div class="panel-header"><div class="panel-title">Top Movers <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">by P/L $</span></div></div>
           <div class="chart-wrap" style="height:300px"><canvas id="moversChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Portfolio Value Over Time -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
+        <div class="panel" style="grid-column:span 6" id="portfolio-value-panel">
+          <div class="panel-header">
+            <div class="panel-title">Portfolio Value Over Time</div>
+            <div class="panel-actions"><span id="pv-card-count" style="font-size:11px;color:var(--text-muted)"></span></div>
+          </div>
+          <div class="chart-wrap" style="height:220px"><canvas id="portfolioValueChart"></canvas></div>
         </div>
       </div>
 
@@ -1018,6 +1040,78 @@ function closeSidebar() {
   if (ov) ov.classList.remove('visible');
 }
 
+
+// ── TOASTS ──
+function showToast(msg, type='success') {
+  const icons = {success:'✓', error:'✗', info:'↑', sync:'↻', warn:'!'};
+  const colors = {success:'var(--green)', error:'var(--red)', info:'var(--accent)', sync:'var(--yellow)', warn:'var(--yellow)'};
+  let ct = $('toast-container');
+  if (!ct) { ct = document.createElement('div'); ct.id='toast-container'; document.body.appendChild(ct); }
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-icon" style="color:${colors[type]||colors.success}">${icons[type]||'•'}</span><span>${msg}</span>`;
+  ct.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(()=>t.remove(), 240); }, 3000);
+}
+
+// ── PORTFOLIO VALUE OVER TIME ──
+let _pvChart = null;
+function renderPortfolioValueChart() {
+  const panel = $('portfolio-value-panel');
+  const hist = getValHistory().filter(e => e.tmv != null && e.date);
+  if (hist.length < 2) { if (panel) panel.style.display = 'none'; return; }
+  if (panel) panel.style.display = '';
+
+  const dates = [...new Set(hist.map(e => e.date))].sort();
+  const vals = dates.map(d => {
+    const upTo = hist.filter(e => e.date <= d);
+    const byId = {};
+    upTo.forEach(e => { if (!byId[e.id] || e.date > byId[e.id].date) byId[e.id] = e; });
+    return +Object.values(byId).reduce((s, e) => s + (e.tmv||0), 0).toFixed(2);
+  });
+
+  const countEl = $('pv-card-count');
+  if (countEl) {
+    const delta = vals[vals.length-1] - vals[0];
+    const sign = delta >= 0 ? '+' : '';
+    countEl.textContent = sign + '$' + delta.toFixed(2) + ' since first valuation';
+    countEl.style.color = delta >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  const ctx = document.getElementById('portfolioValueChart').getContext('2d');
+  if (_pvChart) _pvChart.destroy();
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 220);
+  grad.addColorStop(0, 'rgba(212,168,67,0.2)');
+  grad.addColorStop(1, 'rgba(212,168,67,0)');
+
+  _pvChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: dates, datasets: [{
+      label: 'Portfolio Value',
+      data: vals,
+      borderColor: 'rgba(212,168,67,0.9)',
+      backgroundColor: grad,
+      fill: true,
+      tension: .35,
+      pointRadius: vals.length > 10 ? 0 : 4,
+      pointBackgroundColor: 'var(--accent)',
+      borderWidth: 2.5
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 900, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ' $' + c.raw.toFixed(2) }}
+      },
+      scales: {
+        x: { ticks: { color:'#555', font:{size:9}, maxTicksLimit:8 }, grid:{display:false}, border:{display:true,color:'#2d2d2d',width:1} },
+        y: { ticks: { color:'#555', font:{size:10}, callback: v => '$'+v }, grid:{display:false}, border:{display:true,color:'#2d2d2d',width:1} }
+      }
+    }
+  });
+}
 
 // ── SPARKLINES ──
 function playerSparkline(player) {
@@ -2875,13 +2969,15 @@ function saveValuation() {
     h.unshift(entry);
   }
   saveValHistory(h);
-  renderValHistory(); renderWatchRow();
+  renderValHistory(); renderWatchRow(); renderPortfolioValueChart();
+  showToast('Valuation saved');
 }
 
 function deleteValEntry(id) {
   const h = getValHistory().filter(e => e.id !== id);
   saveValHistory(h);
   renderValHistory(); renderWatchRow();
+  showToast('Entry removed', 'info');
 }
 
 function clearValHistory() {
@@ -3308,6 +3404,14 @@ function closeSearch() {
 }
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); return; }
+  // Number shortcuts 1-7 — only when not typing
+  if (!e.metaKey && !e.ctrlKey && !e.altKey && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+    const pages = {'1':'overview','2':'collection','3':'rookies','4':'watchlist','5':'valuation','6':'transactions','7':'checklists'};
+    if (pages[e.key]) {
+      const el = document.querySelector(`.nav-item[onclick*="'${pages[e.key]}'"]`);
+      if (el) showPage(pages[e.key], el);
+    }
+  }
   if (e.key === 'Escape') { closeSearch(); closePlayerModal(); return; }
   if (!$('search-backdrop').classList.contains('open')) return;
   const items = document.querySelectorAll('.sr-item');
@@ -3394,6 +3498,7 @@ renderPLChart(true);
 renderSpendChart();
 renderMoversChart();
 renderSpendTimeChart();
+renderPortfolioValueChart();
 renderCostValueChart();
 renderTreemap();
 window.addEventListener('resize', () => { clearTimeout(window._tmT); window._tmT = setTimeout(renderTreemap, 200); });
