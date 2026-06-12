@@ -317,6 +317,10 @@
   .pm-sum-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted)}
   .pm-sum-val{font-size:16px;font-weight:800;letter-spacing:-.5px}
 
+
+  /* GRAIN OVERLAY */
+  body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.038;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px}
+
   /* SCROLLBAR */
   ::-webkit-scrollbar{width:5px;height:5px}
   ::-webkit-scrollbar-track{background:var(--bg-base)}
@@ -3157,6 +3161,68 @@ function renderValHistory() {
   } catch {}
 })();
 
+// ── CONFETTI ──
+function launchConfetti() {
+  const cv = document.createElement('canvas');
+  cv.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:10000;width:100%;height:100%';
+  document.body.appendChild(cv);
+  cv.width = window.innerWidth; cv.height = window.innerHeight;
+  const ctx = cv.getContext('2d');
+  const colors = ['#d4a843','#f5c842','#22d36a','#fff','#d4a843','#d4a843'];
+  const count = 90;
+  const pieces = Array.from({length:count}, (_,i) => ({
+    x: cv.width * 0.3 + Math.random() * cv.width * 0.4,
+    y: -10 - Math.random() * 40,
+    vx: (Math.random() - 0.5) * 5,
+    vy: Math.random() * 2 + 1.5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    w: Math.random() * 8 + 3,
+    h: Math.random() * 4 + 2,
+    rot: Math.random() * 360,
+    rspd: (Math.random() - 0.5) * 7,
+    delay: i * 6,
+  }));
+  let f = 0;
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    f++;
+    let alive = false;
+    pieces.forEach(p => {
+      if (f < p.delay) { alive = true; return; }
+      const age = f - p.delay;
+      const op = Math.max(0, 1 - age / 75);
+      if (op <= 0) return;
+      alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.07; p.rot += p.rspd;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = op;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    if (alive) requestAnimationFrame(draw); else cv.remove();
+  }
+  draw();
+}
+
+// ── CHART TOOLTIP DEFAULTS ──
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(13,13,13,0.95)';
+Chart.defaults.plugins.tooltip.borderColor = '#2d2d2d';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.titleColor = '#fff';
+Chart.defaults.plugins.tooltip.bodyColor = '#999';
+Chart.defaults.plugins.tooltip.titleFont = { size: 12, weight: '700', family: '-apple-system,BlinkMacSystemFont,sans-serif' };
+Chart.defaults.plugins.tooltip.bodyFont = { size: 12, family: '-apple-system,BlinkMacSystemFont,sans-serif' };
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.caretSize = 4;
+Chart.defaults.plugins.tooltip.boxWidth = 8;
+Chart.defaults.plugins.tooltip.boxHeight = 8;
+Chart.defaults.plugins.tooltip.boxPadding = 4;
+Chart.defaults.plugins.tooltip.multiKeyBackground = 'transparent';
+
 // ── CMD+K SEARCH ──
 let _srFocused = -1;
 function openSearch() {
@@ -3251,6 +3317,7 @@ function srWatchRow(w) {
 
 
 renderStats();
+if (DATA.summary.total_pl > 0) setTimeout(launchConfetti, 800);
 renderPLChart(true);
 renderSpendChart();
 renderMoversChart();
