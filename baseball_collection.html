@@ -676,8 +676,8 @@
                 <th onclick="sortTable('cost')" style="text-align:right">Cost</th>
                 <th onclick="sortTable('scp_value')" style="text-align:right">SCP Val</th>
                 <th onclick="sortTable('tmv')" style="text-align:right">TMV</th>
-                <th onclick="sortTable('pl_dollars')" style="text-align:right">P/L</th>
-                  <th style="text-align:center;width:60px">Trend</th>
+                <th style="text-align:center;width:60px">Trend</th>
+                  <th onclick="sortTable('pl_dollars')" style="text-align:right">P/L</th>
                 <th style="text-align:center;cursor:default">Active</th>
                 <th style="text-align:center;cursor:default">Comps</th>
                 <th style="cursor:default;width:28px"></th>
@@ -1633,8 +1633,8 @@ function renderTreemap() {
          <div style="font-size:${t.w>90?10:8.5}px;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.5)">$${d.tmv.toFixed(0)}</div>`
       : '';
     return `<div title="${d.player}${d.no?' · '+d.no:''}\nValue $${d.tmv.toFixed(2)} · P/L ${pl>=0?'+':'-'}$${Math.abs(pl).toFixed(2)}"
-      style="position:absolute;left:${t.x}px;top:${t.y}px;width:${t.w}px;height:${t.h}px;background:${bg};border:1px solid rgba(10,15,25,0.6);box-sizing:border-box;padding:4px 5px;overflow:hidden;cursor:default;transition:filter .12s"
-      onmouseover="this.style.filter='brightness(1.25)'" onmouseout="this.style.filter=''">${label}</div>`;
+      style="position:absolute;left:${t.x}px;top:${t.y}px;width:${t.w}px;height:${t.h}px;background:${bg};border:1px solid rgba(10,15,25,0.6);box-sizing:border-box;padding:4px 5px;overflow:hidden;cursor:pointer;transition:filter .12s"
+      onclick="openPlayerModal('${d.player.replace(/'/g,'\\'')}')" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">${label}</div>`;
   }).join('');
 }
 
