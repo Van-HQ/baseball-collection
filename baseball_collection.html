@@ -1562,14 +1562,15 @@ function renderMoversChart() {
       data: vals,
       backgroundColor: function(ctx) {
         const v = vals[ctx.dataIndex];
-        const {chartArea} = ctx.chart;
-        if (!chartArea) return v >= 0 ? 'rgba(34,211,106,0.75)' : 'rgba(242,92,92,0.75)';
+        const {chartArea, scales} = ctx.chart;
+        if (!chartArea || !scales.x) return v >= 0 ? 'rgba(34,211,106,0.75)' : 'rgba(242,92,92,0.75)';
+        const zeroX = scales.x.getPixelForValue(0);
         if (v >= 0) {
-          const g = mCtx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-          g.addColorStop(0, 'rgba(34,211,106,0.08)'); g.addColorStop(1, 'rgba(34,211,106,0.9)'); return g;
+          const g = mCtx.createLinearGradient(zeroX, 0, chartArea.right, 0);
+          g.addColorStop(0, 'rgba(34,211,106,0.08)'); g.addColorStop(1, 'rgba(34,211,106,0.92)'); return g;
         } else {
-          const g = mCtx.createLinearGradient(chartArea.right, 0, chartArea.left, 0);
-          g.addColorStop(0, 'rgba(242,92,92,0.08)'); g.addColorStop(1, 'rgba(242,92,92,0.9)'); return g;
+          const g = mCtx.createLinearGradient(zeroX, 0, chartArea.left, 0);
+          g.addColorStop(0, 'rgba(242,92,92,0.08)'); g.addColorStop(1, 'rgba(242,92,92,0.92)'); return g;
         }
       },
       borderRadius: 5, borderSkipped: false
