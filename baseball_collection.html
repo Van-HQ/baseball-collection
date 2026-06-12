@@ -526,9 +526,8 @@
               <div class="progress-bg"><div class="progress-fill green" id="prog2025"></div></div>
             </div>
           </div>
-          <div style="padding:0 18px 14px">
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Spending Split</div>
-            <div class="chart-wrap" style="height:220px"><canvas id="spendChart"></canvas></div>
+          <div style="padding:0 0 0">
+            <div class="chart-wrap" style="height:260px;padding:0"><canvas id="spendChart"></canvas></div>
           </div>
         </div>
         <div class="panel" style="grid-column:span 3">
@@ -1105,7 +1104,7 @@ function renderSpendChart() {
       responsive:true,maintainAspectRatio:false,
       layout:{ padding:{ top:30, bottom:10, left:50, right:50 } },
       plugins:{
-        legend:{position:'bottom',labels:{color:'#999',font:{size:11},padding:14,boxWidth:10}},
+        legend:{display:false},
         tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)+' ('+(c.raw/_total*100).toFixed(1)+'%)'}}
       },
       cutout:'62%'
