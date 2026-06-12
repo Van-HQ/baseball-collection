@@ -1664,18 +1664,10 @@ function renderCostValueChart() {
     type: 'bar',
     data: { labels, datasets: [{
       data: values,
-      backgroundColor: function(ctx) {
-        const v = values[ctx.dataIndex];
-        const {chartArea} = ctx.chart;
-        if (!chartArea) return v >= 0 ? 'rgba(34,211,106,0.75)' : 'rgba(242,92,92,0.75)';
-        if (v >= 0) {
-          const g = cvCtx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-          g.addColorStop(0, 'rgba(34,211,106,0.08)'); g.addColorStop(1, 'rgba(34,211,106,0.88)'); return g;
-        } else {
-          const g = cvCtx.createLinearGradient(chartArea.right, 0, chartArea.left, 0);
-          g.addColorStop(0, 'rgba(242,92,92,0.08)'); g.addColorStop(1, 'rgba(242,92,92,0.88)'); return g;
-        }
-      },
+      backgroundColor: values.map(v => v >= 0 ? 'rgba(34,211,106,0.72)' : 'rgba(242,92,92,0.72)'),
+      borderColor: values.map(v => v >= 0 ? 'rgba(34,211,106,0.95)' : 'rgba(242,92,92,0.95)'),
+      borderWidth: { top: 0, right: 1.5, bottom: 0, left: 0 },
+      borderSkipped: false,
       borderRadius: 4, barThickness: 14
     }]},
     options: {
