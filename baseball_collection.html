@@ -328,6 +328,18 @@
   body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px}
 
 
+
+  /* CARD HOVER PREVIEW */
+  #card-preview{position:fixed;z-index:9000;pointer-events:none;opacity:0;transition:opacity .15s;width:220px;background:rgba(8,8,8,0.97);border:1px solid #2d2d2d;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+  #card-preview.visible{opacity:1}
+  .cp-header{padding:12px 14px 10px;border-bottom:1px solid #1e1e1e;border-left:2px solid var(--accent)}
+  .cp-player{font-size:13px;font-weight:800;color:#fff;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cp-parallel{font-size:10px;color:#666;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cp-body{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .cp-stat{display:flex;flex-direction:column;gap:2px}
+  .cp-stat-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#555}
+  .cp-stat-val{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.3px}
+
   /* TOASTS */
   #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:10001;pointer-events:none}
   .toast{background:rgba(10,10,10,0.96);border:1px solid #2d2d2d;border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:#fff;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:toastIn .28s cubic-bezier(.25,.46,.45,.94) both;pointer-events:auto;min-width:210px;max-width:300px}
@@ -339,9 +351,9 @@
 
   /* SCROLLBAR */
   ::-webkit-scrollbar{width:5px;height:5px}
-  ::-webkit-scrollbar-track{background:var(--bg-base)}
-  ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:#555}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:3px;transition:background .2s}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(212,168,67,0.5)}
   
   @media(max-width:1200px){.stats-row{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
@@ -1040,6 +1052,39 @@ function closeSidebar() {
   if (ov) ov.classList.remove('visible');
 }
 
+
+// ── CARD HOVER PREVIEW ──
+const _cp = document.getElementById('card-preview') || (() => { const d=document.createElement('div'); d.id='card-preview'; document.body.appendChild(d); return d; })();
+let _cpTimer = null;
+function showCardPreview(card, e) {
+  clearTimeout(_cpTimer);
+  document.getElementById('cp-player').textContent = card.player;
+  document.getElementById('cp-parallel').textContent = [card.parallel, card.card_no].filter(Boolean).join(' · ') || '—';
+  document.getElementById('cp-cost').textContent = card.cost > 0 ? '$'+card.cost.toFixed(2) : 'Ripped';
+  document.getElementById('cp-tmv').textContent = '$'+card.tmv.toFixed(2);
+  const pl = card.tmv - (card.cost||0);
+  const plEl = document.getElementById('cp-pl');
+  plEl.textContent = (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2);
+  plEl.style.color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : '#999';
+  document.getElementById('cp-year').textContent = card.year || '—';
+  positionPreview(e);
+  _cp.classList.add('visible');
+}
+function positionPreview(e) {
+  const W = 220, H = 130, pad = 12;
+  let x = e.clientX + 16, y = e.clientY - 60;
+  if (x + W > window.innerWidth - pad) x = e.clientX - W - 16;
+  if (y + H > window.innerHeight - pad) y = window.innerHeight - H - pad;
+  if (y < pad) y = pad;
+  _cp.style.left = x + 'px';
+  _cp.style.top  = y + 'px';
+}
+function hideCardPreview() {
+  _cpTimer = setTimeout(() => _cp.classList.remove('visible'), 80);
+}
+document.addEventListener('mousemove', e => {
+  if (_cp.classList.contains('visible')) positionPreview(e);
+});
 
 // ── TOASTS ──
 function showToast(msg, type='success') {
@@ -1873,7 +1918,7 @@ function renderCardsTable() {
     const scpHref = buildScpUrl(c.player, c.parallel, c.year, c.card_no)
       || `https://www.sportscardspro.com/search-products?q=${encodeURIComponent([c.player,c.parallel,c.card_no].filter(Boolean).join(' '))}`;
     const linkStyle = `display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 8px;border-radius:10px;text-decoration:none;transition:all .15s;white-space:nowrap`;
-    return `<tr style="cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openCardDetail(${filteredCards.indexOf(c)})">
+    return `<tr style="cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg-hover)';showCardPreview(filteredCards[${filteredCards.indexOf(c)}],event)" onmouseout="this.style.background='';hideCardPreview()" onclick="openCardDetail(${filteredCards.indexOf(c)})">
       <td style="text-align:center;padding:8px 10px;color:var(--text-muted);font-size:11px;font-weight:600;white-space:nowrap;cursor:text" title="Click to edit slot" onclick="event.stopPropagation();editSlot(this,${filteredCards.indexOf(c)})" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">${c.binder||'—'}</td>
       <td class="player-name">${c.player}</td>
       <td style="text-align:center;padding:6px 8px" onclick="event.stopPropagation();cycleStatus(${filteredCards.indexOf(c)})">${_statusChip(c.status)}</td>
@@ -3962,6 +4007,19 @@ buildEbayLinks();
     Valuation
   </div>
 </nav>
+
+<div id="card-preview">
+  <div class="cp-header">
+    <div class="cp-player" id="cp-player"></div>
+    <div class="cp-parallel" id="cp-parallel"></div>
+  </div>
+  <div class="cp-body">
+    <div class="cp-stat"><div class="cp-stat-label">Cost</div><div class="cp-stat-val" id="cp-cost"></div></div>
+    <div class="cp-stat"><div class="cp-stat-label">Value</div><div class="cp-stat-val" id="cp-tmv"></div></div>
+    <div class="cp-stat"><div class="cp-stat-label">P/L</div><div class="cp-stat-val" id="cp-pl"></div></div>
+    <div class="cp-stat"><div class="cp-stat-label">Year</div><div class="cp-stat-val" id="cp-year"></div></div>
+  </div>
+</div>
 
 </body>
 </html>
