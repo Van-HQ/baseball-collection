@@ -483,6 +483,9 @@
         <span style="color:#555">Search</span>
         <span style="background:#1a1a1a;border:1px solid #2d2d2d;border-radius:4px;padding:1px 5px;font-size:10px;color:#555">⌘K</span>
       </button>
+      <button onclick="openCloudSettings()" title="Sync settings" style="background:none;border:1px solid #2d2d2d;color:#555;width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0" onmouseover="this.style.borderColor='#555';this.style.color='#999'" onmouseout="this.style.borderColor='#2d2d2d';this.style.color='#555'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      </button>
     </div>
   </div>
   <div class="content">
@@ -3176,7 +3179,10 @@ function updateSrFocus(items) {
   items.forEach((el, i) => el.classList.toggle('focused', i === _srFocused));
   if (items[_srFocused]) items[_srFocused].scrollIntoView({ block: 'nearest' });
 }
-$('search-input').addEventListener('input', e => { _srFocused = -1; renderSearchResults(e.target.value); });
+document.addEventListener('DOMContentLoaded', () => {
+  const si = $('search-input');
+  if (si) si.addEventListener('input', e => { _srFocused = -1; renderSearchResults(e.target.value); });
+});
 function renderSearchResults(q) {
   const el = $('search-results');
   const raw = q.trim().toLowerCase();
