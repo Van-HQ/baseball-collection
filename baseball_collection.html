@@ -256,6 +256,41 @@
   .page.active{display:block}
   
 
+
+
+  /* PULL TO REFRESH */
+  @media(max-width:767px){
+    #ptr-indicator{position:fixed;top:0;left:0;right:0;height:0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;z-index:400;transition:height .2s ease;pointer-events:none}
+    #ptr-inner{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--bg-card);border-radius:0 0 12px 12px;border:1px solid var(--border-light);margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text-secondary);opacity:0;transition:opacity .2s}
+    #ptr-indicator.pulling #ptr-inner{opacity:1}
+    #ptr-spinner{width:16px;height:16px;border:2px solid #2d2d2d;border-top-color:var(--accent);border-radius:50%;flex-shrink:0}
+    #ptr-indicator.refreshing #ptr-spinner{animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  }
+
+  /* CMD+K SEARCH */
+  #search-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;backdrop-filter:blur(6px);align-items:flex-start;justify-content:center;padding-top:80px}
+  #search-backdrop.open{display:flex}
+  #search-modal{background:#111;border:1px solid #2d2d2d;border-radius:14px;width:min(560px,92vw);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.7)}
+  #search-input-wrap{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #1e1e1e}
+  #search-input-wrap svg{flex-shrink:0;color:#555;width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #search-input{flex:1;background:none;border:none;outline:none;font-size:16px;color:#fff;font-family:inherit}
+  #search-input::placeholder{color:#555}
+  #search-kbd{font-size:11px;color:#555;background:#1a1a1a;border:1px solid #2d2d2d;border-radius:5px;padding:2px 6px;white-space:nowrap;flex-shrink:0}
+  #search-results{max-height:420px;overflow-y:auto}
+  .sr-section{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#555;padding:12px 18px 6px}
+  .sr-item{display:flex;align-items:center;gap:12px;padding:10px 18px;cursor:pointer;transition:background .1s}
+  .sr-item:hover,.sr-item.focused{background:#1a1a1a}
+  .sr-item-icon{width:32px;height:32px;border-radius:8px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;border:1px solid #2d2d2d}
+  .sr-item-main{flex:1;min-width:0}
+  .sr-item-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sr-item-sub{font-size:11px;color:#555;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sr-item-val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #search-empty{padding:32px 18px;text-align:center;color:#555;font-size:13px}
+  #search-hint{padding:10px 18px;border-top:1px solid #1e1e1e;display:flex;align-items:center;gap:16px;color:#555;font-size:11px}
+  #search-hint span{display:flex;align-items:center;gap:5px}
+  .sh-kbd{background:#1a1a1a;border:1px solid #2d2d2d;border-radius:4px;padding:1px 5px;font-size:10px;color:#777}
+
   /* BOTTOM NAV (mobile only) */
   #bottom-nav{display:none}
   @media(max-width:767px){
@@ -443,6 +478,11 @@
       <div class="topbar-title" id="page-title">Overview</div>
     </div>
     <div class="topbar-right">
+      <button onclick="openSearch()" title="Search (⌘K)" style="background:none;border:1px solid #2d2d2d;color:#555;padding:6px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;transition:all .15s" onmouseover="this.style.borderColor='#555';this.style.color='#999'" onmouseout="this.style.borderColor='#2d2d2d';this.style.color='#555'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <span style="color:#555">Search</span>
+        <span style="background:#1a1a1a;border:1px solid #2d2d2d;border-radius:4px;padding:1px 5px;font-size:10px;color:#555">⌘K</span>
+      </button>
     </div>
   </div>
   <div class="content">
@@ -3111,6 +3151,134 @@ function renderValHistory() {
   } catch {}
 })();
 
+// ── CMD+K SEARCH ──
+let _srFocused = -1;
+function openSearch() {
+  $('search-backdrop').classList.add('open');
+  setTimeout(() => $('search-input').focus(), 50);
+  $('search-input').value = '';
+  renderSearchResults('');
+}
+function closeSearch() {
+  $('search-backdrop').classList.remove('open');
+  _srFocused = -1;
+}
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); return; }
+  if (e.key === 'Escape') { closeSearch(); closePlayerModal(); return; }
+  if (!$('search-backdrop').classList.contains('open')) return;
+  const items = document.querySelectorAll('.sr-item');
+  if (e.key === 'ArrowDown') { e.preventDefault(); _srFocused = Math.min(_srFocused + 1, items.length - 1); updateSrFocus(items); }
+  if (e.key === 'ArrowUp')   { e.preventDefault(); _srFocused = Math.max(_srFocused - 1, 0); updateSrFocus(items); }
+  if (e.key === 'Enter' && _srFocused >= 0 && items[_srFocused]) items[_srFocused].click();
+});
+function updateSrFocus(items) {
+  items.forEach((el, i) => el.classList.toggle('focused', i === _srFocused));
+  if (items[_srFocused]) items[_srFocused].scrollIntoView({ block: 'nearest' });
+}
+$('search-input').addEventListener('input', e => { _srFocused = -1; renderSearchResults(e.target.value); });
+function renderSearchResults(q) {
+  const el = $('search-results');
+  const raw = q.trim().toLowerCase();
+  if (!raw) {
+    // Show top players by value when empty
+    const byPlayer = {};
+    DATA.cards.forEach(c => { byPlayer[c.player] = (byPlayer[c.player]||0) + c.tmv; });
+    const top = Object.entries(byPlayer).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    el.innerHTML = `<div class="sr-section">Top Players</div>` + top.map(([p,v]) => srPlayerRow(p, v)).join('');
+    return;
+  }
+  const results = [];
+  // Players
+  const byPlayer = {};
+  DATA.cards.forEach(c => { byPlayer[c.player] = (byPlayer[c.player]||0) + c.tmv; });
+  Object.entries(byPlayer).filter(([p]) => p.toLowerCase().includes(raw))
+    .sort((a,b)=>b[1]-a[1]).slice(0,5)
+    .forEach(([p,v]) => results.push({ type:'player', player:p, val:v }));
+  // Cards
+  DATA.cards.filter(c =>
+    (c.parallel||'').toLowerCase().includes(raw) ||
+    (c.card_no||'').toLowerCase().includes(raw)
+  ).slice(0,4).forEach(c => results.push({ type:'card', card:c }));
+  // Watchlist
+  getWatchlist().filter(w => w.player.toLowerCase().includes(raw)).slice(0,3)
+    .forEach(w => results.push({ type:'watch', watch:w }));
+  if (!results.length) { el.innerHTML = '<div id="search-empty">No results for "' + q + '"</div>'; return; }
+  const players = results.filter(r=>r.type==='player');
+  const cards   = results.filter(r=>r.type==='card');
+  const watches = results.filter(r=>r.type==='watch');
+  let out = '';
+  if (players.length) out += `<div class="sr-section">Players</div>` + players.map(r => srPlayerRow(r.player, r.val)).join('');
+  if (cards.length)   out += `<div class="sr-section">Cards</div>`   + cards.map(r => srCardRow(r.card)).join('');
+  if (watches.length) out += `<div class="sr-section">Watchlist</div>` + watches.map(r => srWatchRow(r.watch)).join('');
+  el.innerHTML = out;
+}
+function srPlayerRow(player, val) {
+  const initials = player.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const cnt = DATA.cards.filter(c=>c.player===player).length;
+  return `<div class="sr-item" onclick="closeSearch();openPlayerModal('${player.replace(/'/g,"\'")}')">
+    <div class="sr-item-icon">${initials}</div>
+    <div class="sr-item-main"><div class="sr-item-name">${player}</div><div class="sr-item-sub">${cnt} card${cnt!==1?'s':''}</div></div>
+    <div class="sr-item-val" style="color:var(--accent)">$${val.toFixed(2)}</div>
+  </div>`;
+}
+function srCardRow(c) {
+  const pl = c.tmv - (c.cost||0);
+  const plColor = pl >= 0 ? 'var(--green)' : 'var(--red)';
+  return `<div class="sr-item" onclick="closeSearch();openPlayerModal('${c.player.replace(/'/g,"\'")}')">
+    <div class="sr-item-icon" style="font-size:10px;color:#555">${c.year}</div>
+    <div class="sr-item-main"><div class="sr-item-name">${c.parallel||c.card_no||'—'}</div><div class="sr-item-sub">${c.player}</div></div>
+    <div class="sr-item-val" style="color:${plColor}">${pl>=0?'+':'-'}$${Math.abs(pl).toFixed(2)}</div>
+  </div>`;
+}
+function srWatchRow(w) {
+  const tier = w.tier||'medium';
+  const tc = tier==='high'?'var(--red)':tier==='low'?'var(--teal)':'var(--yellow)';
+  return `<div class="sr-item" onclick="closeSearch();showPageMobile('watchlist')">
+    <div class="sr-item-icon" style="color:${tc}">👁</div>
+    <div class="sr-item-main"><div class="sr-item-name">${w.player}</div><div class="sr-item-sub">Watchlist · ${tier}</div></div>
+  </div>`;
+}
+
+// ── PULL TO REFRESH ──
+(function() {
+  if (window.innerWidth > 767) return;
+  const content = document.querySelector('.content');
+  let startY = 0, pulling = false, triggered = false;
+  const ind = $('ptr-indicator');
+  const lbl = $('ptr-label');
+  const THRESHOLD = 64;
+  content.addEventListener('touchstart', e => {
+    if (content.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; triggered = false; }
+  }, { passive: true });
+  content.addEventListener('touchmove', e => {
+    if (!pulling) return;
+    const dy = Math.max(0, e.touches[0].clientY - startY);
+    if (dy > 8) {
+      const h = Math.min(dy * 0.5, 70);
+      ind.style.height = h + 'px';
+      ind.classList.add('pulling');
+      ind.classList.remove('refreshing');
+      lbl.textContent = dy > THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
+      triggered = dy > THRESHOLD;
+    }
+  }, { passive: true });
+  content.addEventListener('touchend', async () => {
+    if (!pulling) return;
+    pulling = false;
+    if (triggered) {
+      ind.classList.add('refreshing');
+      lbl.textContent = 'Refreshing…';
+      ind.style.height = '54px';
+      try { await manualSync(); } catch(e) {}
+      setTimeout(() => { ind.style.height = '0'; ind.classList.remove('pulling','refreshing'); }, 600);
+    } else {
+      ind.style.height = '0';
+      setTimeout(() => ind.classList.remove('pulling'), 200);
+    }
+  });
+})();
+
 renderStats();
 renderPLChart(true);
 renderSpendChart();
@@ -3533,6 +3701,29 @@ buildEbayLinks();
     </div>
   </div>
 </div>
+<div id="ptr-indicator">
+  <div id="ptr-inner">
+    <div id="ptr-spinner"></div>
+    <span id="ptr-label">Pull to refresh</span>
+  </div>
+</div>
+
+<div id="search-backdrop" onclick="if(event.target===this)closeSearch()">
+  <div id="search-modal">
+    <div id="search-input-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="search-input" placeholder="Search players, cards, watchlist…" autocomplete="off" spellcheck="false"/>
+      <span id="search-kbd">ESC</span>
+    </div>
+    <div id="search-results"></div>
+    <div id="search-hint">
+      <span><span class="sh-kbd">↑↓</span> navigate</span>
+      <span><span class="sh-kbd">↵</span> open</span>
+      <span><span class="sh-kbd">esc</span> close</span>
+    </div>
+  </div>
+</div>
+
 <div id="player-modal-backdrop" onclick="if(event.target===this)closePlayerModal()">
   <div id="player-modal">
     <div id="player-modal-header">
