@@ -725,8 +725,8 @@
         <div class="panel-header">
           <div class="panel-title">Valuation History <span id="sync-status" style="font-size:10px;font-weight:600;margin-left:8px;transition:color .3s"></span></div>
           <div class="panel-actions">
-            <button class="form-btn secondary" onclick="manualSync()" style="font-size:12px">☁ Sync</button>
-            <button class="form-btn secondary" onclick="clearValHistory()" style="font-size:12px">Clear</button>
+            <button class="form-btn secondary" onclick="manualSync()">☁ Sync</button>
+            <button class="form-btn secondary" onclick="clearValHistory()">Clear</button>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -943,30 +943,69 @@ function togglePLChart() {
 }
 
 // --- SPEND CHART ---
+const _outerLabelPlugin = {
+  id: 'outerLabels',
+  afterDraw(chart) {
+    const { ctx, data } = chart;
+    const meta = chart.getDatasetMeta(0);
+    const total = data.datasets[0].data.reduce((a,b) => a+b, 0);
+    if (!total) return;
+    ctx.save();
+    meta.data.forEach((arc, i) => {
+      const value = data.datasets[0].data[i];
+      const pct = (value/total*100).toFixed(1)+'%';
+      const label = data.labels[i];
+      const midAngle = (arc.startAngle + arc.endAngle) / 2;
+      const cx = arc.x, cy = arc.y;
+      const outerR = arc.outerRadius;
+      const lineStart = outerR + 8;
+      const lineEnd   = outerR + 24;
+      const textR     = outerR + 30;
+      const lsx = cx + Math.cos(midAngle) * lineStart;
+      const lsy = cy + Math.sin(midAngle) * lineStart;
+      const lex = cx + Math.cos(midAngle) * lineEnd;
+      const ley = cy + Math.sin(midAngle) * lineEnd;
+      const tx  = cx + Math.cos(midAngle) * textR;
+      const ty  = cy + Math.sin(midAngle) * textR;
+      // leader line
+      ctx.beginPath();
+      ctx.moveTo(lsx, lsy);
+      ctx.lineTo(lex, ley);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // percentage
+      ctx.textAlign = Math.cos(midAngle) >= 0 ? 'left' : 'right';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 13px -apple-system,BlinkMacSystemFont,sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(pct, tx, ty - 7);
+      // label name
+      ctx.font = '10px -apple-system,BlinkMacSystemFont,sans-serif';
+      ctx.fillStyle = '#999';
+      ctx.fillText(label, tx, ty + 7);
+    });
+    ctx.restore();
+  }
+};
 function renderSpendChart() {
   const ctx = document.getElementById('spendChart').getContext('2d');
   const _total = DATA.summary.wax_spent + DATA.summary.singles_spent;
   new Chart(ctx, {
     type:'doughnut',
-    plugins:[ChartDataLabels],
+    plugins:[_outerLabelPlugin],
     data:{
       labels:['Wax','Singles'],
       datasets:[{data:[DATA.summary.wax_spent,DATA.summary.singles_spent],backgroundColor:['rgba(212,168,67,0.85)','rgba(34,211,106,0.85)'],borderWidth:0,hoverOffset:4}]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
+      layout:{ padding:{ top:30, bottom:10, left:50, right:50 } },
       plugins:{
         legend:{position:'bottom',labels:{color:'#999',font:{size:11},padding:14,boxWidth:10}},
-        tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)+' ('+(c.raw/_total*100).toFixed(1)+'%)'}},
-        datalabels:{
-          color:'#fff',
-          font:{size:12,weight:'700'},
-          formatter:(value)=>(value/_total*100).toFixed(1)+'%',
-          anchor:'center',
-          align:'center'
-        }
+        tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)+' ('+(c.raw/_total*100).toFixed(1)+'%)'}}
       },
-      cutout:'60%'
+      cutout:'62%'
     }
   });
 }
