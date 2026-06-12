@@ -46,7 +46,7 @@
   .nav-section{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.8px;text-transform:uppercase;padding:10px 8px 6px}
   .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--text-secondary);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px}
   .nav-item:hover{background:var(--bg-hover);color:var(--text-primary)}
-  .nav-item.active{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(212,168,67,0.25)}
+  .nav-item.active{background:rgba(212,168,67,0.07);color:var(--accent);border:none;border-left:2px solid var(--accent);padding-left:8px;box-shadow:inset 0 0 24px rgba(212,168,67,0.05);position:relative}
   .nav-item .icon{width:18px;text-align:center;font-size:14px;flex-shrink:0}
   .sidebar-footer{padding:14px 14px;border-top:1px solid var(--border);white-space:nowrap}
   .sidebar-footer .meta{font-size:11px;color:var(--text-muted)}
@@ -238,7 +238,7 @@
   .progress-label span:first-child{font-weight:500}
   .progress-label span:last-child{color:var(--text-secondary)}
   .progress-bg{background:var(--bg-hover);border-radius:4px;height:6px;overflow:hidden}
-  .progress-fill{height:100%;border-radius:4px;transition:width .5s}
+  .progress-fill{height:100%;border-radius:4px;transition:width .9s cubic-bezier(.25,.46,.45,.94)}
   .progress-fill.blue{background:var(--gold)}
   .progress-fill.green{background:var(--green)}
   .progress-fill.yellow{background:var(--yellow)}
@@ -254,6 +254,8 @@
   /* TAB PAGES */
   .page{display:none}
   .page.active{display:block;animation:pageIn 160ms cubic-bezier(.25,.46,.45,.94) both}
+  .dim-cents{font-size:.6em;font-weight:600;color:var(--text-muted);letter-spacing:0;vertical-align:baseline;opacity:.7}
+  @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   
 
@@ -1005,6 +1007,11 @@ function closeSidebar() {
 }
 
 // --- STAT CARDS ---
+function _fmtDimmed(prefix, isNeg, abs, decimals) {
+  if (decimals === 0) return prefix + (isNeg ? '-' : '') + abs.toFixed(0);
+  const parts = abs.toFixed(decimals).split('.');
+  return prefix + (isNeg ? '-' : '') + parts[0] + '<span class="dim-cents">.' + parts[1] + '</span>';
+}
 function animateCounter(el, target, prefix, suffix, decimals, duration) {
   const start = performance.now();
   const isNeg = target < 0;
@@ -1013,9 +1020,9 @@ function animateCounter(el, target, prefix, suffix, decimals, duration) {
     const pct = Math.min((now - start) / duration, 1);
     const ease = 1 - Math.pow(1 - pct, 3);
     const cur = abs * ease;
-    el.textContent = prefix + (isNeg ? '-' : '') + cur.toFixed(decimals) + suffix;
+    el.innerHTML = _fmtDimmed(prefix, isNeg, cur, decimals) + suffix;
     if (pct < 1) requestAnimationFrame(frame);
-    else el.textContent = prefix + (isNeg ? '-' : '') + abs.toFixed(decimals) + suffix;
+    else el.innerHTML = _fmtDimmed(prefix, isNeg, abs, decimals) + suffix;
   }
   requestAnimationFrame(frame);
 }
@@ -1408,7 +1415,7 @@ function renderWatchlistFull() {
       onmouseover="this.style.color='${hoverColor}';this.style.borderColor='${hoverColor}40'"
       onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">${label} ↗</a>`;
 
-  tbody.innerHTML = list.map(w => {
+  tbody.innerHTML = list.map((w, _wi) => {
     const tier = (w.priority||'medium').toLowerCase();
     const s = _wlTierStyle(tier);
     const rowBg = tier==='high' ? 'rgba(242,92,92,0.06)' : tier==='low' ? 'rgba(45,212,191,0.06)' : 'rgba(245,200,66,0.05)';
@@ -2187,8 +2194,9 @@ function renderProgress() {
   const cl = DATA.checklist;
   const p26 = (cl.bowman_2026.owned/cl.bowman_2026.total*100).toFixed(1);
   const p25 = (cl.bowman_2025.owned/cl.bowman_2025.total*100).toFixed(1);
-  $('prog2026').style.width = p26+'%';
-  $('prog2025').style.width = p25+'%';
+  $('prog2026').style.width = '0%';
+  $('prog2025').style.width = '0%';
+  setTimeout(() => { $('prog2026').style.width = p26+'%'; $('prog2025').style.width = p25+'%'; }, 120);
   $('prog2026text').textContent = cl.bowman_2026.owned+' / '+cl.bowman_2026.total;
   $('prog2025text').textContent = cl.bowman_2025.owned+' / '+cl.bowman_2025.total;
   // checklist page
@@ -3061,7 +3069,7 @@ function renderWatchRow() {
   if (countEl) countEl.textContent = entries.length + ' card' + (entries.length !== 1 ? 's' : '');
   const chip = (txt, color, bg, border) =>
     `<span style="font-size:9px;font-weight:700;letter-spacing:.3px;color:${color};background:${bg};border:1px solid ${border};padding:1px 6px;border-radius:10px;margin-left:5px;vertical-align:middle">${txt}</span>`;
-  tbody.innerHTML = entries.map(e => {
+  tbody.innerHTML = entries.map((e, _ei) => {
     const discStr   = e.discount !== null ? ((e.discount*100).toFixed(1)+'%') : '—';
     const discColor = e.discount >= 0.20 ? 'var(--green)' : e.discount >= 0 ? 'var(--yellow)' : 'var(--red)';
     const decCls    = e.decision === 'BUY' ? 'decision-buy' : e.decision === 'PASS' ? 'decision-pass' : 'decision-pending';
@@ -3094,7 +3102,7 @@ function renderValHistory() {
     tbody.innerHTML = '<tr><td colspan="8" class="val-empty">No valuations saved yet.</td></tr>';
     return;
   }
-  tbody.innerHTML = h.map(e => {
+  tbody.innerHTML = h.map((e, _hi) => {
     const discStr   = e.discount !== null ? ((e.discount*100).toFixed(1)+'%') : '—';
     const discColor = e.discount >= 0.20 ? 'var(--green)' : e.discount >= 0 ? 'var(--yellow)' : 'var(--red)';
     const isSold    = e.status === 'sold';
