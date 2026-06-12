@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Baseball Card Collection</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -495,7 +496,7 @@
           </div>
           <div style="padding:0 18px 14px">
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Spending Split</div>
-            <div class="chart-wrap" style="height:130px"><canvas id="spendChart"></canvas></div>
+            <div class="chart-wrap" style="height:220px"><canvas id="spendChart"></canvas></div>
           </div>
         </div>
         <div class="panel" style="grid-column:span 3">
@@ -929,8 +930,8 @@ function renderPLChart(top10only) {
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)}}},
       scales:{
-        x:{ticks:{color:'#4a6480',font:{size:10}},grid:{color:'#1e2d45'}},
-        y:{ticks:{color:'#4a6480',font:{size:10},callback:v=>'$'+v},grid:{color:'#1e2d45'}}
+        x:{ticks:{color:'#555',font:{size:10}},grid:{display:false},border:{display:true,color:'#2d2d2d',width:1}},
+        y:{ticks:{color:'#555',font:{size:10},callback:v=>'$'+v},grid:{display:false},border:{display:true,color:'#2d2d2d',width:1}}
       }
     }
   });
@@ -944,19 +945,28 @@ function togglePLChart() {
 // --- SPEND CHART ---
 function renderSpendChart() {
   const ctx = document.getElementById('spendChart').getContext('2d');
+  const _total = DATA.summary.wax_spent + DATA.summary.singles_spent;
   new Chart(ctx, {
     type:'doughnut',
+    plugins:[ChartDataLabels],
     data:{
       labels:['Wax','Singles'],
-      datasets:[{data:[DATA.summary.wax_spent,DATA.summary.singles_spent],backgroundColor:['rgba(212,168,67,0.8)','rgba(34,211,106,0.8)'],borderWidth:0,hoverOffset:4}]
+      datasets:[{data:[DATA.summary.wax_spent,DATA.summary.singles_spent],backgroundColor:['rgba(212,168,67,0.85)','rgba(34,211,106,0.85)'],borderWidth:0,hoverOffset:4}]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
       plugins:{
-        legend:{position:'bottom',labels:{color:'#7a9cc4',font:{size:11},padding:12,boxWidth:10}},
-        tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)}}
+        legend:{position:'bottom',labels:{color:'#999',font:{size:11},padding:14,boxWidth:10}},
+        tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)+' ('+(c.raw/_total*100).toFixed(1)+'%)'}},
+        datalabels:{
+          color:'#fff',
+          font:{size:12,weight:'700'},
+          formatter:(value)=>(value/_total*100).toFixed(1)+'%',
+          anchor:'center',
+          align:'center'
+        }
       },
-      cutout:'65%'
+      cutout:'60%'
     }
   });
 }
@@ -984,8 +994,8 @@ function renderMoversChart() {
         label:c => (c.raw>=0?'+$':'-$') + Math.abs(c.raw).toFixed(2)
       }}},
       scales:{
-        x:{ ticks:{ color:'#4a6480', font:{size:10}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } },
-        y:{ ticks:{ color:'#7a9cc4', font:{size:10.5, weight:'600'} }, grid:{ display:false } }
+        x:{ ticks:{ color:'#555', font:{size:10}, callback:v => '$'+v }, grid:{ display:false }, border:{ display:true, color:'#2d2d2d', width:1 } },
+        y:{ ticks:{ color:'#999', font:{size:10.5, weight:'600'} }, grid:{ display:false }, border:{ display:false } }
       }
     }
   });
@@ -1018,8 +1028,8 @@ function renderSpendTimeChart() {
         tooltip:{ callbacks:{ label:c => ' ' + c.dataset.label + ': $' + c.raw.toFixed(2) } }
       },
       scales:{
-        x:{ stacked:true, ticks:{ color:'#4a6480', font:{size:9}, maxTicksLimit:8 }, grid:{ color:'#1e2d45' } },
-        y:{ stacked:true, ticks:{ color:'#4a6480', font:{size:10}, callback:v => '$'+v }, grid:{ color:'#1e2d45' } }
+        x:{ stacked:true, ticks:{ color:'#555', font:{size:9}, maxTicksLimit:8 }, grid:{ display:false }, border:{ display:true, color:'#2d2d2d', width:1 } },
+        y:{ stacked:true, ticks:{ color:'#555', font:{size:10}, callback:v => '$'+v }, grid:{ display:false }, border:{ display:true, color:'#2d2d2d', width:1 } }
       }
     }
   });
@@ -1060,8 +1070,8 @@ function renderCostValueChart() {
         }}
       },
       scales: {
-        x: { ticks: { color: '#4a6480', font: { size: 9 }, callback: v => '$' + v }, grid: { color: '#1e2d45' } },
-        y: { ticks: { color: '#8ba3bf', font: { size: 10 } }, grid: { display: false } }
+        x: { ticks: { color: '#555', font: { size: 9 }, callback: v => '$' + v }, grid: { display: false }, border: { display: true, color: '#2d2d2d', width: 1 } },
+        y: { ticks: { color: '#999', font: { size: 10 } }, grid: { display: false }, border: { display: false } }
       }
     }
   });
