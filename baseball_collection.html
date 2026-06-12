@@ -422,13 +422,13 @@
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 3">
           <div class="panel-header">
-            <div class="panel-title"><span class="dot blue"></span>Value by Player (TMV)</div>
+            <div class="panel-title">Value by Player (TMV)</div>
             <div class="panel-actions"><span class="chip active" id="plToggle" onclick="togglePLChart()">Top 10</span></div>
           </div>
           <div class="chart-wrap"><canvas id="plChart"></canvas></div>
         </div>
         <div class="panel" style="grid-column:span 3">
-          <div class="panel-header"><div class="panel-title"><span class="dot green"></span>Top Movers <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">by P/L $</span></div></div>
+          <div class="panel-header"><div class="panel-title">Top Movers <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">by P/L $</span></div></div>
           <div class="chart-wrap" style="height:300px"><canvas id="moversChart"></canvas></div>
         </div>
       </div>
@@ -436,11 +436,11 @@
       <!-- Row 3: Spending Over Time + P/L by Player -->
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 3">
-          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Spending Over Time</div></div>
+          <div class="panel-header"><div class="panel-title">Spending Over Time</div></div>
           <div class="chart-wrap" style="height:260px"><canvas id="spendTimeChart"></canvas></div>
         </div>
         <div class="panel" style="grid-column:span 3">
-          <div class="panel-header"><div class="panel-title"><span class="dot blue"></span>P/L by Player</div></div>
+          <div class="panel-header"><div class="panel-title">P/L by Player</div></div>
           <div class="chart-wrap" style="height:260px;overflow-y:auto"><canvas id="costValueChart"></canvas></div>
         </div>
       </div>
@@ -448,7 +448,7 @@
       <!-- Row 4: Portfolio Map -->
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 6">
-          <div class="panel-header"><div class="panel-title"><span class="dot" style="background:var(--teal)"></span>Portfolio Map <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">size = value · color = P/L</span></div></div>
+          <div class="panel-header"><div class="panel-title">Portfolio Map <span style="font-size:10px;color:var(--text-muted);font-weight:500;margin-left:4px">size = value · color = P/L</span></div></div>
           <div id="treemap" style="position:relative;height:320px;margin:14px 18px 18px;border-radius:8px;overflow:hidden"></div>
         </div>
       </div>
@@ -457,7 +457,7 @@
       <div id="watch-val-panel" style="margin-bottom:14px;display:none">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title"><span class="dot" style="background:#2dd4bf"></span>Watching <span id="watch-val-count" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-left:6px"></span></div>
+            <div class="panel-title">Watching <span id="watch-val-count" style="font-size:11px;font-weight:600;color:var(--text-muted);margin-left:6px"></span></div>
           </div>
           <div style="overflow-x:auto">
             <table style="width:100%;border-collapse:collapse;font-size:12.5px">
@@ -482,7 +482,7 @@
       <!-- Row 5: Set Progress + Recent Singles + Watchlist -->
       <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px">
         <div class="panel" style="grid-column:span 2">
-          <div class="panel-header"><div class="panel-title"><span class="dot green"></span>Set Progress</div></div>
+          <div class="panel-header"><div class="panel-title">Set Progress</div></div>
           <div class="progress-wrap">
             <div class="progress-row">
               <div class="progress-label"><span>Bowman 2026</span><span id="prog2026text"></span></div>
@@ -499,11 +499,11 @@
           </div>
         </div>
         <div class="panel" style="grid-column:span 3">
-          <div class="panel-header"><div class="panel-title"><span class="dot purple"></span>Recent Singles</div></div>
+          <div class="panel-header"><div class="panel-title">Recent Singles</div></div>
           <div id="recent-singles"></div>
         </div>
         <div class="panel" style="grid-column:span 1">
-          <div class="panel-header"><div class="panel-title"><span class="dot yellow"></span>Watchlist</div></div>
+          <div class="panel-header"><div class="panel-title">Watchlist</div></div>
           <div id="watchlist-mini"></div>
         </div>
       </div>
@@ -513,7 +513,7 @@
     <div class="page" id="page-collection">
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot blue"></span>Bowman Collection</div>
+          <div class="panel-title">Bowman Collection</div>
           <div class="panel-actions">
             <span class="chip active" id="filter-all" onclick="filterType('all',this)">All</span>
             <span class="chip" id="filter-ripped" onclick="filterType('Ripped',this)">Ripped</span>
@@ -559,7 +559,7 @@
     <div class="page" id="page-watchlist">
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot yellow"></span>Player Watchlist</div>
+          <div class="panel-title">Player Watchlist</div>
           <div class="panel-actions">
             <span class="chip active" id="wl-f-all" onclick="setWlFilter('all',this)">All</span>
             <span class="chip" id="wl-f-high" onclick="setWlFilter('high',this)">High</span>
@@ -591,7 +591,7 @@
     <div class="page" id="page-rookies">
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot green"></span>Rookie Cards</div>
+          <div class="panel-title">Rookie Cards</div>
           <div class="panel-actions">
             <span class="chip active" id="rook-all" onclick="filterRookies('all',this)">All</span>
             <span class="chip" id="rook-collected" onclick="filterRookies('collected',this)">Collected</span>
@@ -722,7 +722,7 @@
       <!-- HISTORY -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot purple"></span>Valuation History <span id="sync-status" style="font-size:10px;font-weight:600;margin-left:8px;transition:color .3s"></span></div>
+          <div class="panel-title">Valuation History <span id="sync-status" style="font-size:10px;font-weight:600;margin-left:8px;transition:color .3s"></span></div>
           <div class="panel-actions">
             <button class="form-btn secondary" onclick="manualSync()" style="font-size:12px">☁ Sync</button>
             <button class="form-btn secondary" onclick="clearValHistory()" style="font-size:12px">Clear</button>
@@ -756,14 +756,14 @@
       <div class="grid-2">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title"><span class="dot purple"></span>Wax Ripped</div>
+            <div class="panel-title">Wax Ripped</div>
             <div class="panel-actions" style="gap:8px"><button onclick="openAddTxn('wax')" style="font-size:11px;font-weight:700;padding:4px 11px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.borderColor='var(--purple)';this.style.color='var(--purple)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">+ Add</button><span class="badge" id="wax-total-badge"></span></div>
           </div>
           <div id="wax-list"></div>
         </div>
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title"><span class="dot green"></span>Singles Bought</div>
+            <div class="panel-title">Singles Bought</div>
             <div class="panel-actions" style="gap:8px"><button onclick="openAddTxn('single')" style="font-size:11px;font-weight:700;padding:4px 11px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">+ Add</button><span class="badge" id="singles-total-badge"></span></div>
           </div>
           <div id="singles-list"></div>
@@ -782,7 +782,7 @@
       <!-- 2026 Bowman -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot blue"></span>2026 Bowman</div>
+          <div class="panel-title">2026 Bowman</div>
           <div class="panel-actions" style="gap:8px;align-items:center">
             <span id="cl-2026-sync" style="font-size:11px;font-weight:600"></span>
             <input id="cl-2026-search" class="search-input" placeholder="Search player..." oninput="renderChecklist('2026')" style="width:160px;padding:5px 10px;font-size:12px">
@@ -814,7 +814,7 @@
       <!-- 2025 Bowman -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title"><span class="dot" style="background:#ff7849"></span>2025 Bowman</div>
+          <div class="panel-title">2025 Bowman</div>
           <div class="panel-actions" style="gap:8px;align-items:center">
             <span id="cl-2025-sync" style="font-size:11px;font-weight:600"></span>
             <input id="cl-2025-search" class="search-input" placeholder="Search player..." oninput="renderChecklist('2025')" style="width:160px;padding:5px 10px;font-size:12px">
@@ -890,12 +890,12 @@ function renderStats() {
   const s = DATA.summary;
   const plPct = (s.total_pl_pct != null ? s.total_pl_pct : ((s.total_pl / s.total_cost) * 100)).toFixed(1);
   const cards = [
-    {label:'Total Cards', val:s.total_cards, cls:'teal', sub:'In collection', color:'teal'},
+    {label:'Total Cards', val:s.total_cards, cls:'', sub:'In collection', color:''},
     {label:'Total Cost', val:'$'+s.total_cost.toFixed(2), cls:'', sub:'Purchase amount', color:''},
-    {label:'Collection Value', val:'$'+s.total_tmv.toFixed(2), cls:'teal', sub:'Estimated market value', color:'teal'},
+    {label:'Collection Value', val:'$'+s.total_tmv.toFixed(2), cls:'', sub:'Estimated market value', color:''},
     {label:'Total P/L', val:(s.total_pl>=0?'+':'-')+'$'+Math.abs(s.total_pl).toFixed(2), cls:s.total_pl>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:s.total_pl>=0?'green':'red'},
     {label:'Wax Spent', val:'$'+s.wax_spent.toFixed(2), cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
-    {label:'Singles Spent', val:'$'+s.singles_spent.toFixed(2), cls:'', sub:DATA.singles_transactions.length+' cards bought', color:'purple'},
+    {label:'Singles Spent', val:'$'+s.singles_spent.toFixed(2), cls:'accent', sub:DATA.singles_transactions.length+' cards bought', color:'blue'},
   ];
   $('stat-cards').innerHTML = cards.map(c => `
     <div class="stat-card ${c.color}">
@@ -948,7 +948,7 @@ function renderSpendChart() {
     type:'doughnut',
     data:{
       labels:['Wax','Singles'],
-      datasets:[{data:[DATA.summary.wax_spent,DATA.summary.singles_spent],backgroundColor:['rgba(167,139,250,0.8)','rgba(34,211,106,0.8)'],borderWidth:0,hoverOffset:4}]
+      datasets:[{data:[DATA.summary.wax_spent,DATA.summary.singles_spent],backgroundColor:['rgba(212,168,67,0.8)','rgba(34,211,106,0.8)'],borderWidth:0,hoverOffset:4}]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
@@ -1009,7 +1009,7 @@ function renderSpendTimeChart() {
     type:'line',
     data:{ labels:dates, datasets:[
       { label:'Singles', data:singCum, borderColor:'rgba(34,211,106,0.9)', backgroundColor:'rgba(34,211,106,0.15)', fill:true, tension:.25, pointRadius:0, borderWidth:2, stack:'s' },
-      { label:'Wax', data:waxCum, borderColor:'rgba(167,139,250,0.9)', backgroundColor:'rgba(167,139,250,0.15)', fill:true, tension:.25, pointRadius:0, borderWidth:2, stack:'s' }
+      { label:'Wax', data:waxCum, borderColor:'rgba(212,168,67,0.9)', backgroundColor:'rgba(212,168,67,0.12)', fill:true, tension:.25, pointRadius:0, borderWidth:2, stack:'s' }
     ]},
     options:{
       responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
