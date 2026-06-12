@@ -136,7 +136,7 @@
   
   /* STAT CARDS */
   .stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:24px}
-  .stat-card{background:var(--bg-card);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;box-shadow:0 0 0 1px var(--border);transition:box-shadow .2s,transform .15s}
+  .stat-card{background:rgba(13,13,13,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;box-shadow:0 0 0 1px var(--border);transition:box-shadow .2s,transform .15s;position:relative;overflow:hidden}
   .stat-card:hover{box-shadow:0 0 0 1px var(--border-light);transform:translateY(-1px)}
   .stat-card .stat-accent{height:2px;border-radius:1px;width:36px;margin-bottom:6px}
   .stat-card.blue .stat-accent{background:var(--accent)}
@@ -161,7 +161,7 @@
   .grid-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px;margin-bottom:18px}
   
   /* PANEL */
-  .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .panel{background:rgba(13,13,13,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:12px;overflow:hidden}
   .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;border-left:2px solid var(--accent)}
   .panel-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
   .panel-title .dot{width:8px;height:8px;border-radius:50%}
@@ -256,6 +256,11 @@
   .page{display:none}
   .page.active{display:block;animation:pageIn 160ms cubic-bezier(.25,.46,.45,.94) both}
   .dim-cents{font-size:.6em;font-weight:600;color:var(--text-muted);letter-spacing:0;vertical-align:baseline;opacity:.7}
+
+  @keyframes shimmer{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(105deg,transparent 40%,rgba(212,168,67,0.12) 50%,transparent 60%);transform:translateX(-120%);border-radius:inherit;pointer-events:none}
+  .stat-card:hover::before{animation:shimmer .65s ease forwards}
+
   @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
   
@@ -493,6 +498,7 @@
 
     <!-- OVERVIEW PAGE -->
     <div class="page active" id="page-overview">
+      <div id="hero-player" style="margin-bottom:18px"></div>
       <div class="stats-row" id="stat-cards"></div>
 
       <!-- Row 2: Value by Player + Top Movers -->
@@ -620,6 +626,7 @@
                 <th onclick="sortTable('scp_value')" style="text-align:right">SCP Val</th>
                 <th onclick="sortTable('tmv')" style="text-align:right">TMV</th>
                 <th onclick="sortTable('pl_dollars')" style="text-align:right">P/L</th>
+                  <th style="text-align:center;width:60px">Trend</th>
                 <th style="text-align:center;cursor:default">Active</th>
                 <th style="text-align:center;cursor:default">Comps</th>
                 <th style="cursor:default;width:28px"></th>
@@ -1011,6 +1018,67 @@ function closeSidebar() {
   if (ov) ov.classList.remove('visible');
 }
 
+
+// ── SPARKLINES ──
+function playerSparkline(player) {
+  const hist = getValHistory().filter(e => e.player === player && e.tmv != null)
+    .sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  if (hist.length < 2) return '<span style="color:var(--border-light);font-size:10px">—</span>';
+  const vals = hist.map(e => e.tmv);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const range = mx - mn || 1;
+  const W = 48, H = 18;
+  const pts = vals.map((v,i) => {
+    const x = (i/(vals.length-1)) * W;
+    const y = H - ((v-mn)/range) * H;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const last = vals[vals.length-1], first = vals[0];
+  const color = last > first ? 'var(--green)' : last < first ? 'var(--red)' : 'var(--text-muted)';
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:auto"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+// ── HERO SPOTLIGHT ──
+function renderHero() {
+  const el = $('hero-player');
+  if (!el) return;
+  const byPlayer = {};
+  DATA.cards.forEach(c => {
+    if (!byPlayer[c.player]) byPlayer[c.player] = { tmv:0, cost:0, cards:0 };
+    byPlayer[c.player].tmv  += c.tmv;
+    byPlayer[c.player].cost += c.cost || 0;
+    byPlayer[c.player].cards += 1;
+  });
+  const sorted = Object.entries(byPlayer).sort((a,b) => b[1].tmv - a[1].tmv);
+  if (!sorted.length) { el.style.display='none'; return; }
+  const [name, s] = sorted[0];
+  const pl = s.tmv - s.cost;
+  const plStr = (pl>=0?'+$':'-$') + Math.abs(pl).toFixed(2);
+  const plColor = pl>=0 ? 'var(--green)' : 'var(--red)';
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:20px;padding:20px 24px;background:rgba(13,13,13,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:12px;position:relative;overflow:hidden;cursor:pointer" onclick="openPlayerModal('${name.replace(/'/g,"\'")}')" onmouseover="this.style.borderColor='rgba(212,168,67,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(212,168,67,0.05) 0%,transparent 60%);pointer-events:none"></div>
+      <div style="width:48px;height:48px;border-radius:12px;background:rgba(212,168,67,0.1);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:var(--accent);border:1px solid rgba(212,168,67,0.25);flex-shrink:0;letter-spacing:-.5px">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Top Player</div>
+        <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Value</div>
+        <div style="font-size:18px;font-weight:800">$${s.tmv.toFixed(2)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">P/L</div>
+        <div style="font-size:18px;font-weight:800;color:${plColor}">${plStr}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Cards</div>
+        <div style="font-size:18px;font-weight:800">${s.cards}</div>
+      </div>
+    </div>`;
+}
+
 // --- STAT CARDS ---
 function _fmtDimmed(prefix, isNeg, abs, decimals) {
   if (decimals === 0) return prefix + (isNeg ? '-' : '') + abs.toFixed(0);
@@ -1077,6 +1145,7 @@ function renderPLChart(top10only) {
     data:{labels,datasets:[{data:vals,backgroundColor:'rgba(212,168,67,0.75)',borderRadius:4,borderSkipped:false}]},
     options:{
       responsive:true,maintainAspectRatio:false,
+      animation:{duration:800,easing:'easeOutQuart'},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' $'+c.raw.toFixed(2)}}},
       scales:{
         x:{ticks:{color:'#555',font:{size:10}},grid:{display:false},border:{display:true,color:'#2d2d2d',width:1}},
@@ -1178,7 +1247,7 @@ function renderMoversChart() {
     type:'bar',
     data:{ labels, datasets:[{ data:vals, backgroundColor:colors, borderRadius:4, borderSkipped:false }] },
     options:{
-      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:{duration:700,easing:'easeOutQuart'},
       plugins:{ legend:{display:false}, tooltip:{ callbacks:{
         title:items => movers[items[0].dataIndex].player,
         label:c => (c.raw>=0?'+$':'-$') + Math.abs(c.raw).toFixed(2)
@@ -1251,6 +1320,7 @@ function renderCostValueChart() {
     options: {
       indexAxis: 'y',
       responsive: true, maintainAspectRatio: false,
+      animation: { duration: 750, easing: 'easeOutQuart' },
       plugins: {
         legend: { display: false },
         tooltip: { callbacks: {
@@ -1720,6 +1790,7 @@ function renderCardsTable() {
       <td class="money">${fmt(c.cost)}</td>
       <td class="money">${fmt(c.scp_value)}</td>
       <td class="money">${fmt(c.tmv)}</td>
+      <td style="text-align:center;padding:6px 8px">${playerSparkline(c.player)}</td>
       <td style="text-align:right;padding:8px 14px">
         ${(() => {
           const d = c.pl_dollars != null ? c.pl_dollars : (c.tmv - c.cost);
@@ -3316,6 +3387,7 @@ function srWatchRow(w) {
 }
 
 
+renderHero();
 renderStats();
 if (DATA.summary.total_pl > 0) setTimeout(launchConfetti, 800);
 renderPLChart(true);
