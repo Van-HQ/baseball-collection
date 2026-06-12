@@ -255,6 +255,38 @@
   .page{display:none}
   .page.active{display:block}
   
+
+  /* BOTTOM NAV (mobile only) */
+  #bottom-nav{display:none}
+  @media(max-width:767px){
+    #bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:54px;background:var(--bg-card);border-top:1px solid var(--border);z-index:300;safe-area-inset-bottom:env(safe-area-inset-bottom)}
+    .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;transition:color .15s;gap:3px;padding-bottom:2px}
+    .bn-item.active{color:var(--accent)}
+    .bn-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .content{padding-bottom:70px !important}
+  }
+
+
+  /* PLAYER CARDS MODAL */
+  #player-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  #player-modal-backdrop.open{display:flex}
+  #player-modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:14px;width:min(560px,94vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6)}
+  #player-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  #player-modal-title{font-size:15px;font-weight:800;letter-spacing:-.3px}
+  #player-modal-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:6px}
+  #player-modal-close:hover{color:var(--text-primary);background:var(--bg-hover)}
+  #player-modal-body{overflow-y:auto;flex:1}
+  .pm-card{display:grid;grid-template-columns:1fr auto auto auto;gap:0;border-bottom:1px solid var(--border);padding:12px 20px;align-items:center;gap:12px;transition:background .1s}
+  .pm-card:last-child{border-bottom:none}
+  .pm-card:hover{background:var(--bg-hover)}
+  .pm-card-name{font-size:12px;font-weight:600;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pm-card-year{font-size:11px;color:var(--text-muted)}
+  .pm-val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  #player-modal-summary{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:20px;flex-shrink:0;background:var(--bg-base)}
+  .pm-sum-item{display:flex;flex-direction:column;gap:2px}
+  .pm-sum-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted)}
+  .pm-sum-val{font-size:16px;font-weight:800;letter-spacing:-.5px}
+
   /* SCROLLBAR */
   ::-webkit-scrollbar{width:5px;height:5px}
   ::-webkit-scrollbar-track{background:var(--bg-base)}
@@ -866,6 +898,56 @@ function showPage(name, el) {
   $('page-title').textContent = el.textContent.trim();
   currentPage = name;
   if (window.innerWidth < 768) closeSidebar();
+  syncBottomNav(name);
+}
+function showPageMobile(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  $('page-'+name).classList.add('active');
+  currentPage = name;
+  const titles = {overview:'Overview',collection:'Bowman',rookies:'Rookies',watchlist:'Watchlist',valuation:'Valuation',transactions:'Transactions',checklists:'Checklists'};
+  $('page-title').textContent = titles[name] || name;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sideEl = document.querySelector(`.nav-item[onclick*="'${name}'"]`);
+  if (sideEl) sideEl.classList.add('active');
+  syncBottomNav(name);
+}
+function syncBottomNav(name) {
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  const bnMap = {overview:'bn-overview',collection:'bn-collection',watchlist:'bn-watchlist',valuation:'bn-valuation'};
+  if (bnMap[name]) { const el = $(bnMap[name]); if (el) el.classList.add('active'); }
+}
+function openPlayerModal(player) {
+  const cards = DATA.cards.filter(c => c.player === player);
+  if (!cards.length) return;
+  $('player-modal-title').textContent = player;
+  const totalCost = cards.reduce((s,c) => s + (c.cost||0), 0);
+  const totalTmv  = cards.reduce((s,c) => s + (c.tmv||0), 0);
+  const totalPl   = totalTmv - totalCost;
+  $('player-modal-body').innerHTML = cards.map(c => {
+    const pl = c.tmv - (c.cost||0);
+    const plCls = pl >= 0 ? 'var(--green)' : 'var(--red)';
+    const plStr = (pl >= 0 ? '+$' : '-$') + Math.abs(pl).toFixed(2);
+    return `<div class="pm-card">
+      <div>
+        <div class="pm-card-name">${c.parallel || '—'} <span style="color:var(--text-muted);font-weight:400">#${c.card_no||'—'}</span></div>
+        <div class="pm-card-year">${c.year} · ${c.type}</div>
+      </div>
+      <div class="pm-val" style="color:var(--text-muted)">${c.cost > 0 ? '$'+c.cost.toFixed(2) : 'Ripped'}</div>
+      <div class="pm-val" style="color:var(--text-primary)">$${c.tmv.toFixed(2)}</div>
+      <div class="pm-val" style="color:${plCls}">${plStr}</div>
+    </div>`;
+  }).join('');
+  const plColor = totalPl >= 0 ? 'var(--green)' : 'var(--red)';
+  $('player-modal-summary').innerHTML = `
+    <div class="pm-sum-item"><div class="pm-sum-label">Cards</div><div class="pm-sum-val">${cards.length}</div></div>
+    <div class="pm-sum-item"><div class="pm-sum-label">Cost</div><div class="pm-sum-val">$${totalCost.toFixed(2)}</div></div>
+    <div class="pm-sum-item"><div class="pm-sum-label">Value</div><div class="pm-sum-val">$${totalTmv.toFixed(2)}</div></div>
+    <div class="pm-sum-item"><div class="pm-sum-label">P/L</div><div class="pm-sum-val" style="color:${plColor}">${totalPl>=0?'+':'-'}$${Math.abs(totalPl).toFixed(2)}</div></div>
+  `;
+  $('player-modal-backdrop').classList.add('open');
+}
+function closePlayerModal() {
+  $('player-modal-backdrop').classList.remove('open');
 }
 
 function toggleSidebar() {
@@ -887,24 +969,43 @@ function closeSidebar() {
 }
 
 // --- STAT CARDS ---
+function animateCounter(el, target, prefix, suffix, decimals, duration) {
+  const start = performance.now();
+  const isNeg = target < 0;
+  const abs = Math.abs(target);
+  function frame(now) {
+    const pct = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - pct, 3);
+    const cur = abs * ease;
+    el.textContent = prefix + (isNeg ? '-' : '') + cur.toFixed(decimals) + suffix;
+    if (pct < 1) requestAnimationFrame(frame);
+    else el.textContent = prefix + (isNeg ? '-' : '') + abs.toFixed(decimals) + suffix;
+  }
+  requestAnimationFrame(frame);
+}
 function renderStats() {
   const s = DATA.summary;
   const plPct = (s.total_pl_pct != null ? s.total_pl_pct : ((s.total_pl / s.total_cost) * 100)).toFixed(1);
   const cards = [
-    {label:'Total Cards', val:s.total_cards, cls:'', sub:'In collection', color:''},
-    {label:'Total Cost', val:'$'+s.total_cost.toFixed(2), cls:'', sub:'Purchase amount', color:''},
-    {label:'Collection Value', val:'$'+s.total_tmv.toFixed(2), cls:'', sub:'Estimated market value', color:''},
-    {label:'Total P/L', val:(s.total_pl>=0?'+':'-')+'$'+Math.abs(s.total_pl).toFixed(2), cls:s.total_pl>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:s.total_pl>=0?'green':'red'},
-    {label:'Wax Spent', val:'$'+s.wax_spent.toFixed(2), cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
-    {label:'Singles Spent', val:'$'+s.singles_spent.toFixed(2), cls:'accent', sub:DATA.singles_transactions.length+' cards bought', color:'blue'},
+    {label:'Total Cards', num:s.total_cards, prefix:'', suffix:'', decimals:0, cls:'', sub:'In collection', color:''},
+    {label:'Total Cost', num:s.total_cost, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Purchase amount', color:''},
+    {label:'Collection Value', num:s.total_tmv, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Estimated market value', color:''},
+    {label:'Total P/L', num:s.total_pl, prefix:s.total_pl>=0?'+$':'-$', suffix:'', decimals:2, cls:s.total_pl>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:s.total_pl>=0?'green':'red'},
+    {label:'Wax Spent', num:s.wax_spent, prefix:'$', suffix:'', decimals:2, cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
+    {label:'Singles Spent', num:s.singles_spent, prefix:'$', suffix:'', decimals:2, cls:'accent', sub:DATA.singles_transactions.length+' cards bought', color:'blue'},
   ];
-  $('stat-cards').innerHTML = cards.map(c => `
+  $('stat-cards').innerHTML = cards.map((c,i) => `
     <div class="stat-card ${c.color}">
       <div class="stat-accent"></div>
       <div class="stat-label">${c.label}</div>
-      <div class="stat-value ${c.cls}">${c.val}</div>
+      <div class="stat-value ${c.cls}" id="sv-${i}">0</div>
       <div class="stat-sub">${c.sub}</div>
     </div>`).join('');
+  cards.forEach((c,i) => {
+    const el = $('sv-'+i);
+    const absNum = Math.abs(c.num);
+    animateCounter(el, c.num, c.prefix, c.suffix, c.decimals, 900 + i * 60);
+  });
 }
 
 // --- P/L CHART ---
@@ -932,7 +1033,9 @@ function renderPLChart(top10only) {
       scales:{
         x:{ticks:{color:'#555',font:{size:10}},grid:{display:false},border:{display:true,color:'#2d2d2d',width:1}},
         y:{ticks:{color:'#555',font:{size:10},callback:v=>'$'+v},grid:{display:false},border:{display:true,color:'#2d2d2d',width:1}}
-      }
+      },
+      onClick:(evt,els)=>{ if(els.length) openPlayerModal(entries[els[0].index].player); },
+      onHover:(evt,els)=>{ evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; }
     }
   });
 }
@@ -1035,7 +1138,9 @@ function renderMoversChart() {
       scales:{
         x:{ ticks:{ color:'#555', font:{size:10}, callback:v => '$'+v }, grid:{ display:false }, border:{ display:true, color:'#2d2d2d', width:1 } },
         y:{ ticks:{ color:'#999', font:{size:10.5, weight:'600'} }, grid:{ display:false }, border:{ display:false } }
-      }
+      },
+      onClick:(evt,els)=>{ if(els.length) openPlayerModal(movers[els[0].index].player); },
+      onHover:(evt,els)=>{ evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; }
     }
   });
 }
@@ -3429,5 +3534,35 @@ buildEbayLinks();
     </div>
   </div>
 </div>
+<div id="player-modal-backdrop" onclick="if(event.target===this)closePlayerModal()">
+  <div id="player-modal">
+    <div id="player-modal-header">
+      <div id="player-modal-title"></div>
+      <button id="player-modal-close" onclick="closePlayerModal()">×</button>
+    </div>
+    <div id="player-modal-body"></div>
+    <div id="player-modal-summary"></div>
+  </div>
+</div>
+
+<nav id="bottom-nav">
+  <div class="bn-item active" id="bn-overview" onclick="showPageMobile('overview')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Overview
+  </div>
+  <div class="bn-item" id="bn-collection" onclick="showPageMobile('collection')">
+    <svg viewBox="0 0 24 24"><path d="M4 19V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12"/><path d="M4 19h16"/><path d="M8 15h8"/><path d="M8 11h8"/></svg>
+    Bowman
+  </div>
+  <div class="bn-item" id="bn-watchlist" onclick="showPageMobile('watchlist')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
+    Watchlist
+  </div>
+  <div class="bn-item" id="bn-valuation" onclick="showPageMobile('valuation')">
+    <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Valuation
+  </div>
+</nav>
+
 </body>
 </html>
