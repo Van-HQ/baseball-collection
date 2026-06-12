@@ -1054,36 +1054,57 @@ function closeSidebar() {
 
 
 // ── CARD HOVER PREVIEW ──
-const _cp = document.getElementById('card-preview') || (() => { const d=document.createElement('div'); d.id='card-preview'; document.body.appendChild(d); return d; })();
 let _cpTimer = null;
+function _getCP() {
+  let el = document.getElementById('card-preview');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'card-preview';
+    el.innerHTML = `
+      <div class="cp-header">
+        <div class="cp-player" id="cp-player"></div>
+        <div class="cp-parallel" id="cp-parallel"></div>
+      </div>
+      <div class="cp-body">
+        <div class="cp-stat"><div class="cp-stat-label">Cost</div><div class="cp-stat-val" id="cp-cost"></div></div>
+        <div class="cp-stat"><div class="cp-stat-label">Value</div><div class="cp-stat-val" id="cp-tmv"></div></div>
+        <div class="cp-stat"><div class="cp-stat-label">P/L</div><div class="cp-stat-val" id="cp-pl"></div></div>
+        <div class="cp-stat"><div class="cp-stat-label">Year</div><div class="cp-stat-val" id="cp-year"></div></div>
+      </div>`;
+    document.body.appendChild(el);
+  }
+  return el;
+}
 function showCardPreview(card, e) {
   clearTimeout(_cpTimer);
+  const cp = _getCP();
   document.getElementById('cp-player').textContent = card.player;
   document.getElementById('cp-parallel').textContent = [card.parallel, card.card_no].filter(Boolean).join(' · ') || '—';
   document.getElementById('cp-cost').textContent = card.cost > 0 ? '$'+card.cost.toFixed(2) : 'Ripped';
-  document.getElementById('cp-tmv').textContent = '$'+card.tmv.toFixed(2);
-  const pl = card.tmv - (card.cost||0);
+  document.getElementById('cp-tmv').textContent = '$'+(card.tmv||0).toFixed(2);
+  const pl = (card.tmv||0) - (card.cost||0);
   const plEl = document.getElementById('cp-pl');
   plEl.textContent = (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2);
   plEl.style.color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : '#999';
   document.getElementById('cp-year').textContent = card.year || '—';
-  positionPreview(e);
-  _cp.classList.add('visible');
+  _positionCP(cp, e);
+  cp.classList.add('visible');
 }
-function positionPreview(e) {
-  const W = 220, H = 130, pad = 12;
-  let x = e.clientX + 16, y = e.clientY - 60;
-  if (x + W > window.innerWidth - pad) x = e.clientX - W - 16;
+function _positionCP(cp, e) {
+  const W = 220, H = 145, pad = 12;
+  let x = e.clientX + 18, y = e.clientY - 70;
+  if (x + W > window.innerWidth - pad) x = e.clientX - W - 18;
   if (y + H > window.innerHeight - pad) y = window.innerHeight - H - pad;
   if (y < pad) y = pad;
-  _cp.style.left = x + 'px';
-  _cp.style.top  = y + 'px';
+  cp.style.left = x + 'px';
+  cp.style.top  = y + 'px';
 }
 function hideCardPreview() {
-  _cpTimer = setTimeout(() => _cp.classList.remove('visible'), 80);
+  _cpTimer = setTimeout(() => { const cp = document.getElementById('card-preview'); if(cp) cp.classList.remove('visible'); }, 80);
 }
 document.addEventListener('mousemove', e => {
-  if (_cp.classList.contains('visible')) positionPreview(e);
+  const cp = document.getElementById('card-preview');
+  if (cp && cp.classList.contains('visible')) _positionCP(cp, e);
 });
 
 // ── TOASTS ──
@@ -4008,18 +4029,6 @@ buildEbayLinks();
   </div>
 </nav>
 
-<div id="card-preview">
-  <div class="cp-header">
-    <div class="cp-player" id="cp-player"></div>
-    <div class="cp-parallel" id="cp-parallel"></div>
-  </div>
-  <div class="cp-body">
-    <div class="cp-stat"><div class="cp-stat-label">Cost</div><div class="cp-stat-val" id="cp-cost"></div></div>
-    <div class="cp-stat"><div class="cp-stat-label">Value</div><div class="cp-stat-val" id="cp-tmv"></div></div>
-    <div class="cp-stat"><div class="cp-stat-label">P/L</div><div class="cp-stat-val" id="cp-pl"></div></div>
-    <div class="cp-stat"><div class="cp-stat-label">Year</div><div class="cp-stat-val" id="cp-year"></div></div>
-  </div>
-</div>
 
 </body>
 </html>
