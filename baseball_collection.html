@@ -258,15 +258,6 @@
 
 
 
-  /* PULL TO REFRESH */
-  @media(max-width:767px){
-    #ptr-indicator{position:fixed;top:0;left:0;right:0;height:0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;z-index:400;transition:height .2s ease;pointer-events:none}
-    #ptr-inner{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--bg-card);border-radius:0 0 12px 12px;border:1px solid var(--border-light);margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text-secondary);opacity:0;transition:opacity .2s}
-    #ptr-indicator.pulling #ptr-inner{opacity:1}
-    #ptr-spinner{width:16px;height:16px;border:2px solid #2d2d2d;border-top-color:var(--accent);border-radius:50%;flex-shrink:0}
-    #ptr-indicator.refreshing #ptr-spinner{animation:spin .7s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-  }
 
   /* CMD+K SEARCH */
   #search-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;backdrop-filter:blur(6px);align-items:flex-start;justify-content:center;padding-top:80px}
@@ -460,6 +451,10 @@
     <div class="nav-item" onclick="showPage('checklists',this)">
       Checklists
     </div>
+    <div class="nav-section">Settings</div>
+    <div class="nav-item" onclick="openCloudSettings()">
+      Cloud Sync
+    </div>
   </nav>
   <div class="sidebar-footer">
     <div class="meta">Updated Jun 2026</div>
@@ -483,9 +478,7 @@
         <span style="color:#555">Search</span>
         <span style="background:#1a1a1a;border:1px solid #2d2d2d;border-radius:4px;padding:1px 5px;font-size:10px;color:#555">⌘K</span>
       </button>
-      <button onclick="openCloudSettings()" title="Sync settings" style="background:none;border:1px solid #2d2d2d;color:#555;width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0" onmouseover="this.style.borderColor='#555';this.style.color='#999'" onmouseout="this.style.borderColor='#2d2d2d';this.style.color='#555'">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-      </button>
+
     </div>
   </div>
   <div class="content">
@@ -3246,44 +3239,6 @@ function srWatchRow(w) {
   </div>`;
 }
 
-// ── PULL TO REFRESH ──
-(function() {
-  if (window.innerWidth > 767) return;
-  const content = document.querySelector('.content');
-  let startY = 0, pulling = false, triggered = false;
-  const ind = $('ptr-indicator');
-  const lbl = $('ptr-label');
-  const THRESHOLD = 64;
-  content.addEventListener('touchstart', e => {
-    if (content.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; triggered = false; }
-  }, { passive: true });
-  content.addEventListener('touchmove', e => {
-    if (!pulling) return;
-    const dy = Math.max(0, e.touches[0].clientY - startY);
-    if (dy > 8) {
-      const h = Math.min(dy * 0.5, 70);
-      ind.style.height = h + 'px';
-      ind.classList.add('pulling');
-      ind.classList.remove('refreshing');
-      lbl.textContent = dy > THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
-      triggered = dy > THRESHOLD;
-    }
-  }, { passive: true });
-  content.addEventListener('touchend', async () => {
-    if (!pulling) return;
-    pulling = false;
-    if (triggered) {
-      ind.classList.add('refreshing');
-      lbl.textContent = 'Refreshing…';
-      ind.style.height = '54px';
-      try { await manualSync(); } catch(e) {}
-      setTimeout(() => { ind.style.height = '0'; ind.classList.remove('pulling','refreshing'); }, 600);
-    } else {
-      ind.style.height = '0';
-      setTimeout(() => ind.classList.remove('pulling'), 200);
-    }
-  });
-})();
 
 renderStats();
 renderPLChart(true);
@@ -3705,12 +3660,6 @@ buildEbayLinks();
       <button id="wl-delete-btn" onclick="deleteWlEntry(_wlEditId)" class="form-btn" style="background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red);display:none">Delete</button>
       <button onclick="closeWlModal()" class="form-btn secondary">Cancel</button>
     </div>
-  </div>
-</div>
-<div id="ptr-indicator">
-  <div id="ptr-inner">
-    <div id="ptr-spinner"></div>
-    <span id="ptr-label">Pull to refresh</span>
   </div>
 </div>
 
