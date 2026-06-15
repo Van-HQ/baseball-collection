@@ -1512,7 +1512,7 @@ function renderStats() {
     {label:'Total Cards', num:s.total_cards, prefix:'', suffix:'', decimals:0, cls:'', sub:'In collection', color:''},
     {label:'Total Cost', num:totalCost, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Wax + singles', color:''},
     {label:'Collection Value', num:s.total_tmv, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Estimated market value', color:''},
-    {label:'Total P/L', num:s.total_pl, prefix:s.total_pl>=0?'+$':'-$', suffix:'', decimals:2, cls:s.total_pl>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:s.total_pl>=0?'green':'red'},
+    {label:'Total P/L', num:Math.abs(s.total_tmv-totalCost), prefix:(s.total_tmv-totalCost)>=0?'+$':'-$', suffix:'', decimals:2, cls:(s.total_tmv-totalCost)>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:(s.total_tmv-totalCost)>=0?'green':'red'},
     {label:'Wax Spent', num:s.wax_spent, prefix:'$', suffix:'', decimals:2, cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
     {label:'Singles Spent', num:s.singles_spent, prefix:'$', suffix:'', decimals:2, cls:'accent', sub:DATA.singles_transactions.length+' cards bought', color:'blue'},
   ];
