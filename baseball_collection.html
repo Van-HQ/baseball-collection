@@ -1506,7 +1506,7 @@ function animateCounter(el, target, prefix, suffix, decimals, duration) {
 }
 function renderStats() {
   const s = DATA.summary;
-  const totalCost = (s.wax_spent || 0) + (s.singles_spent || 0);
+  const totalCost = (s.wax_spent || 0) + (s.total_cost || 0);
   const plPct = totalCost > 0 ? ((s.total_tmv - totalCost) / totalCost * 100).toFixed(1) : (s.total_pl_pct || 0).toFixed(1);
   const cards = [
     {label:'Total Cards', num:s.total_cards, prefix:'', suffix:'', decimals:0, cls:'', sub:'In collection', color:''},
