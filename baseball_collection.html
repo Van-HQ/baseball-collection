@@ -1506,10 +1506,11 @@ function animateCounter(el, target, prefix, suffix, decimals, duration) {
 }
 function renderStats() {
   const s = DATA.summary;
-  const plPct = (s.total_pl_pct != null ? s.total_pl_pct : ((s.total_pl / s.total_cost) * 100)).toFixed(1);
+  const totalCost = (s.wax_spent || 0) + (s.singles_spent || 0);
+  const plPct = totalCost > 0 ? ((s.total_tmv - totalCost) / totalCost * 100).toFixed(1) : (s.total_pl_pct || 0).toFixed(1);
   const cards = [
     {label:'Total Cards', num:s.total_cards, prefix:'', suffix:'', decimals:0, cls:'', sub:'In collection', color:''},
-    {label:'Total Cost', num:s.total_cost, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Purchase amount', color:''},
+    {label:'Total Cost', num:totalCost, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Wax + singles', color:''},
     {label:'Collection Value', num:s.total_tmv, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Estimated market value', color:''},
     {label:'Total P/L', num:s.total_pl, prefix:s.total_pl>=0?'+$':'-$', suffix:'', decimals:2, cls:s.total_pl>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:s.total_pl>=0?'green':'red'},
     {label:'Wax Spent', num:s.wax_spent, prefix:'$', suffix:'', decimals:2, cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
@@ -2305,11 +2306,13 @@ function renderCollectionStats() {
   const bar = $('coll-stats-bar');
   if (!bar) return;
   const fc = filteredCards;
-  const count   = fc.length;
-  const tmv     = fc.reduce((s,c) => s+(c.tmv||0), 0);
-  const cost    = fc.reduce((s,c) => s+(c.cost||0), 0);
-  const pl      = tmv - cost;
-  const ret     = cost > 0 ? (pl/cost)*100 : 0;
+  const count    = fc.length;
+  const tmv      = fc.reduce((s,c) => s+(c.tmv||0), 0);
+  const cardCost = fc.reduce((s,c) => s+(c.cost||0), 0);
+  const wax      = DATA.summary.wax_spent || 0;
+  const cost     = cardCost + wax;
+  const pl       = tmv - cost;
+  const ret      = cost > 0 ? (pl/cost)*100 : 0;
   const plColor = pl >= 0 ? 'var(--green)' : 'var(--red)';
   const retColor = ret >= 0 ? 'var(--green)' : 'var(--red)';
   bar.innerHTML = `
