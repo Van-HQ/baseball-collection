@@ -404,6 +404,8 @@ class Handler(BaseHTTPRequestHandler):
             tmv        = body.get("tmv")
             new_binder = body.get("new_binder")
             status     = body.get("status")
+            new_player   = body.get("new_player")
+            new_parallel = body.get("new_parallel")
 
             try:
                 import openpyxl as _xl
@@ -442,6 +444,10 @@ class Handler(BaseHTTPRequestHandler):
                 if new_binder is not None:
                     try:    wc(1, float(new_binder))
                     except: wc(1, new_binder)
+                # Player name (col B = 2)
+                if new_player is not None: wc(2, new_player)
+                # Parallel (col D = 4)
+                if new_parallel is not None: wc(4, new_parallel)
                 # Write cost fields (cols J=10, K=11, L=12)
                 if card_price is not None: wc(10, float(card_price))
                 if shipping   is not None: wc(11, float(shipping))

@@ -692,6 +692,9 @@
             <span class="chip active" id="filter-all" onclick="filterType('all',this)">All</span>
             <span class="chip" id="filter-ripped" onclick="filterType('Ripped',this)">Ripped</span>
             <span class="chip" id="filter-auction" onclick="filterType('Auction',this)">Auction</span>
+            <span style="width:1px;height:16px;background:var(--border-light);margin:0 4px"></span>
+            <span class="chip active" id="collview-table" onclick="setCollView('table',this)">☰ Table</span>
+            <span class="chip" id="collview-cards" onclick="setCollView('cards',this)">▦ Cards</span>
           </div>
         </div>
         <div class="filter-row">
@@ -704,7 +707,7 @@
           <span class="count-label" id="card-count"></span>
         </div>
         <div id="coll-stats-bar" class="coll-stat-bar"></div>
-        <div class="table-wrap">
+        <div class="table-wrap" id="coll-table-wrap">
           <table id="cards-table">
             <thead>
               <tr>
@@ -727,6 +730,14 @@
             </thead>
             <tbody id="cards-tbody"></tbody>
           </table>
+        </div>
+        <div id="coll-card-wrap" style="display:none;padding:18px">
+          <div id="coll-card-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:20px">
+            <button onclick="cardViewNav(-1)" style="background:none;border:1px solid var(--border-light);color:var(--text-secondary);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)'">←</button>
+            <span id="coll-card-pageinfo" style="font-size:11px;color:var(--text-muted);font-weight:600;white-space:nowrap"></span>
+            <button onclick="cardViewNav(1)" style="background:none;border:1px solid var(--border-light);color:var(--text-secondary);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)'">→</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2226,6 +2237,67 @@ function buildScpUrl(player, parallel, year, cardNo) {
   return `https://www.sportscardspro.com/game/${setSlug}/${playerSlug}-${parallelSlug}-${cardSlug}?q=${q}`;
 }
 
+let collViewMode = 'table';
+let cardViewPage = 0;
+const CARD_VIEW_SIZE = 9;
+
+function setCollView(mode, el) {
+  collViewMode = mode;
+  cardViewPage = 0;
+  document.querySelectorAll('#collview-table,#collview-cards').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  $('coll-table-wrap').style.display = mode === 'table' ? '' : 'none';
+  $('coll-card-wrap').style.display  = mode === 'cards' ? '' : 'none';
+  if (mode === 'cards') renderCardView();
+}
+
+function cardViewNav(dir) {
+  const maxPage = Math.max(0, Math.ceil(filteredCards.length / CARD_VIEW_SIZE) - 1);
+  cardViewPage = Math.min(maxPage, Math.max(0, cardViewPage + dir));
+  renderCardView();
+}
+
+function renderCardView() {
+  const grid = $('coll-card-grid');
+  if (!grid) return;
+  const totalPages = Math.max(1, Math.ceil(filteredCards.length / CARD_VIEW_SIZE));
+  if (cardViewPage >= totalPages) cardViewPage = totalPages - 1;
+  const start = cardViewPage * CARD_VIEW_SIZE;
+  const pageCards = filteredCards.slice(start, start + CARD_VIEW_SIZE);
+  const slots = pageCards.concat(Array(CARD_VIEW_SIZE - pageCards.length).fill(null));
+
+  grid.innerHTML = slots.map(c => {
+    if (!c) return `<div style="min-height:170px;border:1px dashed var(--border);border-radius:10px;opacity:0.35"></div>`;
+    const idx = filteredCards.indexOf(c);
+    const typeCls = (c.type||'').toLowerCase().includes('ripped') ? 'ripped' : 'auction';
+    const d = c.pl_dollars != null ? c.pl_dollars : (c.tmv - c.cost);
+    const pos = d > 0, neg = d < 0;
+    const plClr = pos ? 'var(--green)' : neg ? 'var(--red)' : 'var(--text-muted)';
+    const dolStr = (d >= 0 ? '+' : '') + '$' + Math.abs(d).toFixed(2);
+    return `<div onclick="openCardDetail(${idx})" style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10px;font-weight:700;color:var(--text-muted);background:var(--bg-hover);padding:2px 7px;border-radius:4px">Slot ${c.binder||'—'}</span>
+        <span class="type-badge ${typeCls}" style="font-size:9px">${c.type||'—'}</span>
+      </div>
+      <div style="font-size:13px;font-weight:700;line-height:1.25;margin-top:2px">${c.player}</div>
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.3">${c.parallel||'—'}</div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:10px;color:var(--text-muted)">
+        <span class="year-tag" style="font-size:10px;padding:1px 6px">${c.year||'—'}</span>
+        <span>${c.card_no||'—'}</span>
+      </div>
+      <div style="display:flex;justify-content:center;padding:2px 0">${playerSparkline(c.player)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-top:2px;font-size:10px">
+        <div><div style="color:var(--text-muted)">Cost</div><div style="font-weight:600">${fmt(c.cost)}</div></div>
+        <div><div style="color:var(--text-muted)">SCP</div><div style="font-weight:600">${fmt(c.scp_value)}</div></div>
+        <div><div style="color:var(--text-muted)">TMV</div><div style="font-weight:600">${fmt(c.tmv)}</div></div>
+        <div><div style="color:var(--text-muted)">P/L</div><div style="font-weight:700;color:${plClr}">${dolStr}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  $('coll-card-pageinfo').textContent = `Page ${cardViewPage+1} of ${totalPages} · ${filteredCards.length} cards`;
+}
+
 function renderCardsTable() {
   const search = ($('card-search')||{value:''}).value.toLowerCase();
   filteredCards = DATA.cards.filter(c => {
@@ -2252,10 +2324,10 @@ function renderCardsTable() {
     const linkStyle = `display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 8px;border-radius:10px;text-decoration:none;transition:all .15s;white-space:nowrap`;
     return `<tr style="cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg-hover)';showCardPreview(filteredCards[${filteredCards.indexOf(c)}],event)" onmouseout="this.style.background='';hideCardPreview()" onclick="openCardDetail(${filteredCards.indexOf(c)})">
       <td style="text-align:center;padding:8px 10px;color:var(--text-muted);font-size:11px;font-weight:600;white-space:nowrap;cursor:text" title="Click to edit slot" onclick="event.stopPropagation();editSlot(this,${filteredCards.indexOf(c)})" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">${c.binder||'—'}</td>
-      <td class="player-name">${c.player}</td>
+      <td class="player-name" style="cursor:text" title="Click to edit player" onclick="event.stopPropagation();editPlayer(this,${filteredCards.indexOf(c)})">${c.player}</td>
       <td style="text-align:center;padding:6px 8px" onclick="event.stopPropagation();cycleStatus(${filteredCards.indexOf(c)})">${_statusChip(c.status)}</td>
       <td><span class="year-tag">${c.year||'—'}</span></td>
-      <td class="parallel-text">${c.parallel||'—'}</td>
+      <td class="parallel-text" style="cursor:text" title="Click to edit parallel" onclick="event.stopPropagation();editParallel(this,${filteredCards.indexOf(c)})">${c.parallel||'—'}</td>
       <td class="card-no" onclick="event.stopPropagation()">${scpHref ? `<a href="${scpHref}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(212,168,67,0.4)" onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'">${c.card_no||'—'}</a>` : (c.card_no||'—')}</td>
       <td><span class="type-badge ${typeCls}">${c.type||'—'}</span></td>
       <td class="money">${fmt(c.cost)}</td>
@@ -2294,6 +2366,7 @@ function renderCardsTable() {
   }).join('');
   $('card-count').textContent = filteredCards.length + ' cards';
   renderCollectionStats();
+  if (collViewMode === 'cards') renderCardView();
   // Update sort headers
   document.querySelectorAll('#cards-table th').forEach(th => {
     th.classList.remove('sort-asc','sort-desc');
@@ -2692,6 +2765,66 @@ async function saveSlot(input, idx) {
     if (!data.ok) { c.binder = oldBinder; renderCardsTable(); }
     else fetch('http://localhost:5055/api/rebuild').catch(()=>{});
   } catch(e) { c.binder = oldBinder; renderCardsTable(); }
+}
+
+function editPlayer(cell, idx) {
+  const c = filteredCards[idx];
+  const cur = c.player || '';
+  cell.innerHTML = `<input type="text" value="${cur.replace(/"/g,'&quot;')}" style="width:100%;background:var(--bg-card);border:1px solid var(--accent);border-radius:6px;color:var(--text-primary);font-size:inherit;font-weight:inherit;padding:3px 6px;outline:none"
+    onclick="event.stopPropagation()"
+    onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}if(event.key==='Escape'){this.dataset.cancel='1';this.blur()}"
+    onblur="savePlayer(this,${idx})">`;
+  const inp = cell.querySelector('input');
+  inp.focus(); inp.select();
+}
+
+async function savePlayer(input, idx) {
+  const c = filteredCards[idx];
+  if (input.dataset.cancel === '1') { renderCardsTable(); return; }
+  const newVal = input.value.trim();
+  if (!newVal || newVal === c.player) { renderCardsTable(); return; }
+  const oldPlayer = c.player;
+  c.player = newVal;
+  renderCardsTable();
+  try {
+    const r = await fetch('http://localhost:5055/api/update-card', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ _row: c._row, binder: c.binder, player: oldPlayer, card_no: c.card_no, new_player: newVal, skip_rebuild: true })
+    });
+    const data = await r.json();
+    if (!data.ok) { c.player = oldPlayer; renderCardsTable(); }
+    else fetch('http://localhost:5055/api/rebuild').catch(()=>{});
+  } catch(e) { c.player = oldPlayer; renderCardsTable(); }
+}
+
+function editParallel(cell, idx) {
+  const c = filteredCards[idx];
+  const cur = c.parallel || '';
+  cell.innerHTML = `<input type="text" value="${cur.replace(/"/g,'&quot;')}" style="width:100%;background:var(--bg-card);border:1px solid var(--accent);border-radius:6px;color:var(--text-primary);font-size:inherit;font-weight:inherit;padding:3px 6px;outline:none"
+    onclick="event.stopPropagation()"
+    onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}if(event.key==='Escape'){this.dataset.cancel='1';this.blur()}"
+    onblur="saveParallel(this,${idx})">`;
+  const inp = cell.querySelector('input');
+  inp.focus(); inp.select();
+}
+
+async function saveParallel(input, idx) {
+  const c = filteredCards[idx];
+  if (input.dataset.cancel === '1') { renderCardsTable(); return; }
+  const newVal = input.value.trim();
+  if (newVal === (c.parallel || '')) { renderCardsTable(); return; }
+  const oldParallel = c.parallel;
+  c.parallel = newVal;
+  renderCardsTable();
+  try {
+    const r = await fetch('http://localhost:5055/api/update-card', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ _row: c._row, binder: c.binder, player: c.player, card_no: c.card_no, new_parallel: newVal, skip_rebuild: true })
+    });
+    const data = await r.json();
+    if (!data.ok) { c.parallel = oldParallel; renderCardsTable(); }
+    else fetch('http://localhost:5055/api/rebuild').catch(()=>{});
+  } catch(e) { c.parallel = oldParallel; renderCardsTable(); }
 }
 
 async function deleteCard(idx) {
