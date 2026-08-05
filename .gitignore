@@ -12,3 +12,6 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Dated local backups — not meant to be tracked
+baseball_collection_backup_*.html
