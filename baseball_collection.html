@@ -111,14 +111,49 @@
     #cl-2026-hero,#cl-2025-hero{flex-direction:column;align-items:flex-start;gap:12px;padding:14px 16px}
     #cl-2026-sets,#cl-2025-sets{grid-template-columns:repeat(auto-fill,minmax(130px,1fr)) !important}
 
+    /* Collection stats bar: even grid instead of ragged flex-wrap */
+    .coll-stat-bar{display:grid !important;grid-template-columns:repeat(3,1fr);flex-wrap:nowrap}
+    .coll-stat{flex-direction:column;align-items:flex-start;gap:2px;padding:9px 12px;min-width:0}
+    .coll-stat:nth-child(3n){border-right:none}
+    .coll-stat:nth-child(-n+3){border-bottom:1px solid var(--border)}
+    .coll-stat:last-child{margin-left:0}
+    .coll-stat-val{font-size:14px;white-space:nowrap}
+
+    /* Card view: 2x2 page, tiles sized to fit */
+    #coll-card-wrap{padding:12px 10px !important}
+    #coll-card-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:10px !important}
+    #coll-card-grid > div{min-width:0;padding:10px !important}
+    #coll-card-grid > div > div{min-width:0}
+    /* Stats become a compact label/value list — a 2x2 grid is too tight at this width.
+       !important because the base .cv-stats rules are defined later in this stylesheet. */
+    .cv-stats{grid-template-columns:1fr !important;gap:3px !important}
+    .cv-stat{display:flex !important;align-items:baseline;justify-content:space-between;gap:8px;padding:5px 8px !important;text-align:left !important}
+    .cv-stat-label{flex-shrink:0}
+    .cv-stat-val{font-size:12.5px !important;margin-top:0 !important}
+    .cv-arrow{display:none}
+    #coll-card-pager{margin-top:14px !important}
+
     /* Valuation */
     .comp-row{grid-template-columns:repeat(3,1fr)}
     .val-action-bar{flex-wrap:wrap;gap:6px;padding:10px 14px}
+    .val-action-bar > button{flex:1 1 auto;min-width:0;white-space:nowrap}
+    /* Leaderboard stat banner: wrap into a grid so labels aren't clipped */
+    .vl-stats{display:grid !important;grid-template-columns:repeat(3,1fr)}
+    .vl-stat{padding:11px 12px;border-bottom:1px solid var(--border)}
+    .vl-stat:nth-child(3n){border-right:none}
+    .vl-stat-label{white-space:normal;line-height:1.25}
+    .vl-stat-val{font-size:16px}
+    #page-valuation .panel-actions{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:2px}
+    .vl-tab{flex-shrink:0}
 
-    /* Card detail modal */
+    /* Card detail modal — arrows replaced by swipe */
     .card-detail-modal{width:96vw !important;max-height:92vh}
     .cd-cost-row{grid-template-columns:1fr 1fr !important}
     .cd-comps-row{grid-template-columns:repeat(3,1fr) !important}
+    .cd-nav-arrow{display:none}
+
+    /* Hover preview is desktop-only */
+    #card-preview{display:none !important}
 
     /* Watchlist table */
     #wl-table th:nth-child(n+5),#wl-table td:nth-child(n+5){display:none}
@@ -343,6 +378,12 @@
   .coll-stat:last-child{border-right:none;margin-left:auto}
   .coll-stat-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted)}
   .coll-stat-val{font-size:13px;font-weight:800;letter-spacing:-.3px}
+
+  /* CARD VIEW TILES */
+  .cv-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:auto}
+  .cv-stat{background:var(--bg-hover);border-radius:7px;padding:7px 8px;text-align:center;min-width:0}
+  .cv-stat-label{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+  .cv-stat-val{font-size:13px;font-weight:700;margin-top:2px;letter-spacing:-.3px;white-space:nowrap}
 
   /* DATE SNAPSHOT MODAL */
   #date-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center}
@@ -733,10 +774,10 @@
         </div>
         <div id="coll-card-wrap" style="display:none;padding:18px">
           <div id="coll-card-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
-          <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:20px">
-            <button onclick="cardViewNav(-1)" style="background:none;border:1px solid var(--border-light);color:var(--text-secondary);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)'">←</button>
+          <div id="coll-card-pager" style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:20px">
+            <button class="cv-arrow" onclick="cardViewNav(-1)" style="background:none;border:1px solid var(--border-light);color:var(--text-secondary);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)'">←</button>
             <span id="coll-card-pageinfo" style="font-size:11px;color:var(--text-muted);font-weight:600;white-space:nowrap"></span>
-            <button onclick="cardViewNav(1)" style="background:none;border:1px solid var(--border-light);color:var(--text-secondary);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)'">→</button>
+            <button class="cv-arrow" onclick="cardViewNav(1)" style="background:none;border:1px solid var(--border-light);color:var(--text-secondary);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border-light)';this.style.color='var(--text-secondary)'">→</button>
           </div>
         </div>
       </div>
@@ -1219,7 +1260,27 @@ function _getCP() {
   }
   return el;
 }
+// Attach a horizontal swipe gesture. onSwipe(-1) = swiped right (previous),
+// onSwipe(1) = swiped left (next). Ignores mostly-vertical drags so scrolling still works.
+function _addSwipe(el, onSwipe) {
+  if (!el || el.dataset.swipeBound) return;
+  el.dataset.swipeBound = '1';
+  let x0 = 0, y0 = 0, t0 = 0;
+  el.addEventListener('touchstart', e => {
+    const t = e.changedTouches[0];
+    x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
+  }, {passive:true});
+  el.addEventListener('touchend', e => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    if (Date.now() - t0 > 700) return;                  // too slow to be a swipe
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    onSwipe(dx < 0 ? 1 : -1);
+  }, {passive:true});
+}
+
 function showCardPreview(card, e) {
+  if (_isMobile()) return;   // hover preview is desktop-only
   clearTimeout(_cpTimer);
   const cp = _getCP();
   document.getElementById('cp-player').textContent = card.player;
@@ -2239,7 +2300,9 @@ function buildScpUrl(player, parallel, year, cardNo) {
 
 let collViewMode = 'table';
 let cardViewPage = 0;
-const CARD_VIEW_SIZE = 9;
+// 3x3 binder page on desktop, 2x2 on mobile so tiles stay readable
+const _isMobile = () => window.matchMedia('(max-width:767px)').matches;
+const _cardViewSize = () => _isMobile() ? 4 : 9;
 
 function setCollView(mode, el) {
   collViewMode = mode;
@@ -2252,19 +2315,22 @@ function setCollView(mode, el) {
 }
 
 function cardViewNav(dir) {
-  const maxPage = Math.max(0, Math.ceil(filteredCards.length / CARD_VIEW_SIZE) - 1);
-  cardViewPage = Math.min(maxPage, Math.max(0, cardViewPage + dir));
+  const maxPage = Math.max(0, Math.ceil(filteredCards.length / _cardViewSize()) - 1);
+  const next = Math.min(maxPage, Math.max(0, cardViewPage + dir));
+  if (next === cardViewPage) return;
+  cardViewPage = next;
   renderCardView();
 }
 
 function renderCardView() {
   const grid = $('coll-card-grid');
   if (!grid) return;
-  const totalPages = Math.max(1, Math.ceil(filteredCards.length / CARD_VIEW_SIZE));
+  const size = _cardViewSize();
+  const totalPages = Math.max(1, Math.ceil(filteredCards.length / size));
   if (cardViewPage >= totalPages) cardViewPage = totalPages - 1;
-  const start = cardViewPage * CARD_VIEW_SIZE;
-  const pageCards = filteredCards.slice(start, start + CARD_VIEW_SIZE);
-  const slots = pageCards.concat(Array(CARD_VIEW_SIZE - pageCards.length).fill(null));
+  const start = cardViewPage * size;
+  const pageCards = filteredCards.slice(start, start + size);
+  const slots = pageCards.concat(Array(size - pageCards.length).fill(null));
 
   grid.innerHTML = slots.map(c => {
     if (!c) return `<div style="min-height:170px;border:1px dashed var(--border);border-radius:10px;opacity:0.35"></div>`;
@@ -2293,29 +2359,38 @@ function renderCardView() {
         <span>${c.card_no||'—'}</span>
       </div>
       <div style="display:flex;justify-content:center;padding:2px 0">${playerSparkline(c.player)}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:auto">
-        <div style="background:var(--bg-hover);border-radius:7px;padding:7px 8px;text-align:center">
-          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Cost</div>
-          <div style="font-size:13px;font-weight:700;margin-top:2px">${fmt(c.cost)}</div>
+      <div class="cv-stats">
+        <div class="cv-stat">
+          <div class="cv-stat-label">Cost</div>
+          <div class="cv-stat-val">${fmt(c.cost)}</div>
         </div>
-        <div style="background:var(--bg-hover);border-radius:7px;padding:7px 8px;text-align:center">
-          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">SCP</div>
-          <div style="font-size:13px;font-weight:700;margin-top:2px">${fmt(c.scp_value)}</div>
+        <div class="cv-stat">
+          <div class="cv-stat-label">SCP</div>
+          <div class="cv-stat-val">${fmt(c.scp_value)}</div>
         </div>
-        <div style="background:var(--bg-hover);border-radius:7px;padding:7px 8px;text-align:center">
-          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">TMV</div>
-          <div style="font-size:13px;font-weight:700;margin-top:2px">${fmt(c.tmv)}</div>
+        <div class="cv-stat">
+          <div class="cv-stat-label">TMV</div>
+          <div class="cv-stat-val">${fmt(c.tmv)}</div>
         </div>
-        <div style="background:${plBg};border-radius:7px;padding:7px 8px;text-align:center">
-          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">P/L</div>
-          <div style="font-size:13px;font-weight:700;margin-top:2px;color:${plClr}">${dolStr}</div>
+        <div class="cv-stat" style="background:${plBg}">
+          <div class="cv-stat-label">P/L</div>
+          <div class="cv-stat-val" style="color:${plClr}">${dolStr}</div>
         </div>
       </div>
     </div>`;
   }).join('');
 
-  $('coll-card-pageinfo').textContent = `Page ${cardViewPage+1} of ${totalPages} · ${filteredCards.length} cards`;
+  const hint = _isMobile() && totalPages > 1 ? ' · swipe to flip' : '';
+  $('coll-card-pageinfo').textContent = `Page ${cardViewPage+1} of ${totalPages} · ${filteredCards.length} cards${hint}`;
+  _addSwipe(grid, dir => cardViewNav(dir));
 }
+
+// Re-page the card grid when the viewport crosses the mobile breakpoint
+window.addEventListener('resize', () => {
+  if (collViewMode !== 'cards') return;
+  clearTimeout(window._cvResizeTimer);
+  window._cvResizeTimer = setTimeout(() => { cardViewPage = 0; renderCardView(); }, 150);
+});
 
 function renderCardsTable() {
   const search = ($('card-search')||{value:''}).value.toLowerCase();
@@ -2498,6 +2573,7 @@ function openCardDetail(idx) {
 
   const ov = $('card-detail-overlay');
   ov.style.display = 'flex';
+  _addSwipe(ov.querySelector('.val-modal'), dir => navigateCard(dir));
   requestAnimationFrame(() => ov.classList.add('open'));
 }
 
@@ -4306,8 +4382,8 @@ buildEbayLinks();
 
 <!-- ── CARD DETAIL MODAL ─────────────────────────────────────────────────── -->
 <div id="card-detail-overlay" class="val-modal-overlay" style="display:none;position:fixed;inset:0" onclick="if(event.target===this)closeCardDetail()">
-  <button onclick="navigateCard(-1)" style="position:absolute;left:16px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:0.3;padding:12px;transition:opacity .15s;z-index:1" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.3'">‹</button>
-  <button onclick="navigateCard(1)"  style="position:absolute;right:16px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:0.3;padding:12px;transition:opacity .15s;z-index:1" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.3'">›</button>
+  <button class="cd-nav-arrow" onclick="navigateCard(-1)" style="position:absolute;left:16px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:0.3;padding:12px;transition:opacity .15s;z-index:1" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.3'">‹</button>
+  <button class="cd-nav-arrow" onclick="navigateCard(1)"  style="position:absolute;right:16px;background:none;border:none;color:white;font-size:28px;cursor:pointer;opacity:0.3;padding:12px;transition:opacity .15s;z-index:1" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.3'">›</button>
   <div class="val-modal" style="max-width:560px;width:100%">
 
     <!-- Header -->
