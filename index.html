@@ -136,8 +136,24 @@
 
     /* Valuation */
     .comp-row{grid-template-columns:repeat(3,1fr)}
-    .val-action-bar{flex-wrap:wrap;gap:6px;padding:10px 14px}
-    .val-action-bar > button{flex:1 1 auto;min-width:0;white-space:nowrap}
+
+    /* Action bar: glass card, stacked into clear groups instead of one
+       wrapped row of 7 mismatched controls.
+       !important throughout: this block sits earlier in the stylesheet
+       than the base .val-action-bar/.val-action-links rules it overrides,
+       and CSS breaks same-specificity ties by source order, not by
+       @media nesting — without !important the later base rules would win. */
+    .val-action-bar{flex-direction:column !important;align-items:stretch !important;gap:10px !important;padding:14px 16px !important;
+      background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+    .val-action-primary{display:grid !important;grid-template-columns:1fr 1fr;gap:8px}
+    .val-action-primary .form-btn{padding:12px 10px;border-radius:12px;font-size:13px}
+    .val-action-links{margin-left:0 !important;display:grid !important;grid-template-columns:repeat(3,1fr);gap:6px}
+    .val-action-links .ebay-chip{justify-content:center;padding:9px 8px;border-radius:10px;
+      background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border-color:rgba(255,255,255,0.08)}
+    .val-clear-all{grid-column:1 / -1;margin:0 !important;margin-top:2px !important;padding:8px !important;border-radius:10px;
+      background:transparent !important;border:none !important;color:var(--text-muted) !important;font-size:11px !important}
+    #v-scp-status{order:-1;text-align:center}
     /* Leaderboard stat banner: wrap into a grid so labels aren't clipped */
     .vl-stats{display:grid !important;grid-template-columns:repeat(3,1fr)}
     .vl-stat{padding:11px 12px;border-bottom:1px solid var(--border)}
@@ -475,6 +491,9 @@
   .form-btn.green-btn{background:var(--green);color:#0b1120}
   /* Action bar */
   .val-action-bar{display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--border);flex-wrap:wrap}
+  .val-action-primary{display:flex;gap:8px}
+  .val-action-links{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+  .val-clear-all{font-size:11px;padding:5px 12px;margin-left:8px}
   .action-divider{width:1px;height:18px;background:var(--border);flex-shrink:0}
   .ebay-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary);font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;text-decoration:none;cursor:pointer;transition:all .15s;white-space:nowrap}
   .ebay-chip:hover{color:var(--text-primary);border-color:var(--border-light)}
@@ -881,11 +900,18 @@
                 <button class="seg-btn" data-val="BASE" onclick="setValType(this)">Base</button>
               </div>
             </div>
-            <div class="form-group full">
+            <div class="form-group">
               <label class="form-label">Listing / BIN Price</label>
               <div style="display:flex;align-items:center;gap:6px">
                 <span style="color:var(--text-muted);font-size:16px;line-height:1">$</span>
                 <input class="form-input" id="v-listing" type="number" step="0.01" placeholder="0.00" oninput="calcValuation()" style="font-size:18px;font-weight:600;letter-spacing:-.3px">
+              </div>
+            </div>
+            <div class="form-group right">
+              <label class="form-label">Shipping</label>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="color:var(--text-muted);font-size:16px;line-height:1">$</span>
+                <input class="form-input" id="v-shipping" type="number" step="0.01" placeholder="0.00" oninput="calcValuation()" style="font-size:18px;font-weight:600;letter-spacing:-.3px">
               </div>
             </div>
           </div>
@@ -905,15 +931,16 @@
 
           <!-- Action bar -->
           <div class="val-action-bar">
-            <button class="form-btn" onclick="saveValuation()">Save</button>
-            <button class="form-btn green-btn" id="v-get-data-btn" onclick="getSCPData()">Get SCP Data</button>
+            <div class="val-action-primary">
+              <button class="form-btn" onclick="saveValuation()">Save</button>
+              <button class="form-btn green-btn" id="v-get-data-btn" onclick="getSCPData()">Get SCP Data</button>
+            </div>
             <span id="v-scp-status" style="font-size:11px;color:var(--text-muted);display:none"></span>
-            <div class="action-divider"></div>
-            <a id="v-link-comps" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbayComps(event)">🔍 Comps</a>
-            <a id="v-link-sn" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbaySN(event)">🏷️ S/N</a>
-            <a id="v-link-auto" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbayAuto(event)">✍️ Auto</a>
-            <div style="margin-left:auto">
-              <button class="form-btn secondary" style="font-size:11px;padding:5px 12px" onclick="resetValuation()">Clear All</button>
+            <div class="val-action-links">
+              <a id="v-link-comps" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbayComps(event)">🔍 Comps</a>
+              <a id="v-link-sn" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbaySN(event)">🏷️ S/N</a>
+              <a id="v-link-auto" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbayAuto(event)">✍️ Auto</a>
+              <button class="form-btn secondary val-clear-all" onclick="resetValuation()">Clear All</button>
             </div>
           </div>
         </div>
@@ -927,9 +954,12 @@
           <!-- Metrics -->
           <div style="border-top:1px solid var(--border)">
             <div class="val-result-row"><span class="val-result-label">Listing</span><span class="val-result-val" id="v-listing-display">—</span></div>
+            <div class="val-result-row"><span class="val-result-label">Shipping</span><span class="val-result-val" id="v-shipping-display" style="font-size:13px;color:var(--text-secondary)">—</span></div>
+            <div class="val-result-row"><span class="val-result-label">Tax <span style="color:var(--text-muted);font-weight:500">(9.25%)</span></span><span class="val-result-val" id="v-tax" style="font-size:13px;color:var(--text-secondary)">—</span></div>
+            <div class="val-result-row"><span class="val-result-label">Total Cost</span><span class="val-result-val" id="v-total">—</span></div>
             <div class="val-result-row"><span class="val-result-label">Avg TMV</span><span class="val-result-val" id="v-tmv">—</span></div>
             <div class="val-result-row"><span class="val-result-label">Discount</span><span class="val-result-val" id="v-discount">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">Max Bid</span><span class="val-result-val" id="v-maxbid">—</span></div>
+            <div class="val-result-row"><span class="val-result-label">Max Bid <span style="color:var(--text-muted);font-weight:500">(item price)</span></span><span class="val-result-val" id="v-maxbid">—</span></div>
             <div class="val-result-row" style="border-bottom:none"><span class="val-result-label" style="color:var(--text-muted)">Comps</span><span class="val-result-val" id="v-compcount" style="color:var(--text-muted);font-size:12px">0 / 5</span></div>
           </div>
 
@@ -1148,8 +1178,8 @@ async function loadData() {
 function _dbToValEntry(r) {
   return {
     id: r.id, date: r.entry_date, player: r.player, year: r.year, parallel: r.parallel,
-    cardno: r.card_no, scpUrl: r.scp_url, type: r.type, listing: r.listing, tmv: r.tmv,
-    discount: r.discount, maxBid: r.max_bid, decision: r.decision, comps: r.comps || [],
+    cardno: r.card_no, scpUrl: r.scp_url, type: r.type, listing: r.listing, shipping: r.shipping,
+    tax: r.tax, tmv: r.tmv, discount: r.discount, maxBid: r.max_bid, decision: r.decision, comps: r.comps || [],
     priceGoal: r.price_goal, notes: r.notes, holdFlip: r.hold_flip,
     purchased: r.purchased, purchaseDate: r.purchase_date,
     status: r.status, soldPrice: r.sold_price, soldDate: r.sold_date,
@@ -1165,6 +1195,7 @@ function _valEntryToDb(e) {
   const set = (col, key) => { if (key in e) out[col] = e[key]; };
   set('entry_date','date'); set('player','player'); set('year','year'); set('parallel','parallel');
   set('card_no','cardno'); set('scp_url','scpUrl'); set('type','type'); set('listing','listing');
+  set('shipping','shipping'); set('tax','tax');
   set('tmv','tmv'); set('discount','discount'); set('max_bid','maxBid'); set('decision','decision');
   set('comps','comps'); set('price_goal','priceGoal'); set('notes','notes'); set('hold_flip','holdFlip');
   set('purchased','purchased'); set('purchase_date','purchaseDate');
@@ -2502,11 +2533,11 @@ function renderCardsTable() {
       || `https://www.sportscardspro.com/search-products?q=${encodeURIComponent([c.player,c.parallel,c.card_no].filter(Boolean).join(' '))}`;
     const linkStyle = `display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 8px;border-radius:10px;text-decoration:none;transition:all .15s;white-space:nowrap`;
     return `<tr style="cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg-hover)';showCardPreview(filteredCards[${filteredCards.indexOf(c)}],event)" onmouseout="this.style.background='';hideCardPreview()" onclick="openCardDetail(${filteredCards.indexOf(c)})">
-      <td style="text-align:center;padding:8px 10px;color:var(--text-muted);font-size:11px;font-weight:600;white-space:nowrap;cursor:text" title="Click to edit slot" onclick="event.stopPropagation();editSlot(this,${filteredCards.indexOf(c)})" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">${c.binder||'—'}</td>
-      <td class="player-name" style="cursor:text" title="Click to edit player" onclick="event.stopPropagation();editPlayer(this,${filteredCards.indexOf(c)})">${c.player}</td>
+      <td style="text-align:center;padding:8px 10px;color:var(--text-muted);font-size:11px;font-weight:600;white-space:nowrap;cursor:text" title="Click to edit slot" onclick="if(_isMobile()){return}event.stopPropagation();editSlot(this,${filteredCards.indexOf(c)})" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">${c.binder||'—'}</td>
+      <td class="player-name" style="cursor:text" title="Click to edit player" onclick="if(_isMobile()){return}event.stopPropagation();editPlayer(this,${filteredCards.indexOf(c)})">${c.player}</td>
       <td style="text-align:center;padding:6px 8px" onclick="event.stopPropagation();cycleStatus(${filteredCards.indexOf(c)})">${_statusChip(c.status)}</td>
       <td><span class="year-tag">${c.year||'—'}</span></td>
-      <td class="parallel-text" style="cursor:text" title="Click to edit parallel" onclick="event.stopPropagation();editParallel(this,${filteredCards.indexOf(c)})">${c.parallel||'—'}</td>
+      <td class="parallel-text" style="cursor:text" title="Click to edit parallel" onclick="if(_isMobile()){return}event.stopPropagation();editParallel(this,${filteredCards.indexOf(c)})">${c.parallel||'—'}</td>
       <td class="card-no" onclick="event.stopPropagation()">${scpHref ? `<a href="${scpHref}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;border-bottom:1px dotted rgba(212,168,67,0.4)" onmouseover="this.style.borderBottomStyle='solid'" onmouseout="this.style.borderBottomStyle='dotted'">${c.card_no||'—'}</a>` : (c.card_no||'—')}</td>
       <td><span class="type-badge ${typeCls}">${c.type||'—'}</span></td>
       <td class="money">${fmt(c.cost)}</td>
@@ -3423,16 +3454,20 @@ function openEbayAuto(e) {
   return true;
 }
 
+// Seal Beach, CA combined sales tax (6% state + 0.25% county + 1.5% city + 1.5% district)
+const SALES_TAX_RATE = 0.0925;
+
 function calcValuation() {
   buildEbayLinks();
   const compIds = ['v-c1','v-c2','v-c3','v-c4','v-c5'];
   const comps = compIds.map(id => parseFloat($( id).value)).filter(v => !isNaN(v) && v > 0);
-  const listing = parseFloat($('v-listing').value);
+  const listing  = parseFloat($('v-listing').value);
+  const shipping = parseFloat($('v-shipping').value) || 0;
 
   $('v-compcount').textContent = comps.length + ' / 5';
 
   if (comps.length === 0) {
-    ['v-tmv','v-listing-display','v-discount','v-maxbid'].forEach(id => $(id).textContent = '—');
+    ['v-tmv','v-listing-display','v-shipping-display','v-tax','v-total','v-discount','v-maxbid'].forEach(id => $(id).textContent = '—');
     $('v-decision-display').textContent = '—';
     $('v-decision-display').className = 'big-decision pending';
     $('v-discount-display').textContent = 'Enter comps to calculate';
@@ -3440,23 +3475,34 @@ function calcValuation() {
   }
 
   const tmv = comps.reduce((a,b) => a+b, 0) / comps.length;
-  const maxBid = tmv * 0.70;
+  const budget = tmv * 0.70;   // all-in ceiling: item + shipping + tax
+  // Max Bid is the *item price* to type into eBay so that, after adding this
+  // shipping and CA sales tax on (item+shipping), the all-in total stays
+  // under budget: (maxBid + shipping) * (1+rate) <= budget
+  const maxBid = Math.max(0, budget / (1 + SALES_TAX_RATE) - shipping);
   $('v-tmv').textContent = '$' + tmv.toFixed(2);
   $('v-maxbid').textContent = '$' + maxBid.toFixed(2);
+  $('v-shipping-display').textContent = shipping > 0 ? '$' + shipping.toFixed(2) : '—';
 
   if (!isNaN(listing) && listing > 0) {
-    const discount = (tmv - listing) / tmv;
+    const tax = (listing + shipping) * SALES_TAX_RATE;
+    const total = listing + shipping + tax;
+    const discount = (tmv - total) / tmv;
     const pct = (discount * 100).toFixed(1);
     $('v-listing-display').textContent = '$' + listing.toFixed(2);
+    $('v-tax').textContent = '$' + tax.toFixed(2);
+    $('v-total').textContent = '$' + total.toFixed(2);
     $('v-discount').textContent = (discount >= 0 ? '+' : '') + pct + '%';
     $('v-discount').style.color = discount >= 0.20 ? 'var(--green)' : discount >= 0 ? 'var(--yellow)' : 'var(--red)';
 
-    const isBuy = discount >= 0.20 && listing <= maxBid;
+    const isBuy = discount >= 0.20 && total <= budget;
     $('v-decision-display').textContent = isBuy ? 'BUY' : 'PASS';
     $('v-decision-display').className = 'big-decision ' + (isBuy ? 'buy' : 'pass');
-    $('v-discount-display').textContent = pct + '% below market' + (isBuy ? ' · at or under max bid' : '');
+    $('v-discount-display').textContent = pct + '% below market' + (isBuy ? ' · at or under budget' : '');
   } else {
     $('v-listing-display').textContent = '—';
+    $('v-tax').textContent = '—';
+    $('v-total').textContent = '—';
     $('v-discount').textContent = '—';
     $('v-discount').style.color = '';
     $('v-decision-display').textContent = '—';
@@ -3475,10 +3521,14 @@ async function saveValuation() {
     return;
   }
   const tmv = comps.reduce((a,b)=>a+b,0) / comps.length;
-  const listing = parseFloat($('v-listing').value) || null;
-  const discount = listing ? (tmv - listing) / tmv : null;
-  const maxBid = tmv * 0.70;
-  const isBuy = listing ? (discount >= 0.20 && listing <= maxBid) : null;
+  const listing  = parseFloat($('v-listing').value) || null;
+  const shipping = parseFloat($('v-shipping').value) || 0;
+  const budget = tmv * 0.70;
+  const maxBid = Math.max(0, budget / (1 + SALES_TAX_RATE) - shipping);
+  const tax = listing ? (listing + shipping) * SALES_TAX_RATE : null;
+  const total = listing ? listing + shipping + tax : null;
+  const discount = listing ? (tmv - total) / tmv : null;
+  const isBuy = listing ? (discount >= 0.20 && total <= budget) : null;
 
   const entry = {
     date: new Date().toISOString().slice(0,10),
@@ -3488,7 +3538,9 @@ async function saveValuation() {
     cardno: $('v-cardno').value.trim(),
     scpUrl: ($('v-scp-block').style.display !== 'none' && $('v-scp-link').href !== '#') ? $('v-scp-link').href : null,
     type: getValType(),
-    listing, tmv: parseFloat(tmv.toFixed(2)),
+    listing, shipping: parseFloat(shipping.toFixed(2)),
+    tax: tax !== null ? parseFloat(tax.toFixed(2)) : null,
+    tmv: parseFloat(tmv.toFixed(2)),
     discount: discount !== null ? parseFloat(discount.toFixed(4)) : null,
     maxBid: parseFloat(maxBid.toFixed(2)),
     decision: isBuy === null ? null : (isBuy ? 'BUY' : 'PASS'),
@@ -3539,6 +3591,7 @@ function loadValEntry(id) {
   $('v-parallel').value = e.parallel || '';
   $('v-cardno').value  = e.cardno  || '';
   $('v-listing').value = e.listing != null ? e.listing : '';
+  $('v-shipping').value = e.shipping != null ? e.shipping : '';
   const compIds = ['v-c1','v-c2','v-c3','v-c4','v-c5'];
   compIds.forEach((cid, i) => $(cid).value = (e.comps && e.comps[i] != null) ? e.comps[i] : '');
   // restore type segmented control
@@ -3569,7 +3622,7 @@ function clearComps() {
 }
 
 function resetValuation() {
-  ['v-player','v-year','v-parallel','v-cardno','v-listing','v-c1','v-c2','v-c3','v-c4','v-c5']
+  ['v-player','v-year','v-parallel','v-cardno','v-listing','v-shipping','v-c1','v-c2','v-c3','v-c4','v-c5']
     .forEach(id => $(id).value = '');
   document.querySelectorAll('#v-type-seg .seg-btn').forEach((b,i) => b.classList.toggle('active', i===0));
   $('v-scp-block').style.display = 'none';
