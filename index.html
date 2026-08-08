@@ -32,6 +32,15 @@
     --purple:#7dd3fc;
     --teal:#2dd4bf;
     --purple-bg:rgba(125,211,252,0.1);
+    /* Valuation page palette — Apple system grays/colors, deliberately
+       softer than the app's originals so the page reads calmer. */
+    --v-surface:#0e0e0f;
+    --v-surface-2:#161618;
+    --v-hairline:rgba(255,255,255,0.07);
+    --v-text-2:#a1a1a6;
+    --v-text-3:#6e6e73;
+    --v-green:#30d158;
+    --v-red:#ff453a;
     --sidebar-w:220px;
     --gold:#d4a843;
     --gold-dim:rgba(212,168,67,0.08);
@@ -134,35 +143,10 @@
     .cv-arrow{display:none}
     #coll-card-pager{margin-top:14px !important}
 
-    /* Valuation */
-    .comp-row{grid-template-columns:repeat(3,1fr)}
-
-    /* Action bar: glass card, stacked into clear groups instead of one
-       wrapped row of 7 mismatched controls.
-       !important throughout: this block sits earlier in the stylesheet
-       than the base .val-action-bar/.val-action-links rules it overrides,
-       and CSS breaks same-specificity ties by source order, not by
-       @media nesting — without !important the later base rules would win. */
-    .val-action-bar{flex-direction:column !important;align-items:stretch !important;gap:10px !important;padding:14px 16px !important;
-      background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-    .val-action-primary{display:grid !important;grid-template-columns:1fr 1fr;gap:8px}
-    .val-action-primary .form-btn{padding:12px 10px;border-radius:12px;font-size:13px}
-    .val-action-links{margin-left:0 !important;display:grid !important;grid-template-columns:repeat(3,1fr);gap:6px}
-    .val-action-links .ebay-chip{justify-content:center;padding:9px 8px;border-radius:10px;
-      background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-      border-color:rgba(255,255,255,0.08)}
-    .val-clear-all{grid-column:1 / -1;margin:0 !important;margin-top:2px !important;padding:8px !important;border-radius:10px;
-      background:transparent !important;border:none !important;color:var(--text-muted) !important;font-size:11px !important}
-    #v-scp-status{order:-1;text-align:center}
-    /* Leaderboard stats: 1 + 2 + 2 so no stat is left orphaned in a row */
-    .vl-stats{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;padding:12px !important}
-    .vl-stat--hero{grid-column:1 / -1}
-    .vl-stat--hero .vl-stat-val{font-size:24px}
-    .vl-stat{padding:11px 13px !important}
-    .vl-stat-val{font-size:17px}
-    /* Header keeps title and Clear on one line instead of stacking */
-    #page-valuation .panel-header{flex-wrap:nowrap;gap:10px}
-    #page-valuation .panel-title{min-width:0;flex:1}
+    /* Valuation — the redesigned page is mobile-first, so it needs no
+       mobile overrides here. Only the comps row tightens up. */
+    .vcomps{gap:5px !important;padding:12px !important}
+    .vcomp{padding:9px 2px !important;font-size:13px !important}
 
     /* Card detail modal — arrows replaced by swipe */
     .card-detail-modal{width:96vw !important;max-height:92vh}
@@ -460,12 +444,6 @@
   @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
 
   /* VALUATION FORM */
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
-  .form-group{display:flex;flex-direction:column;gap:5px;padding:14px 20px;border-bottom:1px solid var(--border)}
-  .form-group.right{border-left:1px solid var(--border)}
-  .form-group.full{grid-column:span 2}
-  .form-group:last-of-type{border-bottom:none}
-  .form-label{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase}
   .form-input{background:transparent;border:none;color:var(--text-primary);padding:2px 0;font-size:14px;outline:none;width:100%;font-family:inherit}
   .form-input::placeholder{color:var(--border-light)}
   .form-input[type=number]::-webkit-inner-spin-button,.form-input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
@@ -477,13 +455,6 @@
   .seg-btn.active{background:var(--bg-hover);color:var(--text-primary);box-shadow:0 1px 4px rgba(0,0,0,.4)}
   .seg-btn:hover:not(.active){color:var(--text-secondary)}
   /* Comp row */
-  .comp-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:14px 20px}
-  .comp-cell{display:flex;flex-direction:column;gap:4px;position:relative}
-  .comp-num{font-size:9px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase}
-  .comp-field{background:var(--bg-hover);border:1px solid transparent;border-radius:8px;padding:9px 10px;font-size:13px;color:var(--text-primary);outline:none;width:100%;font-family:inherit;transition:border-color .15s}
-  .comp-field::placeholder{color:var(--border-light)}
-  .comp-field:focus{border-color:var(--accent)}
-  .comp-field[type=number]::-webkit-inner-spin-button,.comp-field[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
   /* Buttons */
   .form-btn{background:var(--accent);color:#000;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;letter-spacing:.1px;white-space:nowrap}
   .form-btn:hover{opacity:.85}
@@ -491,29 +462,8 @@
   .form-btn.secondary:hover{color:var(--text-primary)}
   .form-btn.green-btn{background:var(--green);color:#0b1120}
   /* Action bar */
-  .val-action-bar{display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--border);flex-wrap:wrap}
-  .val-action-primary{display:flex;gap:8px}
-  .val-action-links{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
-  .val-clear-all{font-size:11px;padding:5px 12px;margin-left:8px}
-  .action-divider{width:1px;height:18px;background:var(--border);flex-shrink:0}
-  .ebay-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary);font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;text-decoration:none;cursor:pointer;transition:all .15s;white-space:nowrap}
-  .ebay-chip:hover{color:var(--text-primary);border-color:var(--border-light)}
-  .ebay-chip.disabled{opacity:.3;pointer-events:none}
 
   /* VALUATION RESULT */
-  .val-result{display:flex;flex-direction:column;gap:0}
-  .val-result-row{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border)}
-  .val-result-row:last-child{border-bottom:none}
-  .val-result-label{font-size:12px;color:var(--text-secondary);font-weight:500}
-  .val-result-val{font-size:16px;font-weight:700;letter-spacing:-.3px}
-  .decision-buy{color:var(--green)}
-  .decision-pass{color:var(--red)}
-  .decision-pending{color:var(--text-muted)}
-  .big-decision{font-size:28px;font-weight:800;letter-spacing:-.5px;text-align:center;padding:18px 20px 10px}
-  .big-decision.buy{color:var(--green)}
-  .big-decision.pass{color:var(--red)}
-  .big-decision.pending{color:var(--text-muted)}
-  .discount-pct{font-size:12px;color:var(--text-muted);text-align:center;padding-bottom:18px}
 
   /* VALUATION HISTORY */
   .val-hist-item{display:grid;grid-template-columns:1fr auto auto auto auto auto;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:12.5px}
@@ -527,38 +477,160 @@
   .delete-btn:hover{color:var(--red)}
   .ebay-link{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   .ebay-link.disabled{opacity:.35;pointer-events:none;cursor:default}
-  /* VALUATION LEADERBOARD */
-  /* Auth state pill in the leaderboard header */
-  .auth-pill{font-size:9.5px;font-weight:700;letter-spacing:.3px;padding:3px 9px;border-radius:20px;
-    border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);white-space:nowrap;
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:color .3s}
-  .vl-clear-btn{font-size:11px;padding:6px 14px;border-radius:20px;background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-  .vl-clear-btn:hover{color:var(--red);border-color:rgba(242,92,92,0.35)}
+  /* ══════════ VALUATION PAGE ══════════
+     Grouped-list design: the section label sits outside a rounded card, and
+     rows inside are label-left / value-right with hairline separators.
+     Restraint is the point — gold is reserved for the primary action, and
+     green/red only ever carry meaning on numbers. */
 
-  /* Leaderboard stats — glass tiles rather than hard-ruled table cells */
-  .vl-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:14px;border-bottom:1px solid var(--border)}
-  .vl-stat{padding:12px 14px;min-width:0;border-radius:12px;
-    background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.06);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-  .vl-stat-label{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .vl-stat-val{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text-primary);white-space:nowrap}
-  /* Filters — single scrollable row, never wraps to an orphan */
-  .vl-filters{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);
-    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .vcalc{max-width:520px;margin:0 auto 34px}
+  .vhist{max-width:760px;margin:0 auto}
+
+  /* Section header — label outside the card, iOS Settings style */
+  .vsec{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:22px 4px 8px}
+  .vsec-t{font-size:12px;font-weight:600;letter-spacing:.2px;color:var(--v-text-3)}
+  .vsec-x{font-size:12px;color:var(--v-text-3);font-variant-numeric:tabular-nums}
+  .vsec-link{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+
+  /* Grouped card */
+  .vgroup{background:var(--v-surface);border-radius:14px;overflow:hidden}
+  .vrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:13px 16px;position:relative;margin:0}
+  .vrow + .vrow::before,.vcomps + .vrow::before{content:'';position:absolute;top:0;left:16px;right:0;height:1px;background:var(--v-hairline)}
+  .vrow-k{font-size:15px;color:var(--text-primary);flex-shrink:0}
+  .vrow-k.sub{color:var(--v-text-2)}
+  .vrow-v{font-size:15px;color:var(--v-text-2);text-align:right;font-variant-numeric:tabular-nums}
+  .vrow-v.strong{color:var(--text-primary);font-weight:600}
+  .vrow.total{background:rgba(255,255,255,0.025)}
+  .vrow.total .vrow-k{font-weight:600}
+  .vrow.total .vrow-v{font-size:17px;font-weight:700;color:var(--text-primary)}
+  /* Inputs read as values, not boxes */
+  .vrow-in{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text-primary);
+    font-family:inherit;font-size:15px;font-weight:500;text-align:right;padding:0;
+    font-variant-numeric:tabular-nums}
+  .vrow-in::placeholder{color:var(--v-text-3);font-weight:400}
+  .vrow-in[type=number]::-webkit-inner-spin-button,.vrow-in[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  .vrow-money{display:flex;align-items:center;gap:3px;flex:1;justify-content:flex-end;min-width:0}
+  .vrow-cur{font-size:15px;color:var(--v-text-3)}
+  .vrow-in.num{flex:0 1 auto;width:88px}
+
+  /* Verdict — leads the page */
+  .verdict{border-radius:18px;padding:22px 20px 20px;text-align:center;position:relative;overflow:hidden;
+    background:var(--v-surface);border:1px solid var(--v-hairline);transition:border-color .3s,background .3s}
+  .verdict.buy{background:radial-gradient(120% 100% at 50% 0%,rgba(48,209,88,0.14) 0%,rgba(48,209,88,0) 62%),var(--v-surface);
+    border-color:rgba(48,209,88,0.22)}
+  .verdict.pass{background:radial-gradient(120% 100% at 50% 0%,rgba(255,69,58,0.12) 0%,rgba(255,69,58,0) 62%),var(--v-surface);
+    border-color:rgba(255,69,58,0.2)}
+  .verdict-tag{font-size:41px;font-weight:800;letter-spacing:-1.4px;line-height:1;color:var(--v-text-3)}
+  .verdict.buy .verdict-tag{color:var(--v-green)}
+  .verdict.pass .verdict-tag{color:var(--v-red)}
+  .verdict-sub{font-size:13.5px;color:var(--v-text-2);margin-top:7px}
+  .verdict-bid{margin-top:17px;padding-top:15px;border-top:1px solid var(--v-hairline);
+    display:flex;align-items:baseline;justify-content:center;gap:9px}
+  .verdict-bid-lab{font-size:12px;color:var(--v-text-3)}
+  .verdict-bid-num{font-size:27px;font-weight:700;letter-spacing:-.7px;font-variant-numeric:tabular-nums}
+  .verdict-hint{font-size:11.5px;color:var(--v-text-3);margin-top:5px}
+
+  /* Comps */
+  .vcomps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;padding:13px 16px}
+  .vcomp{background:var(--v-surface-2);border:1px solid transparent;border-radius:9px;padding:9px 4px;
+    text-align:center;font-size:14px;font-weight:600;color:var(--text-primary);font-family:inherit;
+    outline:none;min-width:0;font-variant-numeric:tabular-nums;transition:border-color .15s}
+  .vcomp::placeholder{color:var(--v-text-3);font-weight:400}
+  .vcomp:focus{border-color:var(--accent)}
+  .vcomp[type=number]::-webkit-inner-spin-button,.vcomp[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  .vcomps-foot{padding-top:11px;padding-bottom:11px}
+
+  /* Actions — one clear primary, everything else recedes */
+  .vacts{padding:22px 0 0;display:flex;flex-direction:column;gap:9px}
+  .vbtn{border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;
+    font-family:inherit;cursor:pointer;width:100%;transition:opacity .15s,background .15s}
+  .vbtn:hover{opacity:.88}
+  .vbtn.primary{background:var(--accent);color:#1a1400}
+  .vbtn.plain{background:var(--v-surface);color:var(--text-primary)}
+  .vbtn:disabled{opacity:.45;cursor:default}
+  .vstatus{font-size:12.5px;color:var(--v-text-2);text-align:center;padding-top:2px}
+  .vlinks{display:flex;justify-content:center;align-items:center;gap:6px;padding-top:14px;
+    font-size:13px;color:var(--v-text-3)}
+  .vlinks a{color:var(--accent);text-decoration:none}
+  .vlinks a:hover{text-decoration:underline;text-underline-offset:2px}
+  .vlinks a.disabled{color:var(--v-text-3);pointer-events:none}
+  .vlinks .sep{color:var(--v-text-3)}
+  .vclear{display:block;margin:16px auto 0;background:none;border:none;color:var(--v-text-3);
+    font-family:inherit;font-size:13px;cursor:pointer;padding:6px 10px}
+  .vclear:hover{color:var(--v-red)}
+  .vlink-btn{background:none;border:none;color:var(--accent);font-family:inherit;font-size:12px;
+    font-weight:500;cursor:pointer;padding:0}
+  .vlink-btn:hover{text-decoration:underline;text-underline-offset:2px}
+  .vlink-btn.danger{color:var(--v-text-3)}
+  .vlink-btn.danger:hover{color:var(--v-red)}
+
+  /* History — five stat boxes collapse into one quiet line */
+  .vhist-head{padding-top:4px}
+  .vl-summary{padding:0 4px;display:flex;flex-direction:column;gap:4px}
+  .vl-sumline{font-size:13px;color:var(--v-text-2);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .vl-sumline b{color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums}
+  .vl-sumline .dot{color:var(--v-text-3)}
+  .vl-sumline .up{color:var(--v-green);font-weight:600}
+
+  .vl-filters{display:flex;gap:7px;padding:14px 4px 0;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
   .vl-filters::-webkit-scrollbar{display:none}
-  .vl-tab{font-size:11.5px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);
-    background:rgba(255,255,255,0.04);color:var(--text-muted);cursor:pointer;transition:all .15s;flex-shrink:0;
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-  .vl-tab:hover{border-color:var(--border-light);color:var(--text-secondary)}
-  .vl-tab.active{background:rgba(212,168,67,0.12);border-color:rgba(212,168,67,0.4);color:var(--accent)}
-  .disc-track{margin-top:4px;height:3px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden;width:72px}
-  .disc-fill{height:100%;border-radius:2px;transition:width .4s ease}
-  .vh-sort-th{cursor:pointer;user-select:none;white-space:nowrap}
-  .vh-sort-th:hover{color:var(--text-secondary)}
-  .sort-arrow{display:inline-block;margin-left:4px;font-size:9px;opacity:0.5}
-  .sort-arrow.active{opacity:1;color:var(--accent)}
+  .vl-tab{flex-shrink:0;font-size:13px;font-weight:500;padding:6px 14px;border-radius:20px;border:none;
+    background:var(--v-surface);color:var(--v-text-2);cursor:pointer;font-family:inherit;transition:all .15s}
+  .vl-tab:hover{color:var(--text-primary)}
+  .vl-tab.active{background:#fff;color:#000;font-weight:600}
+
+  .vl-sortbar{display:flex;align-items:center;gap:6px;padding:12px 4px 2px;overflow-x:auto;scrollbar-width:none}
+  .vl-sortbar::-webkit-scrollbar{display:none}
+  .vl-sortlab{font-size:12px;color:var(--v-text-3);flex-shrink:0;margin-right:2px}
+  .vl-sort{flex-shrink:0;background:none;border:none;font-family:inherit;font-size:12.5px;
+    color:var(--v-text-3);cursor:pointer;padding:4px 2px}
+  .vl-sort:hover{color:var(--v-text-2)}
+  .vl-sort.active{color:var(--accent);font-weight:600}
+
+  /* Entries — cards, not a table squeezed onto a phone */
+  .vent{background:var(--v-surface);border-radius:14px;padding:13px 15px;margin-top:9px;
+    display:grid;grid-template-columns:1fr auto;gap:13px;align-items:center;cursor:pointer;
+    transition:background .15s}
+  .vent:hover{background:var(--v-surface-2)}
+  .vent.sold{opacity:.55}
+  .vent-main{min-width:0}
+  .vent-nm{font-size:15px;font-weight:600;letter-spacing:-.2px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .vent.sold .vent-nm{text-decoration:line-through}
+  .vent-meta{font-size:12.5px;color:var(--v-text-3);margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .vent-money{text-align:right}
+  .vent-paid{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .vent-off{font-size:12.5px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--v-text-3)}
+  .vent-off.g{color:var(--v-green)}
+  .vent-off.r{color:var(--v-red)}
+  .vent-del{background:none;border:none;color:var(--v-text-3);cursor:pointer;font-size:14px;
+    padding:4px 2px;opacity:0;transition:opacity .15s,color .15s}
+  .vent:hover .vent-del{opacity:1}
+  .vent-del:hover{color:var(--v-red)}
+  .vchip{font-size:10px;font-weight:700;letter-spacing:.3px;padding:2px 7px;border-radius:5px;text-transform:uppercase}
+  .vchip.bought{background:rgba(212,168,67,.15);color:var(--accent)}
+  .vchip.watch{background:rgba(100,210,255,.15);color:#64d2ff}
+  .vchip.flip{background:rgba(255,214,10,.15);color:#ffd60a}
+  .vchip.sold{background:rgba(48,209,88,.15);color:var(--v-green)}
+  .val-empty{padding:34px;text-align:center;color:var(--v-text-3);font-size:13.5px}
+
+  /* Desktop: entries fan out into aligned columns, still one DOM */
+  @media (min-width:768px){
+    .vent{grid-template-columns:minmax(0,1.6fr) minmax(0,1.1fr) 92px 92px 96px 26px;gap:16px}
+    .vent-money{display:contents}
+    .vent-card{font-size:13px;color:var(--v-text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .vent-paid,.vent-tmv{font-size:14px;font-weight:600;text-align:right}
+    .vent-tmv{color:var(--v-text-2)}
+    .vent-off{margin-top:0;text-align:right;font-size:13.5px}
+    .vent-del{opacity:.5}
+  }
+  @media (max-width:767px){
+    .vent-card,.vent-tmv{display:none}
+    .vent{grid-template-columns:1fr auto auto}
+    .vent-del{opacity:.45}
+  }
 
   /* ── Val Card Modal ────────────────────────────────────── */
   .val-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);opacity:0;transition:opacity .18s}
@@ -886,143 +958,120 @@
 
     <!-- VALUATION PAGE -->
     <div class="page" id="page-valuation">
-      <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:16px;align-items:start">
 
-        <!-- INPUT PANEL -->
-        <div class="panel" style="overflow:hidden">
-          <!-- Card details -->
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Player</label>
-              <input class="form-input" id="v-player" type="text" placeholder="Nick Kurtz" oninput="calcValuation()">
-            </div>
-            <div class="form-group right">
-              <label class="form-label">Year</label>
-              <input class="form-input" id="v-year" type="number" placeholder="2025" oninput="calcValuation()">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Parallel</label>
-              <input class="form-input" id="v-parallel" type="text" placeholder="Gold Mojo /50" oninput="calcValuation()">
-            </div>
-            <div class="form-group right">
-              <label class="form-label">Card #</label>
-              <input class="form-input" id="v-cardno" type="text" placeholder="BDC-166" oninput="calcValuation()">
-            </div>
-            <div class="form-group full" style="border-bottom:1px solid var(--border)">
-              <label class="form-label">Type</label>
-              <div class="seg-ctrl" id="v-type-seg" style="margin-top:4px">
-                <button class="seg-btn active" data-val="S/N" onclick="setValType(this)">S/N</button>
-                <button class="seg-btn" data-val="AUTO" onclick="setValType(this)">Auto</button>
-                <button class="seg-btn" data-val="RC" onclick="setValType(this)">RC</button>
-                <button class="seg-btn" data-val="BASE" onclick="setValType(this)">Base</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Listing / BIN Price</label>
-              <div style="display:flex;align-items:center;gap:6px">
-                <span style="color:var(--text-muted);font-size:16px;line-height:1">$</span>
-                <input class="form-input" id="v-listing" type="number" step="0.01" placeholder="0.00" oninput="calcValuation()" style="font-size:18px;font-weight:600;letter-spacing:-.3px">
-              </div>
-            </div>
-            <div class="form-group right">
-              <label class="form-label">Shipping</label>
-              <div style="display:flex;align-items:center;gap:6px">
-                <span style="color:var(--text-muted);font-size:16px;line-height:1">$</span>
-                <input class="form-input" id="v-shipping" type="number" step="0.01" placeholder="0.00" oninput="calcValuation()" style="font-size:18px;font-weight:600;letter-spacing:-.3px">
-              </div>
-            </div>
-          </div>
+      <!-- ══ CALCULATOR ══ -->
+      <div class="vcalc">
 
-          <!-- Comps -->
-          <div style="padding:12px 20px 8px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
-            <span style="font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase">eBay Comps — Last 5 Sold</span>
-            <button class="form-btn secondary" style="font-size:11px;padding:4px 10px;border-radius:6px" onclick="clearComps()">Clear</button>
+        <!-- Verdict: the only thing you act on, so it leads -->
+        <div class="verdict" id="v-verdict">
+          <div class="verdict-tag" id="v-decision-display">&mdash;</div>
+          <div class="verdict-sub" id="v-discount-display">Enter comps to calculate</div>
+          <div class="verdict-bid">
+            <span class="verdict-bid-lab">Bid up to</span>
+            <span class="verdict-bid-num" id="v-maxbid">&mdash;</span>
           </div>
-          <div class="comp-row">
-            <div class="comp-cell"><div class="comp-num">Comp 1</div><input class="comp-field" id="v-c1" type="number" step="0.01" placeholder="—" oninput="calcValuation()"></div>
-            <div class="comp-cell"><div class="comp-num">Comp 2</div><input class="comp-field" id="v-c2" type="number" step="0.01" placeholder="—" oninput="calcValuation()"></div>
-            <div class="comp-cell"><div class="comp-num">Comp 3</div><input class="comp-field" id="v-c3" type="number" step="0.01" placeholder="—" oninput="calcValuation()"></div>
-            <div class="comp-cell"><div class="comp-num">Comp 4</div><input class="comp-field" id="v-c4" type="number" step="0.01" placeholder="—" oninput="calcValuation()"></div>
-            <div class="comp-cell"><div class="comp-num">Comp 5</div><input class="comp-field" id="v-c5" type="number" step="0.01" placeholder="—" oninput="calcValuation()"></div>
-          </div>
+          <div class="verdict-hint" id="v-maxbid-hint">item price &mdash; shipping and tax are added on top</div>
+        </div>
 
-          <!-- Action bar -->
-          <div class="val-action-bar">
-            <div class="val-action-primary">
-              <button class="form-btn" onclick="saveValuation()">Save</button>
-              <button class="form-btn green-btn" id="v-get-data-btn" onclick="getSCPData()">Get SCP Data</button>
-            </div>
-            <span id="v-scp-status" style="font-size:11px;color:var(--text-muted);display:none"></span>
-            <div class="val-action-links">
-              <a id="v-link-comps" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbayComps(event)">🔍 Comps</a>
-              <a id="v-link-sn" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbaySN(event)">🏷️ S/N</a>
-              <a id="v-link-auto" href="#" target="_blank" rel="noopener noreferrer" class="ebay-chip disabled" onclick="return openEbayAuto(event)">✍️ Auto</a>
-              <button class="form-btn secondary val-clear-all" onclick="resetValuation()">Clear All</button>
-            </div>
+        <!-- Card identity -->
+        <div class="vsec"><span class="vsec-t">Card</span></div>
+        <div class="vgroup">
+          <label class="vrow"><span class="vrow-k">Player</span>
+            <input class="vrow-in" id="v-player" type="text" placeholder="Nick Kurtz" oninput="calcValuation()"></label>
+          <label class="vrow"><span class="vrow-k">Year</span>
+            <input class="vrow-in" id="v-year" type="number" placeholder="2025" oninput="calcValuation()"></label>
+          <label class="vrow"><span class="vrow-k">Parallel</span>
+            <input class="vrow-in" id="v-parallel" type="text" placeholder="Gold Mojo /50" oninput="calcValuation()"></label>
+          <label class="vrow"><span class="vrow-k">Card #</span>
+            <input class="vrow-in" id="v-cardno" type="text" placeholder="BDC-166" oninput="calcValuation()"></label>
+        </div>
+        <div class="seg-ctrl" id="v-type-seg">
+          <button class="seg-btn active" data-val="S/N" onclick="setValType(this)">S/N</button>
+          <button class="seg-btn" data-val="AUTO" onclick="setValType(this)">Auto</button>
+          <button class="seg-btn" data-val="RC" onclick="setValType(this)">RC</button>
+          <button class="seg-btn" data-val="BASE" onclick="setValType(this)">Base</button>
+        </div>
+
+        <!-- Cost -->
+        <div class="vsec"><span class="vsec-t">Your cost</span></div>
+        <div class="vgroup">
+          <label class="vrow"><span class="vrow-k">Listing</span>
+            <span class="vrow-money"><span class="vrow-cur">$</span><input class="vrow-in num" id="v-listing" type="number" step="0.01" placeholder="0.00" oninput="calcValuation()"></span></label>
+          <label class="vrow"><span class="vrow-k">Shipping</span>
+            <span class="vrow-money"><span class="vrow-cur">$</span><input class="vrow-in num" id="v-shipping" type="number" step="0.01" placeholder="0.00" oninput="calcValuation()"></span></label>
+          <div class="vrow"><span class="vrow-k sub">Tax &middot; 9.25%</span><span class="vrow-v" id="v-tax">&mdash;</span></div>
+          <div class="vrow total"><span class="vrow-k">Total</span><span class="vrow-v" id="v-total">&mdash;</span></div>
+        </div>
+
+        <!-- Comps -->
+        <div class="vsec"><span class="vsec-t">Comps</span><span class="vsec-x" id="v-comps-avg">&mdash;</span></div>
+        <div class="vgroup">
+          <div class="vcomps">
+            <input class="vcomp" id="v-c1" type="number" step="0.01" placeholder="&mdash;" oninput="calcValuation()">
+            <input class="vcomp" id="v-c2" type="number" step="0.01" placeholder="&mdash;" oninput="calcValuation()">
+            <input class="vcomp" id="v-c3" type="number" step="0.01" placeholder="&mdash;" oninput="calcValuation()">
+            <input class="vcomp" id="v-c4" type="number" step="0.01" placeholder="&mdash;" oninput="calcValuation()">
+            <input class="vcomp" id="v-c5" type="number" step="0.01" placeholder="&mdash;" oninput="calcValuation()">
+          </div>
+          <div class="vrow vcomps-foot">
+            <span class="vrow-k sub" id="v-compcount">0 / 5</span>
+            <button class="vlink-btn" onclick="clearComps()">Clear comps</button>
           </div>
         </div>
 
-        <!-- RESULT PANEL -->
-        <div class="panel" style="overflow:hidden">
-          <!-- Decision -->
-          <div id="v-decision-display" class="big-decision pending" style="font-size:36px;padding:24px 20px 8px">—</div>
-          <div id="v-discount-display" class="discount-pct" style="padding-bottom:16px;font-size:12px">Enter comps to calculate</div>
-
-          <!-- Metrics -->
-          <div style="border-top:1px solid var(--border)">
-            <div class="val-result-row"><span class="val-result-label">Listing</span><span class="val-result-val" id="v-listing-display">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">Shipping</span><span class="val-result-val" id="v-shipping-display" style="font-size:13px;color:var(--text-secondary)">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">Tax <span style="color:var(--text-muted);font-weight:500">(9.25%)</span></span><span class="val-result-val" id="v-tax" style="font-size:13px;color:var(--text-secondary)">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">Total Cost</span><span class="val-result-val" id="v-total">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">Avg TMV</span><span class="val-result-val" id="v-tmv">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">Discount</span><span class="val-result-val" id="v-discount">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">Max Bid <span style="color:var(--text-muted);font-weight:500">(item price)</span></span><span class="val-result-val" id="v-maxbid">—</span></div>
-            <div class="val-result-row" style="border-bottom:none"><span class="val-result-label" style="color:var(--text-muted)">Comps</span><span class="val-result-val" id="v-compcount" style="color:var(--text-muted);font-size:12px">0 / 5</span></div>
+        <!-- SCP reference (only shown after a lookup) -->
+        <div id="v-scp-block" style="display:none">
+          <div class="vsec">
+            <span class="vsec-t"><a id="v-scp-link" href="#" target="_blank" rel="noopener noreferrer" class="vsec-link">SCP</a> reference</span>
+            <button class="vlink-btn" onclick="useSCPAsComp()">Use as comp</button>
           </div>
-
-          <!-- SCP block -->
-          <div id="v-scp-block" style="display:none;border-top:1px solid var(--border)">
-            <div style="padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between">
-              <span style="font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted)">
-                <a id="v-scp-link" href="#" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;font-weight:700">SCP</a> Reference
-              </span>
-              <button class="form-btn secondary" style="font-size:10px;padding:3px 9px;border-radius:6px" onclick="useSCPAsComp()">Use as Comp</button>
-            </div>
-            <div class="val-result-row"><span class="val-result-label">RAW</span><span class="val-result-val" id="v-scp-raw" style="color:var(--yellow)">—</span></div>
-            <div class="val-result-row"><span class="val-result-label">PSA 9</span><span class="val-result-val" id="v-scp-g9" style="font-size:13px;color:var(--text-secondary)">—</span></div>
-            <div class="val-result-row" style="border-bottom:none"><span class="val-result-label">PSA 10</span><span class="val-result-val" id="v-scp-p10" style="font-size:13px;color:var(--text-secondary)">—</span></div>
+          <div class="vgroup">
+            <div class="vrow"><span class="vrow-k">Raw</span><span class="vrow-v strong" id="v-scp-raw">&mdash;</span></div>
+            <div class="vrow"><span class="vrow-k sub">PSA 9</span><span class="vrow-v" id="v-scp-g9">&mdash;</span></div>
+            <div class="vrow"><span class="vrow-k sub">PSA 10</span><span class="vrow-v" id="v-scp-p10">&mdash;</span></div>
           </div>
         </div>
+
+        <!-- Actions -->
+        <div class="vacts">
+          <button class="vbtn primary" onclick="saveValuation()">Save valuation</button>
+          <button class="vbtn plain" id="v-get-data-btn" onclick="getSCPData()">Get SCP data</button>
+          <div id="v-scp-status" class="vstatus" style="display:none"></div>
+        </div>
+        <div class="vlinks">
+          <span>eBay</span>
+          <a id="v-link-comps" href="#" target="_blank" rel="noopener noreferrer" class="disabled" onclick="return openEbayComps(event)">Comps</a>
+          <span class="sep">&middot;</span>
+          <a id="v-link-sn" href="#" target="_blank" rel="noopener noreferrer" class="disabled" onclick="return openEbaySN(event)">S/N</a>
+          <span class="sep">&middot;</span>
+          <a id="v-link-auto" href="#" target="_blank" rel="noopener noreferrer" class="disabled" onclick="return openEbayAuto(event)">Auto</a>
+        </div>
+        <button class="vclear" onclick="resetValuation()">Clear all</button>
       </div>
 
-      <!-- HISTORY -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Leaderboard <span id="sync-status" class="auth-pill"></span></div>
-          <div class="panel-actions">
-            <button class="form-btn secondary vl-clear-btn" onclick="clearValHistory()">Clear</button>
-          </div>
+      <!-- ══ HISTORY ══ -->
+      <div class="vhist">
+        <div class="vsec vhist-head">
+          <span class="vsec-t">History</span>
+          <button class="vlink-btn danger" onclick="clearValHistory()">Clear all</button>
         </div>
-        <div class="vl-stats" id="vl-stats-row"></div>
+        <div class="vl-summary" id="vl-stats-row"></div>
         <div class="vl-filters">
           <button class="vl-tab active" data-vf="all"      onclick="setVlFilter(this)">All</button>
-          <button class="vl-tab"        data-vf="buy"      onclick="setVlFilter(this)">BUY</button>
+          <button class="vl-tab"        data-vf="buy"      onclick="setVlFilter(this)">Buy</button>
           <button class="vl-tab"        data-vf="bought"   onclick="setVlFilter(this)">Bought</button>
           <button class="vl-tab"        data-vf="pass"     onclick="setVlFilter(this)">Pass</button>
           <button class="vl-tab"        data-vf="watching" onclick="setVlFilter(this)">Watching</button>
           <button class="vl-tab"        data-vf="sold"     onclick="setVlFilter(this)">Sold</button>
         </div>
-        <div style="overflow-x:auto">
-          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-            <thead>
-              <tr id="val-history-thead">
-              </tr>
-            </thead>
-            <tbody id="val-history-tbody">
-              <tr><td colspan="9" class="val-empty">No valuations saved yet.</td></tr>
-            </tbody>
-          </table>
+        <div class="vl-sortbar">
+          <span class="vl-sortlab">Sort</span>
+          <button class="vl-sort" data-sc="date"     onclick="_vlSortBy('date')">Recent</button>
+          <button class="vl-sort" data-sc="discount" onclick="_vlSortBy('discount')">Discount</button>
+          <button class="vl-sort" data-sc="tmv"      onclick="_vlSortBy('tmv')">Value</button>
+          <button class="vl-sort" data-sc="player"   onclick="_vlSortBy('player')">Player</button>
         </div>
+        <div id="val-history-list"></div>
       </div>
     </div>
 
@@ -3481,13 +3530,16 @@ function calcValuation() {
   const listing  = parseFloat($('v-listing').value);
   const shipping = parseFloat($('v-shipping').value) || 0;
 
+  const verdict = $('v-verdict');
   $('v-compcount').textContent = comps.length + ' / 5';
 
   if (comps.length === 0) {
-    ['v-tmv','v-listing-display','v-shipping-display','v-tax','v-total','v-discount','v-maxbid'].forEach(id => $(id).textContent = '—');
+    ['v-tax','v-total','v-comps-avg'].forEach(id => $(id).textContent = '—');
+    $('v-maxbid').textContent = '—';
     $('v-decision-display').textContent = '—';
-    $('v-decision-display').className = 'big-decision pending';
+    verdict.className = 'verdict';
     $('v-discount-display').textContent = 'Enter comps to calculate';
+    $('v-maxbid-hint').textContent = 'item price — shipping and tax are added on top';
     return;
   }
 
@@ -3497,34 +3549,30 @@ function calcValuation() {
   // shipping and CA sales tax on (item+shipping), the all-in total stays
   // under budget: (maxBid + shipping) * (1+rate) <= budget
   const maxBid = Math.max(0, budget / (1 + SALES_TAX_RATE) - shipping);
-  $('v-tmv').textContent = '$' + tmv.toFixed(2);
+  $('v-comps-avg').textContent = 'avg $' + tmv.toFixed(2);
   $('v-maxbid').textContent = '$' + maxBid.toFixed(2);
-  $('v-shipping-display').textContent = shipping > 0 ? '$' + shipping.toFixed(2) : '—';
+  $('v-maxbid-hint').textContent = `item price — keeps you under $${budget.toFixed(2)} all-in`;
 
   if (!isNaN(listing) && listing > 0) {
     const tax = (listing + shipping) * SALES_TAX_RATE;
     const total = listing + shipping + tax;
     const discount = (tmv - total) / tmv;
     const pct = (discount * 100).toFixed(1);
-    $('v-listing-display').textContent = '$' + listing.toFixed(2);
     $('v-tax').textContent = '$' + tax.toFixed(2);
     $('v-total').textContent = '$' + total.toFixed(2);
-    $('v-discount').textContent = (discount >= 0 ? '+' : '') + pct + '%';
-    $('v-discount').style.color = discount >= 0.20 ? 'var(--green)' : discount >= 0 ? 'var(--yellow)' : 'var(--red)';
 
     const isBuy = discount >= 0.20 && total <= budget;
     $('v-decision-display').textContent = isBuy ? 'BUY' : 'PASS';
-    $('v-decision-display').className = 'big-decision ' + (isBuy ? 'buy' : 'pass');
-    $('v-discount-display').textContent = pct + '% below market' + (isBuy ? ' · at or under budget' : '');
+    verdict.className = 'verdict ' + (isBuy ? 'buy' : 'pass');
+    $('v-discount-display').textContent = discount >= 0
+      ? `${pct}% below market value`
+      : `${Math.abs(pct)}% over market value`;
   } else {
-    $('v-listing-display').textContent = '—';
     $('v-tax').textContent = '—';
     $('v-total').textContent = '—';
-    $('v-discount').textContent = '—';
-    $('v-discount').style.color = '';
     $('v-decision-display').textContent = '—';
-    $('v-decision-display').className = 'big-decision pending';
-    $('v-discount-display').textContent = 'TMV: $' + tmv.toFixed(2) + ' · Max Bid: $' + maxBid.toFixed(2);
+    verdict.className = 'verdict';
+    $('v-discount-display').textContent = 'Add a listing price for a verdict';
   }
 }
 
@@ -3893,16 +3941,18 @@ function renderVlStats(h) {
   const withDisc = h.filter(e => e.discount != null && e.discount > 0);
   const best    = withDisc.length ? Math.max(...withDisc.map(e => e.discount)) : null;
   const avgDisc = withDisc.length ? withDisc.reduce((s,e) => s+e.discount, 0) / withDisc.length : null;
-  // `hero` marks the headline stat — it spans the full width on mobile so the
-  // five stats lay out 1 + 2 + 2 instead of leaving an orphan in a 3-col grid.
-  const stat = (label, val, color='var(--text-primary)', hero=false) =>
-    `<div class="vl-stat${hero ? ' vl-stat--hero' : ''}"><div class="vl-stat-label">${label}</div><div class="vl-stat-val" style="color:${color}">${val}</div></div>`;
+  // Two quiet lines of text rather than five competing stat boxes — these are
+  // context for the list below, not the headline.
   el.innerHTML =
-    stat('Analyzed', h.length, 'var(--text-primary)', true) +
-    stat('BUY Signals', buys.length, buys.length ? 'var(--green)' : 'var(--text-primary)') +
-    stat('Bought', bought.length, bought.length ? 'var(--accent)' : 'var(--text-primary)') +
-    stat('Best Deal', best != null ? (best*100).toFixed(0)+'% off' : '—', best >= 0.30 ? 'var(--green)' : 'var(--yellow)') +
-    stat('Avg Discount', avgDisc != null ? (avgDisc*100).toFixed(1)+'%' : '—');
+    `<div class="vl-sumline">
+       <b>${h.length}</b> analyzed <span class="dot">·</span>
+       <b>${buys.length}</b> buy ${buys.length === 1 ? 'signal' : 'signals'} <span class="dot">·</span>
+       <b>${bought.length}</b> bought
+     </div>` +
+    (withDisc.length ? `<div class="vl-sumline">
+       best deal <span class="up">${(best*100).toFixed(0)}% off</span> <span class="dot">·</span>
+       avg discount <b>${(avgDisc*100).toFixed(1)}%</b>
+     </div>` : '');
 }
 
 function renderValHistory() {
@@ -3936,84 +3986,45 @@ function renderValHistory() {
     return av < bv ? _vlSort.dir : av > bv ? -_vlSort.dir : 0;
   });
 
-  const tbody = $('val-history-tbody');
-  const thead = $('val-history-thead');
+  // Highlight the active sort control
+  document.querySelectorAll('.vl-sort').forEach(b =>
+    b.classList.toggle('active', b.dataset.sc === _vlSort.col));
 
-  const thStyle = 'padding:9px 14px;color:var(--text-muted);font-weight:600;font-size:10px;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-base)';
-  const arrow = col => {
-    const active = _vlSort.col === col;
-    const sym = active ? (_vlSort.dir < 0 ? '↓' : '↑') : '↕';
-    return `<span class="sort-arrow${active?' active':''}">${sym}</span>`;
-  };
-  thead.innerHTML = `
-    <th style="${thStyle};width:28px">#</th>
-    <th class="vh-sort-th" style="${thStyle};text-align:left" onclick="_vlSortBy('player')">Player ${arrow('player')}</th>
-    <th style="${thStyle};text-align:left">Card</th>
-    <th class="vh-sort-th" style="${thStyle};text-align:right" onclick="_vlSortBy('listing')">Listing ${arrow('listing')}</th>
-    <th class="vh-sort-th" style="${thStyle};text-align:right" onclick="_vlSortBy('tmv')">TMV ${arrow('tmv')}</th>
-    <th class="vh-sort-th" style="${thStyle};text-align:right" onclick="_vlSortBy('discount')">Discount ${arrow('discount')}</th>
-    <th style="${thStyle};text-align:right">Max Bid</th>
-    <th style="${thStyle};text-align:center">Decision</th>
-    <th style="${thStyle}"></th>
-    <th style="${thStyle}"></th>`;
-
+  const list = $('val-history-list');
   if (h.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" class="val-empty">No entries match this filter.</td></tr>`;
+    list.innerHTML = `<div class="val-empty">No entries match this filter.</div>`;
     return;
   }
 
-  tbody.innerHTML = h.map((e, rank) => {
-    const discVal   = e.discount ?? null;
-    const discStr   = discVal !== null ? ((discVal*100).toFixed(1)+'%') : '—';
-    const discColor = discVal >= 0.20 ? 'var(--green)' : discVal >= 0 ? 'var(--yellow)' : 'var(--red)';
-    const barW      = discVal > 0 ? Math.min(100, (discVal / 0.70) * 100).toFixed(1) : 0;
-    const isSold    = e.status === 'sold';
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-    let decCell;
-    if (isSold) {
-      decCell = `<span style="font-size:11px;font-weight:700;color:var(--green);background:var(--green-bg);padding:3px 9px;border-radius:12px;border:1px solid rgba(34,211,106,0.25)">SOLD${e.soldPrice != null ? ' $'+e.soldPrice.toFixed(2) : ''}</span>`;
-    } else {
-      const dc = e.decision === 'BUY' ? 'var(--green)' : e.decision === 'PASS' ? 'var(--red)' : 'var(--text-muted)';
-      const db = e.decision === 'BUY' ? 'var(--green-bg)' : e.decision === 'PASS' ? 'var(--red-bg)' : 'transparent';
-      const dbr = e.decision === 'BUY' ? 'rgba(34,211,106,0.25)' : e.decision === 'PASS' ? 'rgba(242,92,92,0.25)' : 'var(--border)';
-      decCell = `<span style="font-size:11px;font-weight:700;color:${dc};background:${db};padding:3px 9px;border-radius:12px;border:1px solid ${dbr}">${e.decision || '—'}</span>`;
-    }
+  list.innerHTML = h.map(e => {
+    const isSold = e.status === 'sold';
+    const d      = e.discount;
+    const discStr = d != null ? (d >= 0 ? '' : '−') + Math.abs(d*100).toFixed(0) + '%' : '—';
+    const discCls = d == null ? '' : d >= 0.20 ? ' g' : d < 0 ? ' r' : '';
 
-    const chip = (txt, color, bg, border) =>
-      `<span style="font-size:9px;font-weight:700;letter-spacing:.3px;color:${color};background:${bg};border:1px solid ${border};padding:1px 6px;border-radius:10px;margin-left:5px;vertical-align:middle">${txt}</span>`;
-    const boughtChip = e.purchased && !isSold ? chip('BOUGHT','var(--accent)','var(--accent-glow)','rgba(212,168,67,0.3)') : '';
-    const intentChip = isSold ? '' :
-        e.holdFlip === 'flip'     ? chip('FLIP',  'var(--yellow)','var(--yellow-bg)','rgba(245,200,66,0.25)')
-      : e.holdFlip === 'watching' ? chip('WATCH', '#2dd4bf','rgba(45,212,191,0.1)','rgba(45,212,191,0.25)')
-      : '';
+    const chips = [
+      e.purchased && !isSold ? '<span class="vchip bought">Bought</span>' : '',
+      isSold ? '<span class="vchip sold">Sold</span>' : '',
+      !isSold && e.holdFlip === 'flip'     ? '<span class="vchip flip">Flip</span>'  : '',
+      !isSold && e.holdFlip === 'watching' ? '<span class="vchip watch">Watch</span>' : '',
+    ].join('');
 
-    const rowBorder = isSold ? 'rgba(34,211,106,0.18)' : e.decision === 'BUY' ? 'rgba(34,211,106,0.3)' : e.decision === 'PASS' ? 'rgba(242,92,92,0.18)' : 'transparent';
-    const rankNum = rank + 1;
-    const rankCls = rankNum <= 3 ? ' top' : '';
-
-    return `<tr style="border-bottom:1px solid var(--border);border-left:2px solid ${rowBorder};transition:background .1s;cursor:pointer;${isSold?'opacity:.6':''}" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openValCard('${e.id}')">
-      <td style="padding:8px 10px;text-align:center"><span class="vl-rank${rankCls}">${rankNum}</span></td>
-      <td style="padding:10px 14px;vertical-align:middle">
-        <div style="font-weight:700;font-size:13px;${isSold?'text-decoration:line-through;color:var(--text-muted)':''}">${e.player}${boughtChip}${intentChip}</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:1px">${e.date} · ${e.type}</div>
-      </td>
-      <td style="padding:10px 14px;font-size:11.5px;color:var(--text-secondary);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.parallel||'—'}<br><span style="color:var(--text-muted);font-size:10px">${e.year||''}</span></td>
-      <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums">${e.listing!=null?'$'+e.listing.toFixed(2):'—'}</td>
-      <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$${e.tmv.toFixed(2)}</td>
-      <td style="padding:10px 14px;text-align:right">
-        <div style="font-weight:700;color:${discVal!==null?discColor:'var(--text-muted)'}">${discStr}</div>
-        <div class="disc-track" style="margin-left:auto"><div class="disc-fill" style="width:${barW}%;background:${discColor}"></div></div>
-      </td>
-      <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-secondary)">$${e.maxBid.toFixed(2)}</td>
-      <td style="padding:10px 14px;text-align:center">${decCell}</td>
-      <td style="padding:10px 14px;text-align:center" onclick="event.stopPropagation()">
-        <a href="https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent([e.player,e.parallel,e.cardno].filter(Boolean).join(' '))}" target="_blank" rel="noopener noreferrer"
-          style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:3px 8px;border-radius:10px;text-decoration:none;transition:all .15s;white-space:nowrap"
-          onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
-          onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay ↗</a>
-      </td>
-      <td style="padding:10px 14px"><button class="delete-btn" onclick="event.stopPropagation();deleteValEntry('${e.id}')">✕</button></td>
-    </tr>`;
+    return `<div class="vent${isSold ? ' sold' : ''}" onclick="openValCard('${e.id}')">
+      <div class="vent-main">
+        <div class="vent-nm">${esc(e.player)}${chips}</div>
+        <div class="vent-meta">${esc(e.parallel || e.cardno || '—')}${e.year ? ' · ' + esc(e.year) : ''}</div>
+      </div>
+      <div class="vent-card">${esc(e.parallel || '—')}</div>
+      <div class="vent-money">
+        <div class="vent-paid">${e.listing != null ? '$' + e.listing.toFixed(2) : '—'}</div>
+        <div class="vent-tmv">$${e.tmv.toFixed(2)}</div>
+        <div class="vent-off${discCls}">${discStr}</div>
+      </div>
+      <button class="vent-del" title="Delete" onclick="event.stopPropagation();deleteValEntry('${e.id}')">✕</button>
+    </div>`;
   }).join('');
 }
 
