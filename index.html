@@ -154,14 +154,15 @@
     .val-clear-all{grid-column:1 / -1;margin:0 !important;margin-top:2px !important;padding:8px !important;border-radius:10px;
       background:transparent !important;border:none !important;color:var(--text-muted) !important;font-size:11px !important}
     #v-scp-status{order:-1;text-align:center}
-    /* Leaderboard stat banner: wrap into a grid so labels aren't clipped */
-    .vl-stats{display:grid !important;grid-template-columns:repeat(3,1fr)}
-    .vl-stat{padding:11px 12px;border-bottom:1px solid var(--border)}
-    .vl-stat:nth-child(3n){border-right:none}
-    .vl-stat-label{white-space:normal;line-height:1.25}
-    .vl-stat-val{font-size:16px}
-    #page-valuation .panel-actions{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:2px}
-    .vl-tab{flex-shrink:0}
+    /* Leaderboard stats: 1 + 2 + 2 so no stat is left orphaned in a row */
+    .vl-stats{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;padding:12px !important}
+    .vl-stat--hero{grid-column:1 / -1}
+    .vl-stat--hero .vl-stat-val{font-size:24px}
+    .vl-stat{padding:11px 13px !important}
+    .vl-stat-val{font-size:17px}
+    /* Header keeps title and Clear on one line instead of stacking */
+    #page-valuation .panel-header{flex-wrap:nowrap;gap:10px}
+    #page-valuation .panel-title{min-width:0;flex:1}
 
     /* Card detail modal — arrows replaced by swipe */
     .card-detail-modal{width:96vw !important;max-height:92vh}
@@ -527,15 +528,31 @@
   .ebay-link{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   .ebay-link.disabled{opacity:.35;pointer-events:none;cursor:default}
   /* VALUATION LEADERBOARD */
-  .vl-stats{display:flex;border-bottom:1px solid var(--border)}
-  .vl-stat{flex:1;padding:14px 18px;border-right:1px solid var(--border);min-width:0}
-  .vl-stat:last-child{border-right:none}
-  .vl-stat-label{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
+  /* Auth state pill in the leaderboard header */
+  .auth-pill{font-size:9.5px;font-weight:700;letter-spacing:.3px;padding:3px 9px;border-radius:20px;
+    border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);white-space:nowrap;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:color .3s}
+  .vl-clear-btn{font-size:11px;padding:6px 14px;border-radius:20px;background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .vl-clear-btn:hover{color:var(--red);border-color:rgba(242,92,92,0.35)}
+
+  /* Leaderboard stats — glass tiles rather than hard-ruled table cells */
+  .vl-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:14px;border-bottom:1px solid var(--border)}
+  .vl-stat{padding:12px 14px;min-width:0;border-radius:12px;
+    background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .vl-stat-label{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .vl-stat-val{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text-primary);white-space:nowrap}
-  .vl-filters{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-  .vl-tab{font-size:11px;font-weight:600;padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;transition:all .15s}
+  /* Filters — single scrollable row, never wraps to an orphan */
+  .vl-filters{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .vl-filters::-webkit-scrollbar{display:none}
+  .vl-tab{font-size:11.5px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.04);color:var(--text-muted);cursor:pointer;transition:all .15s;flex-shrink:0;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   .vl-tab:hover{border-color:var(--border-light);color:var(--text-secondary)}
-  .vl-tab.active{background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.35);color:var(--accent)}
+  .vl-tab.active{background:rgba(212,168,67,0.12);border-color:rgba(212,168,67,0.4);color:var(--accent)}
   .disc-track{margin-top:4px;height:3px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden;width:72px}
   .disc-fill{height:100%;border-radius:2px;transition:width .4s ease}
   .vh-sort-th{cursor:pointer;user-select:none;white-space:nowrap}
@@ -981,9 +998,9 @@
       <!-- HISTORY -->
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">Leaderboard <span id="sync-status" style="font-size:10px;font-weight:600;margin-left:8px;transition:color .3s"></span></div>
+          <div class="panel-title">Leaderboard <span id="sync-status" class="auth-pill"></span></div>
           <div class="panel-actions">
-            <button class="form-btn secondary" onclick="clearValHistory()">Clear</button>
+            <button class="form-btn secondary vl-clear-btn" onclick="clearValHistory()">Clear</button>
           </div>
         </div>
         <div class="vl-stats" id="vl-stats-row"></div>
@@ -3832,7 +3849,7 @@ function renderWatchRow() {
     const discColor = e.discount >= 0.20 ? 'var(--green)' : e.discount >= 0 ? 'var(--yellow)' : 'var(--red)';
     const decCls    = e.decision === 'BUY' ? 'decision-buy' : e.decision === 'PASS' ? 'decision-pass' : 'decision-pending';
     const boughtChip = e.purchased ? chip('BOUGHT','var(--accent)','var(--accent-glow)','rgba(212,168,67,0.3)') : '';
-    return `<tr style="border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openValCard(${e.id})">
+    return `<tr style="border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openValCard('${e.id}')">
       <td style="padding:10px 14px;vertical-align:middle">
         <div style="font-weight:600;font-size:13px">${e.player}${boughtChip}</div>
         <div style="font-size:11px;color:var(--text-muted)">${e.date} · ${e.type}</div>
@@ -3876,10 +3893,12 @@ function renderVlStats(h) {
   const withDisc = h.filter(e => e.discount != null && e.discount > 0);
   const best    = withDisc.length ? Math.max(...withDisc.map(e => e.discount)) : null;
   const avgDisc = withDisc.length ? withDisc.reduce((s,e) => s+e.discount, 0) / withDisc.length : null;
-  const stat = (label, val, color='var(--text-primary)') =>
-    `<div class="vl-stat"><div class="vl-stat-label">${label}</div><div class="vl-stat-val" style="color:${color}">${val}</div></div>`;
+  // `hero` marks the headline stat — it spans the full width on mobile so the
+  // five stats lay out 1 + 2 + 2 instead of leaving an orphan in a 3-col grid.
+  const stat = (label, val, color='var(--text-primary)', hero=false) =>
+    `<div class="vl-stat${hero ? ' vl-stat--hero' : ''}"><div class="vl-stat-label">${label}</div><div class="vl-stat-val" style="color:${color}">${val}</div></div>`;
   el.innerHTML =
-    stat('Analyzed', h.length) +
+    stat('Analyzed', h.length, 'var(--text-primary)', true) +
     stat('BUY Signals', buys.length, buys.length ? 'var(--green)' : 'var(--text-primary)') +
     stat('Bought', bought.length, bought.length ? 'var(--accent)' : 'var(--text-primary)') +
     stat('Best Deal', best != null ? (best*100).toFixed(0)+'% off' : '—', best >= 0.30 ? 'var(--green)' : 'var(--yellow)') +
@@ -3972,7 +3991,7 @@ function renderValHistory() {
     const rankNum = rank + 1;
     const rankCls = rankNum <= 3 ? ' top' : '';
 
-    return `<tr style="border-bottom:1px solid var(--border);border-left:2px solid ${rowBorder};transition:background .1s;cursor:pointer;${isSold?'opacity:.6':''}" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openValCard(${e.id})">
+    return `<tr style="border-bottom:1px solid var(--border);border-left:2px solid ${rowBorder};transition:background .1s;cursor:pointer;${isSold?'opacity:.6':''}" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openValCard('${e.id}')">
       <td style="padding:8px 10px;text-align:center"><span class="vl-rank${rankCls}">${rankNum}</span></td>
       <td style="padding:10px 14px;vertical-align:middle">
         <div style="font-weight:700;font-size:13px;${isSold?'text-decoration:line-through;color:var(--text-muted)':''}">${e.player}${boughtChip}${intentChip}</div>
@@ -3993,7 +4012,7 @@ function renderValHistory() {
           onmouseover="this.style.color='var(--text-primary)';this.style.borderColor='var(--border-light)'"
           onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">eBay ↗</a>
       </td>
-      <td style="padding:10px 14px"><button class="delete-btn" onclick="event.stopPropagation();deleteValEntry(${e.id})">✕</button></td>
+      <td style="padding:10px 14px"><button class="delete-btn" onclick="event.stopPropagation();deleteValEntry('${e.id}')">✕</button></td>
     </tr>`;
   }).join('');
 }
