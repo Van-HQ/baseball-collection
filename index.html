@@ -114,11 +114,6 @@
     #hero-player > div > div:nth-child(2){flex:1 1 100% !important}
     #hero-player > div > div:nth-last-child(1){display:none !important}
 
-    /* Valuation entry modal: Date Purchased / Date Sold rows are label +
-       date input + a "Mark ✓" action all in one row — too tight at this
-       width, so the value side drops to its own line under the label */
-    #vm-bought-form,#vm-sold-date-row{flex-wrap:wrap;row-gap:8px}
-    #vm-bought-form > div,#vm-sold-date-row > div{flex:1 1 100%;justify-content:space-between}
     /* Metrics strip: 4 equal columns don't fit "Max Bid $70.00" at this
        width (was overflowing the modal by ~30px) — 2x2 instead */
     .vm-metrics{grid-template-columns:repeat(2,1fr) !important}
@@ -757,22 +752,56 @@
     .vent-del{opacity:.45}
   }
 
-  /* ── Val Card Modal ────────────────────────────────────── */
-  .val-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);opacity:0;transition:opacity .18s}
+  /* ── Val Card Modal — real frosted glass, matching the player card ── */
+  .val-modal-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;
+    background:
+      radial-gradient(70% 55% at 18% 10%, rgba(212,168,67,0.13) 0%, transparent 60%),
+      radial-gradient(60% 50% at 85% 80%, rgba(48,209,88,0.10) 0%, transparent 62%),
+      rgba(0,0,0,0.65);
+    backdrop-filter:blur(4px);opacity:0;transition:opacity .18s}
   .val-modal-overlay.open{opacity:1}
-  .val-modal{background:var(--v-surface);border:1px solid var(--v-hairline);border-radius:16px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.7);transform:translateY(12px);transition:transform .18s}
+  .val-modal{
+    background:rgba(28,28,31,0.72);
+    backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);
+    border:1px solid var(--v-hairline);border-radius:22px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;
+    box-shadow:0 1px 0 0 rgba(255,255,255,0.07) inset, 0 24px 60px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+    transform:translateY(12px);transition:transform .18s}
   .val-modal-overlay.open .val-modal{transform:translateY(0)}
-  .val-modal-hdr{padding:20px 20px 16px;display:flex;align-items:flex-start;gap:16px;border-bottom:1px solid var(--v-hairline)}
-  /* Metrics strip — same grouped-list treatment as the calculator's Card/Cost sections */
-  .vm-metrics{display:grid;grid-template-columns:repeat(4,1fr);background:var(--v-surface-2);border-bottom:1px solid var(--v-hairline)}
-  .vm-metric{padding:13px 16px;border-right:1px solid var(--v-hairline)}
+  .val-modal-hdr{padding:18px 20px 16px;display:flex;align-items:flex-start;gap:16px;border-bottom:1px solid var(--v-hairline)}
+  .vm-icon-btn{width:29px;height:29px;border-radius:50%;border:none;flex-shrink:0;
+    background:rgba(255,255,255,0.055);color:var(--v-text-2);font-size:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s}
+  .vm-icon-btn:hover{color:var(--text-primary);background:rgba(255,255,255,0.09)}
+  .vm-links{display:flex;gap:16px;margin-top:9px}
+  .vm-links a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:500}
+  .vm-links a:hover{text-decoration:underline}
+  /* Metrics strip — centered, not left-aligned, so it reads as a stat row
+     rather than a form. Listing/TMV/Max Bid/Discount: the two dollar
+     figures lead, the two derived numbers (bid ceiling, discount %) follow. */
+  .vm-metrics{display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,255,255,0.04);border-bottom:1px solid var(--v-hairline)}
+  .vm-metric{padding:13px 8px;border-right:1px solid var(--v-hairline);text-align:center}
   .vm-metric:last-child{border-right:none}
-  .vm-metric-lbl{font-size:10px;font-weight:600;color:var(--v-text-3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px}
-  .vm-metric-val{font-size:16px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+  .vm-metric-lbl{font-size:9.5px;font-weight:600;color:var(--v-text-3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px}
+  .vm-metric-val{font-size:15px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
   .vm-section{padding:16px 20px;border-top:1px solid var(--v-hairline)}
   .vm-section-title{font-size:11px;font-weight:600;color:var(--v-text-3);letter-spacing:.3px;margin-bottom:11px}
-  .vm-input{background:var(--v-surface-2);border:1px solid transparent;border-radius:9px;padding:8px 11px;color:var(--text-primary);font-size:14px;font-weight:600;outline:none;transition:border-color .15s;font-family:inherit}
+  .vm-input{background:rgba(255,255,255,0.055);border:1px solid transparent;border-radius:9px;padding:8px 11px;color:var(--text-primary);font-size:14px;font-weight:600;outline:none;transition:border-color .15s;font-family:inherit}
   .vm-input:focus{border-color:var(--accent)}
+  /* Ownership toggles — real iOS-style switches instead of a text link with
+     a checkmark glyph in it. Off = untouched; on reveals the date inline. */
+  .vm-toggle-row{display:flex;align-items:center;gap:12px;padding:12px 8px}
+  .vm-toggle{width:42px;height:25px;border-radius:14px;background:rgba(255,255,255,0.09);position:relative;
+    flex-shrink:0;border:none;cursor:pointer;padding:0;transition:background .2s}
+  .vm-toggle.on{background:var(--v-green)}
+  .vm-toggle-knob{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
+  .vm-toggle.on .vm-toggle-knob{transform:translateX(17px)}
+  .vm-toggle-label{flex:1;min-width:0}
+  .vm-toggle-title{font-size:14px;font-weight:500}
+  .vm-toggle-sub{font-size:11.5px;color:var(--v-text-3);margin-top:1px}
+  .vm-toggle-sub.g{color:var(--v-green)}
+  .vm-toggle-date{font-size:12.5px;color:var(--text-primary);background:rgba(255,255,255,0.07);border:none;
+    border-radius:8px;padding:6px 9px;flex-shrink:0;font-family:inherit;outline:none;color-scheme:dark}
   /* Intent (Hold/Flip/Watching) — a neutral segmented control like Type,
      not a traffic-light. These are states you're tracking, not a verdict,
      so they don't need alarm colors. */
@@ -3848,6 +3877,13 @@ function openValCard(id) {
   $('vm-meta').innerHTML = [e.year, e.type || 'S/N', cardnoHtml, 'Saved ' + e.date]
     .filter(Boolean).join(' &middot; ');
 
+  // eBay Active/Sold — these were missing from this modal entirely (only
+  // the calculator form above it had eBay links).
+  const ebayQ = encodeURIComponent([e.player, e.parallel, e.cardno].filter(Boolean).join(' '));
+  $('vm-ebay-links').innerHTML = `
+    <a href="https://www.ebay.com/sch/i.html?_nkw=${ebayQ}" target="_blank" rel="noopener noreferrer">Active</a>
+    <a href="https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Complete=1&LH_Sold=1" target="_blank" rel="noopener noreferrer">Sold</a>`;
+
   // Decision badge
   const db = $('vm-decision-badge');
   if (e.status === 'sold') {
@@ -3892,39 +3928,34 @@ function openValCard(id) {
   const hf = e.holdFlip || 'hold';
   document.querySelectorAll('.vm-hf-btn').forEach(b => b.classList.toggle('active', b.dataset.hf === hf));
 
-  // Sold section
+  // Sold toggle
+  $('vm-sold-price-row').style.display = 'none';
+  $('vm-sold-date').style.display = 'none';
   if (e.status === 'sold') {
-    $('vm-sold-form').style.display = 'none';
-    $('vm-sold-date-row').style.display = 'none';
-    $('vm-sold-display').style.display = 'flex';
+    $('vm-sold-toggle').classList.add('on');
     const pl = e.listing != null ? (e.soldPrice - e.listing) : null;
-    const plStr = pl !== null ? ((pl >= 0 ? '+' : '') + '$' + pl.toFixed(2)) : '—';
-    const plColor = pl !== null ? (pl >= 0 ? 'var(--v-green)' : 'var(--v-red)') : 'var(--v-text-3)';
-    $('vm-sold-display').innerHTML = `
-      <div class="vm-sold-tag">✓ Sold for <strong>$${e.soldPrice.toFixed(2)}</strong></div>
-      <div style="display:flex;align-items:center;gap:16px">
-        <div style="text-align:right"><div style="font-size:9.5px;color:var(--v-text-3)">DATE</div><div style="font-size:13px;font-weight:600">${e.soldDate || '—'}</div></div>
-        <div style="text-align:right"><div style="font-size:9.5px;color:var(--v-text-3)">P/L</div><div style="font-size:13px;font-weight:700;color:${plColor}">${plStr}</div></div>
-        <button onclick="unmarkSold()" class="vlink-btn" style="color:var(--v-text-3)">Undo</button>
-      </div>`;
+    const plStr = pl !== null ? ((pl >= 0 ? '+' : '') + '$' + pl.toFixed(2)) : null;
+    $('vm-sold-title').textContent = 'Sold for $' + e.soldPrice.toFixed(2);
+    $('vm-sold-sub').style.display = 'block';
+    $('vm-sold-sub').className = 'vm-toggle-sub' + (pl !== null && pl < 0 ? '' : ' g');
+    $('vm-sold-sub').textContent = (e.soldDate || '') + (plStr ? ' · ' + plStr : '');
   } else {
-    $('vm-sold-form').style.display = 'flex';
-    $('vm-sold-date-row').style.display = 'flex';
-    $('vm-sold-display').style.display = 'none';
+    $('vm-sold-toggle').classList.remove('on');
+    $('vm-sold-title').textContent = 'Sold';
+    $('vm-sold-sub').style.display = 'none';
     $('vm-sold-price').value = '';
     $('vm-sold-date').value  = new Date().toISOString().slice(0,10);
   }
 
-  // Purchased section
+  // Purchased toggle
+  $('vm-bought-date').style.display = 'none';
   if (e.purchased) {
-    $('vm-bought-form').style.display = 'none';
-    $('vm-bought-display').style.display = 'flex';
-    $('vm-bought-display').innerHTML = `
-      <span style="font-size:13px;font-weight:700;color:var(--accent)">✓ Purchased${e.purchaseDate ? ' · ' + e.purchaseDate : ''}</span>
-      <button onclick="unmarkPurchased()" class="vlink-btn" style="color:var(--v-text-3)">Undo</button>`;
+    $('vm-purchased-toggle').classList.add('on');
+    $('vm-purchased-sub').style.display = 'block';
+    $('vm-purchased-sub').textContent = e.purchaseDate || '';
   } else {
-    $('vm-bought-form').style.display = 'flex';
-    $('vm-bought-display').style.display = 'none';
+    $('vm-purchased-toggle').classList.remove('on');
+    $('vm-purchased-sub').style.display = 'none';
     $('vm-bought-date').value = new Date().toISOString().slice(0,10);
   }
 
@@ -3998,6 +4029,23 @@ async function unmarkSold() {
   if (!_vmId || !requireAuth()) return;
   const ok = await _patchValEntry(_vmId, { status: null, soldPrice: null, soldDate: null });
   if (ok) openValCard(_vmId);
+}
+
+function vmTogglePurchased() {
+  const h = getValHistory(), e = h.find(x => x.id === _vmId);
+  if (!e) return;
+  if (e.purchased) { unmarkPurchased(); return; }
+  $('vm-bought-date').style.display = 'inline-block';
+  markAsPurchased();
+}
+
+function vmToggleSold() {
+  const h = getValHistory(), e = h.find(x => x.id === _vmId);
+  if (!e) return;
+  if (e.status === 'sold') { unmarkSold(); return; }
+  $('vm-sold-price-row').style.display = 'flex';
+  $('vm-sold-date').style.display = 'inline-block';
+  $('vm-sold-price').focus();
 }
 
 function loadFromModal() {
@@ -4341,10 +4389,12 @@ boot();
         <div id="vm-player" style="font-size:20px;font-weight:700;letter-spacing:-.4px"></div>
         <div id="vm-parallel" style="font-size:12px;color:var(--v-text-2);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
         <div id="vm-meta" style="font-size:12px;color:var(--v-text-3);margin-top:3px;line-height:1.5"></div>
+        <div class="vm-links" id="vm-ebay-links"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
         <div id="vm-decision-badge" style="font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px"></div>
-        <button onclick="closeValCard()" style="background:none;border:none;color:var(--v-text-3);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:color .15s" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--v-text-3)'">✕</button>
+        <button onclick="loadFromModal()" class="vm-icon-btn" title="Load into calculator">↩</button>
+        <button onclick="closeValCard()" class="vm-icon-btn" title="Close">✕</button>
       </div>
     </div>
 
@@ -4352,8 +4402,8 @@ boot();
     <div class="vm-metrics">
       <div class="vm-metric"><div class="vm-metric-lbl">Listing</div><div id="vm-listing" class="vm-metric-val"></div></div>
       <div class="vm-metric"><div class="vm-metric-lbl">TMV</div><div id="vm-tmv" class="vm-metric-val" style="color:var(--v-green)"></div></div>
-      <div class="vm-metric"><div class="vm-metric-lbl">Discount</div><div id="vm-discount" class="vm-metric-val"></div></div>
       <div class="vm-metric"><div class="vm-metric-lbl">Max Bid</div><div id="vm-maxbid" class="vm-metric-val" style="color:var(--v-text-2)"></div></div>
+      <div class="vm-metric"><div class="vm-metric-lbl">Discount</div><div id="vm-discount" class="vm-metric-val"></div></div>
     </div>
 
     <!-- Comps -->
@@ -4378,38 +4428,37 @@ boot();
       </div>
     </div>
 
-    <!-- Ownership -->
+    <!-- Ownership — real toggles, not a text link with a checkmark in it -->
     <div class="vsec"><span class="vsec-t">Ownership</span></div>
     <div class="vgroup">
-      <div id="vm-bought-form" class="vrow">
-        <span class="vrow-k">Date Purchased</span>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input id="vm-bought-date" type="date" class="vrow-in" style="width:auto">
-          <button onclick="markAsPurchased()" class="vlink-btn" style="white-space:nowrap">Mark purchased ✓</button>
+      <div class="vm-toggle-row">
+        <button id="vm-purchased-toggle" class="vm-toggle" onclick="vmTogglePurchased()"><span class="vm-toggle-knob"></span></button>
+        <div class="vm-toggle-label">
+          <div class="vm-toggle-title">Purchased</div>
+          <div id="vm-purchased-sub" class="vm-toggle-sub" style="display:none"></div>
         </div>
+        <input id="vm-bought-date" type="date" class="vm-toggle-date" style="display:none" onchange="markAsPurchased()">
       </div>
-      <div id="vm-bought-display" class="vrow" style="display:none"></div>
-      <div id="vm-sold-form" class="vrow" style="flex-wrap:wrap">
+      <div class="vm-toggle-row">
+        <button id="vm-sold-toggle" class="vm-toggle" onclick="vmToggleSold()"><span class="vm-toggle-knob"></span></button>
+        <div class="vm-toggle-label">
+          <div id="vm-sold-title" class="vm-toggle-title">Sold</div>
+          <div id="vm-sold-sub" class="vm-toggle-sub g" style="display:none"></div>
+        </div>
+        <input id="vm-sold-date" type="date" class="vm-toggle-date" style="display:none" onchange="markAsSold()">
+      </div>
+      <!-- Revealed only while confirming a new sale — a price is required
+           before there's anything to save, so the toggle alone isn't enough. -->
+      <div id="vm-sold-price-row" class="vrow" style="display:none">
         <span class="vrow-k">Sold Price</span>
-        <span class="vrow-money"><span class="vrow-cur">$</span><input id="vm-sold-price" type="number" step="0.01" placeholder="0.00" class="vrow-in num"></span>
+        <span class="vrow-money"><span class="vrow-cur">$</span><input id="vm-sold-price" type="number" step="0.01" placeholder="0.00" class="vrow-in num" onkeydown="if(event.key==='Enter'){event.preventDefault();markAsSold()}"></span>
       </div>
-      <div id="vm-sold-date-row" class="vrow">
-        <span class="vrow-k">Date Sold</span>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input id="vm-sold-date" type="date" class="vrow-in" style="width:auto">
-          <button onclick="markAsSold()" class="vlink-btn" style="white-space:nowrap;color:var(--v-green)">Mark sold ✓</button>
-        </div>
-      </div>
-      <div id="vm-sold-display" class="vrow" style="display:none"></div>
     </div>
 
     <!-- Footer -->
-    <div style="padding:14px 20px;border-top:1px solid var(--v-hairline);display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <button onclick="loadFromModal()" class="vlink-btn">↑ Load into form</button>
-      <div style="display:flex;gap:8px">
-        <button onclick="closeValCard()" class="vm-action-btn quiet">Cancel</button>
-        <button onclick="saveValCard()" class="vm-action-btn primary">Save Changes</button>
-      </div>
+    <div style="padding:14px 20px;border-top:1px solid var(--v-hairline);display:flex;justify-content:flex-end;gap:8px">
+      <button onclick="closeValCard()" class="vm-action-btn quiet">Cancel</button>
+      <button onclick="saveValCard()" class="vm-action-btn primary">Save Changes</button>
     </div>
 
   </div>
