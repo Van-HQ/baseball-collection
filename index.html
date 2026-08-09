@@ -703,7 +703,6 @@
 
   .vl-sortbar{display:flex;align-items:center;gap:6px;padding:12px 4px 2px;overflow-x:auto;scrollbar-width:none}
   .vl-sortbar::-webkit-scrollbar{display:none}
-  .vl-sortlab{font-size:12px;color:var(--v-text-3);flex-shrink:0;margin-right:2px}
   .vl-sort{flex-shrink:0;background:none;border:none;font-family:inherit;font-size:12.5px;
     color:var(--v-text-3);cursor:pointer;padding:4px 2px}
   .vl-sort:hover{color:var(--v-text-2)}
@@ -1127,13 +1126,21 @@
 
         <!-- Verdict: the only thing you act on, so it leads -->
         <div class="verdict" id="v-verdict">
-          <div class="verdict-tag" id="v-decision-display">&mdash;</div>
+          <div class="verdict-tag" id="v-decision-display"></div>
           <div class="verdict-sub" id="v-discount-display">Enter comps to calculate</div>
           <div class="verdict-bid">
             <span class="verdict-bid-lab">Bid up to</span>
             <span class="verdict-bid-num" id="v-maxbid">&mdash;</span>
           </div>
           <div class="verdict-hint" id="v-maxbid-hint">item price &mdash; shipping and tax are added on top</div>
+        </div>
+
+        <!-- Quick fill: paste an eBay title, best-effort parse into the fields below -->
+        <div class="vsec"><span class="vsec-t">Quick Fill</span></div>
+        <div class="vgroup">
+          <div class="vrow" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px">
+            <textarea id="v-paste" class="vrow-in" style="width:100%;min-height:40px;resize:vertical;font-size:13px;font-weight:400;text-align:left;line-height:1.5" placeholder="Paste an eBay listing title here…" oninput="autofillFromPaste()"></textarea>
+          </div>
         </div>
 
         <!-- Card identity -->
@@ -1227,7 +1234,6 @@
           <button class="vl-tab"        data-vf="sold"     onclick="setVlFilter(this)">Sold</button>
         </div>
         <div class="vl-sortbar">
-          <span class="vl-sortlab">Sort</span>
           <button class="vl-sort" data-sc="date"     onclick="_vlSortBy('date')">Recent</button>
           <button class="vl-sort" data-sc="discount" onclick="_vlSortBy('discount')">Discount</button>
           <button class="vl-sort" data-sc="tmv"      onclick="_vlSortBy('tmv')">Value</button>
@@ -3693,7 +3699,7 @@ function calcValuation() {
   if (comps.length === 0) {
     ['v-tax','v-total','v-comps-avg'].forEach(id => $(id).textContent = '—');
     $('v-maxbid').textContent = '—';
-    $('v-decision-display').textContent = '—';
+    $('v-decision-display').textContent = '';
     verdict.className = 'verdict';
     $('v-discount-display').textContent = 'Enter comps to calculate';
     $('v-maxbid-hint').textContent = 'item price — shipping and tax are added on top';
@@ -3727,7 +3733,7 @@ function calcValuation() {
   } else {
     $('v-tax').textContent = '—';
     $('v-total').textContent = '—';
-    $('v-decision-display').textContent = '—';
+    $('v-decision-display').textContent = '';
     verdict.className = 'verdict';
     $('v-discount-display').textContent = 'Add a listing price for a verdict';
   }
@@ -3838,6 +3844,98 @@ function getValType() {
   return active ? active.dataset.val : 'S/N';
 }
 
+// Best-effort parse of a pasted eBay listing title into the Card fields.
+// Titles don't follow one fixed grammar, so this strips out the parts we can
+// recognize confidently (year, card #, print run, parallel words, grading/
+// condition noise) and treats whatever's left as the player name.
+const VAL_PARALLEL_WORDS = [
+  'refractor','chrome','prizm','wave','shimmer','mojo','sparkle','superfractor',
+  'atomic','speckle','ice','lava','pulsar','mosaic','optic','holo','holofoil',
+  'xfractor','negative','die-cut','die cut','sepia','camo','tiger','zebra',
+  'gold','silver','orange','green','blue','purple','red','black','pink','yellow',
+  'teal','white','sky','magenta','aqua','bronze','platinum','rainbow','foil'
+];
+const VAL_NOISE_WORDS = [
+  'baseball','card','cards','rc','rookie','1st','base','psa','bgs','sgc','csg','gem','mt','mint',
+  'nm','nm-mt','graded','ungraded','auto','autograph','autographed','signed','on-card',
+  'topps','bowman','panini','donruss','upper','deck','draft','prospect','prospects','chrome','update',
+  'series','1','2','heritage','stadium','club','finest','allen','ginter'
+];
+
+function parseEbayTitle(text) {
+  let t = text.trim();
+  if (!t) return null;
+
+  const result = { year: null, player: null, parallel: null, cardno: null, type: null };
+
+  // Year — first standalone 19xx/20xx
+  const yearM = t.match(/\b(19|20)\d{2}\b/);
+  if (yearM) { result.year = yearM[0]; t = t.replace(yearM[0], ' '); }
+
+  // Print run, e.g. "/299" — captured separately so it can be re-appended to parallel
+  let printRun = '';
+  const printM = t.match(/\/(\d{1,5})\b/);
+  if (printM) { printRun = ' /' + printM[1]; t = t.replace(printM[0], ' '); }
+
+  // Card number — prefer letter(s)+dash+digits ("BDC-166", "BCP-9"), fall back to letters+digits ("US1")
+  let cardnoM = t.match(/\b[A-Z]{1,6}-\d{1,4}\b/);
+  if (!cardnoM) cardnoM = t.match(/\b[A-Z]{2,6}\d{1,4}\b/);
+  if (cardnoM) { result.cardno = cardnoM[0]; t = t.replace(cardnoM[0], ' '); }
+
+  // Type
+  const lower = t.toLowerCase();
+  if (/\bauto(graph(ed)?)?\b|\bsigned\b/.test(lower)) result.type = 'AUTO';
+  else if (/\brc\b|\brookie\b/.test(lower)) result.type = 'RC';
+  else if (printRun) result.type = 'S/N';
+  else result.type = 'BASE';
+
+  // Parallel — longest run of consecutive parallel-descriptor words
+  const words = t.split(/\s+/).filter(Boolean);
+  let bestRun = [], curRun = [];
+  words.forEach(w => {
+    const clean = w.toLowerCase().replace(/[^a-z-]/g, '');
+    if (VAL_PARALLEL_WORDS.includes(clean)) {
+      curRun.push(w);
+      if (curRun.length > bestRun.length) bestRun = curRun.slice();
+    } else {
+      curRun = [];
+    }
+  });
+  if (bestRun.length) {
+    result.parallel = bestRun.join(' ') + printRun;
+    bestRun.forEach(w => { t = t.replace(w, ' '); });
+  } else if (printRun) {
+    result.parallel = printRun.trim();
+  }
+
+  // Player — whatever's left after stripping noise words, condition/grading
+  // terms, and stray punctuation. Usually collapses to a 2-4 word name.
+  const leftover = t.split(/\s+/).filter(w => {
+    const clean = w.toLowerCase().replace(/[^a-z-]/g, '');
+    return clean && !VAL_NOISE_WORDS.includes(clean);
+  });
+  const player = leftover.join(' ').replace(/[#*/,.:•|-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (player) result.player = player;
+
+  return result;
+}
+
+function autofillFromPaste() {
+  const text = $('v-paste').value;
+  const r = parseEbayTitle(text);
+  if (!r) return;
+  if (r.player)   $('v-player').value   = r.player;
+  if (r.year)     $('v-year').value     = r.year;
+  if (r.parallel) $('v-parallel').value = r.parallel;
+  if (r.cardno)   $('v-cardno').value   = r.cardno;
+  if (r.type) {
+    document.querySelectorAll('#v-type-seg .seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === r.type);
+    });
+  }
+  calcValuation();
+}
+
 function clearComps() {
   ['v-c1','v-c2','v-c3','v-c4','v-c5'].forEach(id => $(id).value = '');
   calcValuation();
@@ -3874,7 +3972,7 @@ function openValCard(id) {
         ? `<a href="${e.scpUrl}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px">#${e.cardno} ↗</a>`
         : `#${e.cardno}`)
     : '';
-  $('vm-meta').innerHTML = [e.year, e.type || 'S/N', cardnoHtml, 'Saved ' + e.date]
+  $('vm-meta').innerHTML = [e.year, e.type || 'S/N', cardnoHtml]
     .filter(Boolean).join(' &middot; ');
 
   // eBay Active/Sold — these were missing from this modal entirely (only
@@ -3947,15 +4045,17 @@ function openValCard(id) {
     $('vm-sold-date').value  = new Date().toISOString().slice(0,10);
   }
 
-  // Purchased toggle
-  $('vm-bought-date').style.display = 'none';
+  // Purchased toggle — date pill stays visible and editable while purchased,
+  // instead of a locked-in "today" that can't be changed.
   if (e.purchased) {
     $('vm-purchased-toggle').classList.add('on');
-    $('vm-purchased-sub').style.display = 'block';
-    $('vm-purchased-sub').textContent = e.purchaseDate || '';
+    $('vm-purchased-sub').style.display = 'none';
+    $('vm-bought-date').style.display = 'inline-block';
+    $('vm-bought-date').value = e.purchaseDate || new Date().toISOString().slice(0,10);
   } else {
     $('vm-purchased-toggle').classList.remove('on');
     $('vm-purchased-sub').style.display = 'none';
+    $('vm-bought-date').style.display = 'none';
     $('vm-bought-date').value = new Date().toISOString().slice(0,10);
   }
 
@@ -4105,8 +4205,13 @@ function setVlFilter(btn) {
   renderValHistory();
 }
 
+// dir:1 = descending (largest/newest first), dir:-1 = ascending. Each column's
+// first click should land on whichever direction reads as "sorted" to a user
+// (newest date, biggest value, A→Z name) instead of always defaulting to -1.
+const _VL_SORT_DEFAULT_DIR = { date: 1, discount: -1, tmv: 1, listing: 1, player: -1 };
+
 function _vlSortBy(col) {
-  _vlSort = _vlSort.col === col ? { col, dir: -_vlSort.dir } : { col, dir: -1 };
+  _vlSort = _vlSort.col === col ? { col, dir: -_vlSort.dir } : { col, dir: _VL_SORT_DEFAULT_DIR[col] ?? -1 };
   renderValHistory();
 }
 
@@ -4393,7 +4498,7 @@ boot();
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
         <div id="vm-decision-badge" style="font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px"></div>
-        <button onclick="loadFromModal()" class="vm-icon-btn" title="Load into calculator">↩</button>
+        <button onclick="loadFromModal()" class="vm-icon-btn" title="Load into calculator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg></button>
         <button onclick="closeValCard()" class="vm-icon-btn" title="Close">✕</button>
       </div>
     </div>
