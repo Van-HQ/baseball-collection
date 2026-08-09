@@ -107,6 +107,13 @@
     .chart-wrap[style*="130px"]{height:130px !important}
     #treemap{height:220px !important}
 
+    /* Hero player card: avatar + name on their own row (name was truncating
+       to "Bill…" squeezed against the metrics), Value/P/L flow below;
+       Cards is dropped as the third metric doesn't fit meaningfully here */
+    #hero-player > div{flex-wrap:wrap;row-gap:10px;padding:16px 18px !important}
+    #hero-player > div > div:nth-child(2){flex:1 1 100% !important}
+    #hero-player > div > div:nth-last-child(1){display:none !important}
+
     /* Tables scroll horizontally */
     .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
     table{font-size:11.5px}
@@ -194,6 +201,14 @@
   /* PANEL */
   .panel{background:rgba(13,13,13,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:12px;overflow:hidden}
   .panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;border-left:2px solid var(--accent)}
+  /* Overview only: every panel here got a gold left-border regardless of
+     content (chart, list, doesn't matter) — that's decoration, not meaning,
+     so it's dropped in favor of a plain hairline card. Scoped to this page
+     rather than changed globally, since the other not-yet-redesigned pages
+     (Rookies, Watchlist, Transactions, Checklists) still use the old style. */
+  #page-overview .panel{background:var(--v-surface);border:1px solid var(--v-hairline)}
+  #page-overview .panel-header{border-left:none;border-bottom:1px solid var(--v-hairline)}
+  #page-overview .stat-card{box-shadow:none;background:var(--v-surface);border:1px solid var(--v-hairline)}
   .panel-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
   .panel-title .dot{width:8px;height:8px;border-radius:50%}
   .panel-title .dot.blue{background:var(--gold)}
@@ -658,29 +673,37 @@
   /* ── Val Card Modal ────────────────────────────────────── */
   .val-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);opacity:0;transition:opacity .18s}
   .val-modal-overlay.open{opacity:1}
-  .val-modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:16px;width:100%;max-width:660px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.7);transform:translateY(12px);transition:transform .18s}
+  .val-modal{background:var(--v-surface);border:1px solid var(--v-hairline);border-radius:16px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.7);transform:translateY(12px);transition:transform .18s}
   .val-modal-overlay.open .val-modal{transform:translateY(0)}
-  .val-modal-hdr{padding:20px 20px 16px;display:flex;align-items:flex-start;gap:16px;border-bottom:1px solid var(--border)}
-  .vm-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
-  .vm-metric{background:var(--bg-card);padding:12px 16px}
-  .vm-metric-lbl{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px}
-  .vm-metric-val{font-size:17px;font-weight:700;letter-spacing:-.3px}
-  .vm-section{padding:14px 20px;border-top:1px solid var(--border)}
-  .vm-section-title{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
-  .vm-input{background:var(--bg-base);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text-primary);font-size:14px;font-weight:600;outline:none;transition:border-color .15s}
+  .val-modal-hdr{padding:20px 20px 16px;display:flex;align-items:flex-start;gap:16px;border-bottom:1px solid var(--v-hairline)}
+  .val-modal-hdr span:not(:empty) ~ span:not(:empty)::before{content:'·';margin:0 6px;color:var(--v-text-3)}
+  /* Metrics strip — same grouped-list treatment as the calculator's Card/Cost sections */
+  .vm-metrics{display:grid;grid-template-columns:repeat(4,1fr);background:var(--v-surface-2);border-bottom:1px solid var(--v-hairline)}
+  .vm-metric{padding:13px 16px;border-right:1px solid var(--v-hairline)}
+  .vm-metric:last-child{border-right:none}
+  .vm-metric-lbl{font-size:10px;font-weight:600;color:var(--v-text-3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:4px}
+  .vm-metric-val{font-size:16px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+  .vm-section{padding:16px 20px;border-top:1px solid var(--v-hairline)}
+  .vm-section-title{font-size:11px;font-weight:600;color:var(--v-text-3);letter-spacing:.3px;margin-bottom:11px}
+  .vm-input{background:var(--v-surface-2);border:1px solid transparent;border-radius:9px;padding:8px 11px;color:var(--text-primary);font-size:14px;font-weight:600;outline:none;transition:border-color .15s;font-family:inherit}
   .vm-input:focus{border-color:var(--accent)}
-  .vm-hf-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:11px;font-weight:500;padding:5px 11px;border-radius:6px;cursor:pointer;transition:all .15s}
-  .cd-hf-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;padding:3px 9px;border-radius:6px;cursor:pointer;transition:all .15s}
-  .cd-hf-btn[data-hf="sell"].active{background:rgba(74,222,128,0.12);border-color:rgba(74,222,128,0.4);color:var(--green)}
-  .cd-hf-btn[data-hf="hold"].active{background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red)}
-  .cd-hf-btn[data-hf="flip"].active{background:var(--yellow-bg);border-color:rgba(245,200,66,0.35);color:var(--yellow)}
-  .cd-hf-btn:hover:not(.active){color:var(--text-secondary);border-color:var(--border-light)}
-  .vm-hf-btn[data-hf="hold"].active{background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red)}
-  .vm-hf-btn[data-hf="flip"].active{background:var(--yellow-bg);border-color:rgba(245,200,66,0.35);color:var(--yellow)}
-  .vm-hf-btn[data-hf="watching"].active{background:rgba(45,212,191,0.1);border-color:rgba(45,212,191,0.35);color:#2dd4bf}
-  .vm-hf-btn:hover:not(.active){color:var(--text-secondary);border-color:var(--border-light)}
-  .vm-action-btn{font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .15s;border:none}
-  .vm-sold-tag{display:inline-flex;align-items:center;gap:6px;background:var(--green-bg);border:1px solid rgba(34,211,106,0.25);color:var(--green);font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px}
+  .vm-hf-btn{background:var(--v-surface-2);border:none;color:var(--v-text-2);font-size:11.5px;font-weight:500;padding:6px 13px;border-radius:16px;cursor:pointer;transition:all .15s}
+  .cd-hf-btn{background:var(--v-surface-2);border:none;color:var(--v-text-2);font-size:10.5px;font-weight:600;padding:4px 11px;border-radius:14px;cursor:pointer;transition:all .15s}
+  .cd-hf-btn[data-hf="sell"].active{background:rgba(48,209,88,0.15);color:var(--v-green)}
+  .cd-hf-btn[data-hf="hold"].active{background:rgba(255,69,58,0.15);color:var(--v-red)}
+  .cd-hf-btn[data-hf="flip"].active{background:rgba(255,214,10,0.15);color:#ffd60a}
+  .cd-hf-btn:hover:not(.active){color:var(--text-primary)}
+  .vm-hf-btn[data-hf="hold"].active{background:rgba(255,69,58,0.15);color:var(--v-red)}
+  .vm-hf-btn[data-hf="flip"].active{background:rgba(255,214,10,0.15);color:#ffd60a}
+  .vm-hf-btn[data-hf="watching"].active{background:rgba(100,210,255,0.15);color:#64d2ff}
+  .vm-hf-btn:hover:not(.active){color:var(--text-primary)}
+  .vm-action-btn{font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer;transition:opacity .15s;border:none}
+  .vm-action-btn:hover{opacity:.85}
+  .vm-action-btn.quiet{background:var(--v-surface-2);color:var(--v-text-2)}
+  .vm-action-btn.primary{background:var(--accent);color:#1a1400}
+  .vm-action-btn.tinted-accent{background:rgba(212,168,67,0.12);color:var(--accent)}
+  .vm-action-btn.tinted-green{background:rgba(48,209,88,0.12);color:var(--v-green)}
+  .vm-sold-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(48,209,88,0.12);color:var(--v-green);font-size:12px;font-weight:600;padding:7px 13px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -1748,20 +1771,19 @@ function renderHero() {
   const plColor = pl>=0 ? 'var(--green)' : 'var(--red)';
   const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:20px;padding:20px 24px;background:rgba(13,13,13,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:12px;position:relative;overflow:hidden;cursor:pointer" onclick="openPlayerModal('${name.replace(/'/g,"\'")}')" onmouseover="this.style.borderColor='rgba(212,168,67,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(212,168,67,0.05) 0%,transparent 60%);pointer-events:none"></div>
-      <div style="width:48px;height:48px;border-radius:12px;background:rgba(212,168,67,0.1);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:var(--accent);border:1px solid rgba(212,168,67,0.25);flex-shrink:0;letter-spacing:-.5px">${initials}</div>
+    <div style="display:flex;align-items:center;gap:20px;padding:18px 22px;background:var(--v-surface);border:1px solid var(--v-hairline);border-radius:14px;cursor:pointer;transition:background .15s" onclick="openPlayerModal('${name.replace(/'/g,"\'")}')" onmouseover="this.style.background='var(--v-surface-2)'" onmouseout="this.style.background='var(--v-surface)'">
+      <div style="width:44px;height:44px;border-radius:11px;background:rgba(212,168,67,0.1);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--accent);flex-shrink:0;letter-spacing:-.5px">${initials}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Top Player</div>
-        <div style="font-size:20px;font-weight:900;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+        <div style="font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--v-text-3);margin-bottom:2px">Top Player</div>
+        <div style="font-size:17px;font-weight:700;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Value</div>
-        <div style="font-size:18px;font-weight:800">$${s.tmv.toFixed(2)}</div>
+        <div style="font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--v-text-3);margin-bottom:2px">Value</div>
+        <div style="font-size:16px;font-weight:700">$${s.tmv.toFixed(2)}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">P/L</div>
-        <div style="font-size:18px;font-weight:800;color:${plColor}">${plStr}</div>
+        <div style="font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--v-text-3);margin-bottom:2px">P/L</div>
+        <div style="font-size:16px;font-weight:700;color:${plColor}">${plStr}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
         <div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Cards</div>
@@ -1794,17 +1816,19 @@ function renderStats() {
   const s = DATA.summary;
   const totalCost = (s.wax_spent || 0) + (s.total_cost || 0);
   const plPct = totalCost > 0 ? ((s.total_tmv - totalCost) / totalCost * 100).toFixed(1) : (s.total_pl_pct || 0).toFixed(1);
+  // Color appears exactly once here — on the P/L number. The other five
+  // stats are context, not decisions, so they no longer get an arbitrary
+  // rainbow accent bar (previously: gray/gray/gray/green-or-red/yellow/gold).
   const cards = [
-    {label:'Total Cards', num:s.total_cards, prefix:'', suffix:'', decimals:0, cls:'', sub:'In collection', color:''},
-    {label:'Total Cost', num:totalCost, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Wax + singles', color:''},
-    {label:'Collection Value', num:s.total_tmv, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Estimated market value', color:''},
-    {label:'Total P/L', num:Math.abs(s.total_tmv-totalCost), prefix:(s.total_tmv-totalCost)>=0?'+$':'-$', suffix:'', decimals:2, cls:(s.total_tmv-totalCost)>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return', color:(s.total_tmv-totalCost)>=0?'green':'red'},
-    {label:'Wax Spent', num:s.wax_spent, prefix:'$', suffix:'', decimals:2, cls:'yellow', sub:DATA.wax_transactions.length+' products ripped', color:'yellow'},
-    {label:'Singles Spent', num:s.singles_spent, prefix:'$', suffix:'', decimals:2, cls:'accent', sub:DATA.singles_transactions.length+' cards bought', color:'blue'},
+    {label:'Total Cards', num:s.total_cards, prefix:'', suffix:'', decimals:0, cls:'', sub:'In collection'},
+    {label:'Total Cost', num:totalCost, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Wax + singles'},
+    {label:'Collection Value', num:s.total_tmv, prefix:'$', suffix:'', decimals:2, cls:'', sub:'Estimated market value'},
+    {label:'Total P/L', num:Math.abs(s.total_tmv-totalCost), prefix:(s.total_tmv-totalCost)>=0?'+$':'-$', suffix:'', decimals:2, cls:(s.total_tmv-totalCost)>=0?'green':'red', sub:(plPct>=0?'+':'')+plPct+'% return'},
+    {label:'Wax Spent', num:s.wax_spent, prefix:'$', suffix:'', decimals:2, cls:'', sub:DATA.wax_transactions.length+' products ripped'},
+    {label:'Singles Spent', num:s.singles_spent, prefix:'$', suffix:'', decimals:2, cls:'', sub:DATA.singles_transactions.length+' cards bought'},
   ];
   $('stat-cards').innerHTML = cards.map((c,i) => `
-    <div class="stat-card ${c.color}">
-      <div class="stat-accent"></div>
+    <div class="stat-card">
       <div class="stat-label">${c.label}</div>
       <div class="stat-value ${c.cls}" id="sv-${i}">0</div>
       <div class="stat-sub">${c.sub}</div>
@@ -2190,7 +2214,7 @@ function renderWatchlistMini() {
     const t = (w.priority||'medium').toLowerCase(); const s = ts(t);
     return `<div class="watchlist-item">
       <span class="player-name" style="font-size:13px">${w.player}</span>
-      <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid ${s.border};background:${s.bg};color:${s.color}">${t.charAt(0).toUpperCase()+t.slice(1)}</span>
+      <span style="font-size:9.5px;font-weight:700;padding:2px 9px;border-radius:20px;background:${s.bg};color:${s.color};text-transform:uppercase;letter-spacing:.3px">${t.charAt(0).toUpperCase()+t.slice(1)}</span>
     </div>`;
   }).join('') || '<div style="padding:10px 16px;color:var(--text-muted);font-size:12px">No players on watchlist</div>';
 }
@@ -3711,17 +3735,17 @@ function openValCard(id) {
   // Decision badge
   const db = $('vm-decision-badge');
   if (e.status === 'sold') {
-    db.textContent = 'SOLD'; db.style.cssText = 'font-size:13px;font-weight:800;padding:6px 14px;border-radius:8px;background:var(--green-bg);color:var(--green);border:1px solid rgba(34,211,106,0.3)';
+    db.textContent = 'SOLD'; db.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;background:rgba(48,209,88,0.14);color:var(--v-green)';
   } else if (e.decision === 'BUY') {
-    db.textContent = 'BUY';  db.style.cssText = 'font-size:13px;font-weight:800;padding:6px 14px;border-radius:8px;background:var(--green-bg);color:var(--green);border:1px solid rgba(34,211,106,0.3)';
+    db.textContent = 'BUY';  db.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;background:rgba(48,209,88,0.14);color:var(--v-green)';
   } else if (e.decision === 'PASS') {
-    db.textContent = 'PASS'; db.style.cssText = 'font-size:13px;font-weight:800;padding:6px 14px;border-radius:8px;background:var(--red-bg);color:var(--red);border:1px solid rgba(242,92,92,0.3)';
+    db.textContent = 'PASS'; db.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;background:rgba(255,69,58,0.14);color:var(--v-red)';
   } else {
-    db.textContent = '—';   db.style.cssText = 'font-size:13px;font-weight:800;padding:6px 14px;border-radius:8px;background:var(--bg-hover);color:var(--text-muted);border:1px solid var(--border)';
+    db.textContent = '—';   db.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;background:var(--v-surface-2);color:var(--v-text-3)';
   }
 
   // Metrics
-  const dc = e.discount !== null ? (e.discount >= 0.20 ? 'var(--green)' : e.discount >= 0 ? 'var(--yellow)' : 'var(--red)') : 'var(--text-muted)';
+  const dc = e.discount !== null ? (e.discount >= 0.20 ? 'var(--v-green)' : e.discount >= 0 ? '#ffd60a' : 'var(--v-red)') : 'var(--v-text-3)';
   $('vm-listing').textContent  = e.listing != null ? '$' + e.listing.toFixed(2) : '—';
   $('vm-listing').style.color  = 'var(--text-primary)';
   $('vm-tmv').textContent      = '$' + e.tmv.toFixed(2);
@@ -3733,17 +3757,17 @@ function openValCard(id) {
   const ce = $('vm-comps');
   if (e.comps && e.comps.length) {
     ce.innerHTML = e.comps.map((c,i) =>
-      `<div style="background:var(--bg-base);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center;min-width:72px">
-        <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">Comp ${i+1}</div>
+      `<div style="background:var(--v-surface-2);border-radius:9px;padding:8px 12px;text-align:center;min-width:72px">
+        <div style="font-size:10px;color:var(--v-text-3);margin-bottom:3px">Comp ${i+1}</div>
         <div style="font-size:14px;font-weight:700">$${c.toFixed(2)}</div>
       </div>`
     ).join('') +
-    `<div style="background:var(--accent-glow);border:1px solid rgba(212,168,67,0.25);border-radius:8px;padding:8px 12px;text-align:center;min-width:72px">
+    `<div style="background:rgba(212,168,67,0.1);border-radius:9px;padding:8px 12px;text-align:center;min-width:72px">
       <div style="font-size:10px;color:var(--accent);margin-bottom:3px">Avg TMV</div>
       <div style="font-size:14px;font-weight:700;color:var(--accent)">$${e.tmv.toFixed(2)}</div>
     </div>`;
   } else {
-    ce.innerHTML = '<span style="color:var(--text-muted);font-size:12px">No comps saved.</span>';
+    ce.innerHTML = '<span style="color:var(--v-text-3);font-size:12px">No comps saved.</span>';
   }
 
   // Goals / intent / notes
@@ -3758,13 +3782,13 @@ function openValCard(id) {
     $('vm-sold-display').style.display = 'block';
     const pl = e.listing != null ? (e.soldPrice - e.listing) : null;
     const plStr = pl !== null ? ((pl >= 0 ? '+' : '') + '$' + pl.toFixed(2)) : '—';
-    const plColor = pl !== null ? (pl >= 0 ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)';
+    const plColor = pl !== null ? (pl >= 0 ? 'var(--v-green)' : 'var(--v-red)') : 'var(--v-text-3)';
     $('vm-sold-display').innerHTML = `
       <div class="vm-sold-tag" style="width:fit-content">✓ Sold for <strong>$${e.soldPrice.toFixed(2)}</strong></div>
       <div style="display:flex;gap:20px;margin-top:10px">
-        <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">DATE</div><div style="font-size:13px;font-weight:600">${e.soldDate || '—'}</div></div>
-        <div><div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">P/L</div><div style="font-size:13px;font-weight:700;color:${plColor}">${plStr}</div></div>
-        <div style="margin-left:auto;align-self:flex-end"><button onclick="unmarkSold()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer">Undo</button></div>
+        <div><div style="font-size:10px;color:var(--v-text-3);margin-bottom:2px">DATE</div><div style="font-size:13px;font-weight:600">${e.soldDate || '—'}</div></div>
+        <div><div style="font-size:10px;color:var(--v-text-3);margin-bottom:2px">P/L</div><div style="font-size:13px;font-weight:700;color:${plColor}">${plStr}</div></div>
+        <div style="margin-left:auto;align-self:flex-end"><button onclick="unmarkSold()" style="background:none;border:none;color:var(--v-text-3);font-size:11px;padding:5px 4px;cursor:pointer">Undo</button></div>
       </div>`;
   } else {
     $('vm-sold-form').style.display = 'flex';
@@ -3778,9 +3802,9 @@ function openValCard(id) {
     $('vm-bought-form').style.display = 'none';
     $('vm-bought-display').style.display = 'block';
     $('vm-bought-display').innerHTML = `
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-glow);border:1px solid rgba(212,168,67,0.25);padding:6px 12px;border-radius:8px">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(212,168,67,0.1);padding:7px 13px;border-radius:10px">
         <span style="font-size:13px;font-weight:700;color:var(--accent)">✓ Purchased${e.purchaseDate ? ' · ' + e.purchaseDate : ''}</span>
-        <button onclick="unmarkPurchased()" style="background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;padding:0 0 0 4px">Undo</button>
+        <button onclick="unmarkPurchased()" style="background:none;border:none;color:var(--v-text-3);font-size:11px;cursor:pointer;padding:0 0 0 4px">Undo</button>
       </div>`;
   } else {
     $('vm-bought-form').style.display = 'flex';
@@ -4221,28 +4245,28 @@ boot();
     <!-- Header -->
     <div class="val-modal-hdr">
       <div style="flex:1;min-width:0">
-        <div id="vm-player" style="font-size:22px;font-weight:800;letter-spacing:-.5px"></div>
-        <div style="display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap">
-          <span id="vm-parallel" style="font-size:12px;color:var(--text-secondary)"></span>
-          <span id="vm-year-badge" class="badge" style="font-size:10px;padding:2px 7px"></span>
-          <span id="vm-type-badge" style="font-size:10px;font-weight:600;background:var(--bg-hover);border:1px solid var(--border-light);color:var(--text-secondary);padding:2px 8px;border-radius:20px"></span>
-          <span id="vm-cardno-badge" style="font-size:10px;color:var(--text-muted)"></span>
+        <div id="vm-player" style="font-size:20px;font-weight:700;letter-spacing:-.4px"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap;font-size:12px;color:var(--v-text-2)">
+          <span id="vm-parallel"></span>
+          <span id="vm-year-badge" style="color:var(--v-text-3)"></span>
+          <span id="vm-type-badge" style="color:var(--v-text-3)"></span>
+          <span id="vm-cardno-badge"></span>
           <span id="vm-scp-wrap"></span>
-          <span id="vm-date" style="font-size:11px;color:var(--text-muted)"></span>
+          <span id="vm-date" style="color:var(--v-text-3)"></span>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-        <div id="vm-decision-badge" style="font-size:13px;font-weight:800;padding:6px 14px;border-radius:8px"></div>
-        <button onclick="closeValCard()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:color .15s" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
+        <div id="vm-decision-badge" style="font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px"></div>
+        <button onclick="closeValCard()" style="background:none;border:none;color:var(--v-text-3);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:color .15s" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--v-text-3)'">✕</button>
       </div>
     </div>
 
     <!-- Metrics strip -->
     <div class="vm-metrics">
       <div class="vm-metric"><div class="vm-metric-lbl">Listing</div><div id="vm-listing" class="vm-metric-val"></div></div>
-      <div class="vm-metric"><div class="vm-metric-lbl">TMV</div><div id="vm-tmv" class="vm-metric-val" style="color:var(--green)"></div></div>
+      <div class="vm-metric"><div class="vm-metric-lbl">TMV</div><div id="vm-tmv" class="vm-metric-val" style="color:var(--v-green)"></div></div>
       <div class="vm-metric"><div class="vm-metric-lbl">Discount</div><div id="vm-discount" class="vm-metric-val"></div></div>
-      <div class="vm-metric"><div class="vm-metric-lbl">Max Bid</div><div id="vm-maxbid" class="vm-metric-val" style="color:var(--text-secondary)"></div></div>
+      <div class="vm-metric"><div class="vm-metric-lbl">Max Bid</div><div id="vm-maxbid" class="vm-metric-val" style="color:var(--v-text-2)"></div></div>
     </div>
 
     <!-- Comps -->
@@ -4287,7 +4311,7 @@ boot();
           <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Date Purchased</label>
           <input id="vm-bought-date" type="date" class="vm-input" style="font-size:12px;font-weight:400">
         </div>
-        <button onclick="markAsPurchased()" style="background:var(--accent-glow);border:1px solid rgba(212,168,67,0.3);color:var(--accent);margin-bottom:1px" class="vm-action-btn">Mark Purchased ✓</button>
+        <button onclick="markAsPurchased()" class="vm-action-btn tinted-accent" style="margin-bottom:1px">Mark Purchased ✓</button>
       </div>
       <div id="vm-bought-display" style="display:none;margin-bottom:14px"></div>
 
@@ -4305,17 +4329,17 @@ boot();
           <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Date Sold</label>
           <input id="vm-sold-date" type="date" class="vm-input" style="font-size:12px;font-weight:400">
         </div>
-        <button onclick="markAsSold()" style="background:var(--green-bg);border:1px solid rgba(34,211,106,0.3);color:var(--green);margin-bottom:1px" class="vm-action-btn">Mark Sold ✓</button>
+        <button onclick="markAsSold()" class="vm-action-btn tinted-green" style="margin-bottom:1px">Mark Sold ✓</button>
       </div>
       <div id="vm-sold-display" style="display:none"></div>
     </div>
 
     <!-- Footer -->
-    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <button onclick="loadFromModal()" style="background:var(--accent-glow);border:1px solid rgba(212,168,67,0.3);color:var(--accent)" class="vm-action-btn">↑ Load into Form</button>
+    <div style="padding:14px 20px;border-top:1px solid var(--v-hairline);display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <button onclick="loadFromModal()" class="vlink-btn">↑ Load into form</button>
       <div style="display:flex;gap:8px">
-        <button onclick="closeValCard()" style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-secondary)" class="vm-action-btn">Cancel</button>
-        <button onclick="saveValCard()" style="background:#1e2d45;border:1px solid var(--border-light);color:var(--text-primary)" class="vm-action-btn">Save Changes</button>
+        <button onclick="closeValCard()" class="vm-action-btn quiet">Cancel</button>
+        <button onclick="saveValCard()" class="vm-action-btn primary">Save Changes</button>
       </div>
     </div>
 
