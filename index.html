@@ -137,6 +137,13 @@
     #cl-2026-hero,#cl-2025-hero{flex-direction:column;align-items:flex-start;gap:12px;padding:14px 16px}
     #cl-2026-sets,#cl-2025-sets{grid-template-columns:repeat(auto-fill,minmax(130px,1fr)) !important}
 
+    /* Watchlist: cards instead of a horizontally-scrolling table.
+       !important: this block sits earlier in the stylesheet than the base
+       .wl-cards{display:none} rule it overrides, and CSS breaks same-
+       specificity ties by source order, not @media nesting. */
+    #page-watchlist .table-wrap{display:none !important}
+    .wl-cards{display:block !important}
+
     /* Collection stats bar: even grid instead of ragged flex-wrap */
     .coll-stat-bar{display:grid !important;grid-template-columns:repeat(3,1fr);flex-wrap:nowrap}
     .coll-stat{flex-direction:column;align-items:flex-start;gap:2px;padding:9px 12px;min-width:0}
@@ -293,6 +300,26 @@
   .tier-low{background:#22d36a}
   .tier-medium{background:#f5c842}
   .tier-high{background:#f25c5c}
+
+  /* Watchlist table — quiet language: no more tinted row backgrounds by
+     tier (the badge already carries that meaning) and no more three
+     individually bordered/colored link chips per row. */
+  .wl-tier{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px}
+  .wl-rlink{color:var(--v-text-3);font-size:11px;text-decoration:none;margin-right:14px;transition:color .15s}
+  .wl-rlink:hover{color:var(--text-primary)}
+  .wl-del{background:none;border:none;color:var(--v-text-3);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;opacity:0;transition:opacity .15s,color .15s}
+  #wl-table tbody tr:hover .wl-del{opacity:1}
+  .wl-del:hover{color:var(--v-red)}
+
+  /* Mobile: cards instead of a table that would need horizontal scroll */
+  .wl-cards{display:none}
+  .went{background:var(--v-surface);border-radius:14px;padding:13px 15px;margin-top:9px;cursor:pointer;transition:background .15s}
+  .went:hover{background:var(--v-surface-2)}
+  .went-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .went-nm{font-size:15px;font-weight:600}
+  .went-notes{font-size:11.5px;color:var(--v-text-3);margin-top:6px}
+  .went-links{margin-top:8px;padding-top:8px;border-top:1px solid var(--v-hairline);display:flex;gap:16px}
+  .went-links a{color:var(--v-text-3);font-size:11px;text-decoration:none}
   .tier-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
   .tier-badge.low{background:var(--green-bg);color:var(--green)}
   .tier-badge.medium{background:var(--yellow-bg);color:var(--yellow)}
@@ -513,6 +540,12 @@
   .seg-btn{flex:1;background:none;border:none;padding:6px 10px;border-radius:6px;color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
   .seg-btn.active{background:var(--bg-hover);color:var(--text-primary);box-shadow:0 1px 4px rgba(0,0,0,.4)}
   .seg-btn:hover:not(.active){color:var(--text-secondary)}
+  /* Watchlist priority — neutral segmented control, same reasoning as
+     Intent on the valuation modal: only the active choice is highlighted,
+     not all three permanently tinted teal/yellow/red regardless of state. */
+  .wl-priority-btn{flex:1;background:none;border:none;padding:6px 10px;border-radius:6px;color:var(--v-text-2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+  .wl-priority-btn.active{background:var(--v-surface-2);color:var(--text-primary);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .wl-priority-btn:hover:not(.active){color:var(--text-primary)}
   /* Comp row */
   /* Buttons */
   .form-btn{background:var(--accent);color:#000;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;letter-spacing:.1px;white-space:nowrap}
@@ -989,6 +1022,7 @@
             <tbody id="wl-tbody"></tbody>
           </table>
         </div>
+        <div id="wl-card-list" class="wl-cards"></div>
       </div>
     </div>
 
@@ -2259,46 +2293,68 @@ function toggleWlSort() {
 
 function renderWatchlistFull() {
   const tbody = $('wl-tbody');
+  const cardList = $('wl-card-list');
   if (!tbody) return;
   let list = getWatchlist();
   if (_wlFilter !== 'all') list = list.filter(w => (w.priority||'medium').toLowerCase() === _wlFilter);
   list.sort((a,b) => { const ord={high:0,medium:1,low:2}; return _wlSortDir * ((ord[a.priority]||1)-(ord[b.priority]||1)); });
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="padding:28px;text-align:center;color:var(--text-muted);font-size:13px">No players on watchlist${_wlFilter!=='all'?' for this priority':''} — click + Add Player to get started.</td></tr>`;
+    const emptyMsg = `No players on watchlist${_wlFilter!=='all'?' for this priority':''} — click + Add Player to get started.`;
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:28px;text-align:center;color:var(--text-muted);font-size:13px">${emptyMsg}</td></tr>`;
+    if (cardList) cardList.innerHTML = `<div class="val-empty">${emptyMsg}</div>`;
     return;
   }
 
-  const lnk = (href, label, hoverColor) =>
-    `<a href="${href}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()"
-      style="display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;text-decoration:none;border:1px solid var(--border);color:var(--text-muted);background:var(--bg-hover);white-space:nowrap;transition:all .15s"
-      onmouseover="this.style.color='${hoverColor}';this.style.borderColor='${hoverColor}40'"
-      onmouseout="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">${label} ↗</a>`;
-
-  tbody.innerHTML = list.map((w, _wi) => {
-    const tier = (w.priority||'medium').toLowerCase();
-    const s = _wlTierStyle(tier);
-    const rowBg = tier==='high' ? 'rgba(242,92,92,0.06)' : tier==='low' ? 'rgba(45,212,191,0.06)' : 'rgba(245,200,66,0.05)';
-    const rowHover = tier==='high' ? 'rgba(242,92,92,0.12)' : tier==='low' ? 'rgba(45,212,191,0.1)' : 'rgba(245,200,66,0.09)';
+  const linkUrls = w => {
     const autoQ = encodeURIComponent([w.player, 'bowman chrome auto 1st'].join(' '));
     const snQ   = encodeURIComponent([w.player, 'bowman 1st chrome'].join(' '));
     const scpQ  = [w.player, 'bowman'].join(' ').toLowerCase().replace(/\s+/g, '+');
-    return `<tr style="cursor:pointer;background:${rowBg};transition:background .1s"
-      onmouseover="this.style.background='${rowHover}'" onmouseout="this.style.background='${rowBg}'"
-      onclick="openEditWatchlist('${w.id}')">
+    return {
+      auto: 'https://www.ebay.com/sch/i.html?_nkw='+autoQ,
+      sn:   'https://www.ebay.com/sch/i.html?_nkw='+snQ+'&Features=Serial%2520Numbered',
+      scp:  'https://www.sportscardspro.com/search-products?q='+scpQ+'&type=prices',
+    };
+  };
+
+  tbody.innerHTML = list.map(w => {
+    const tier = (w.priority||'medium').toLowerCase();
+    const s = _wlTierStyle(tier);
+    const u = linkUrls(w);
+    return `<tr style="cursor:pointer" onclick="openEditWatchlist('${w.id}')">
       <td style="padding:10px 14px;text-align:center">
-        <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid ${s.border};background:${s.bg};color:${s.color}">${tier.charAt(0).toUpperCase()+tier.slice(1)}</span>
+        <span class="wl-tier" style="background:${s.bg};color:${s.color}">${tier.charAt(0).toUpperCase()+tier.slice(1)}</span>
       </td>
       <td class="player-name" style="font-size:13.5px">${w.player}</td>
-      <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+autoQ,'AUTO','#22d36a')}</td>
-      <td style="text-align:center;padding:8px 10px">${lnk('https://www.ebay.com/sch/i.html?_nkw='+snQ+'&Features=Serial%2520Numbered','S/N','#d4a843')}</td>
-      <td style="text-align:center;padding:8px 10px">${lnk('https://www.sportscardspro.com/search-products?q='+scpQ+'&type=prices','SCP','#f5c842')}</td>
+      <td style="text-align:center;padding:8px 10px" onclick="event.stopPropagation()"><a class="wl-rlink" style="margin:0" href="${u.auto}" target="_blank" rel="noopener noreferrer">Auto</a></td>
+      <td style="text-align:center;padding:8px 10px" onclick="event.stopPropagation()"><a class="wl-rlink" style="margin:0" href="${u.sn}" target="_blank" rel="noopener noreferrer">S/N</a></td>
+      <td style="text-align:center;padding:8px 10px" onclick="event.stopPropagation()"><a class="wl-rlink" style="margin:0" href="${u.scp}" target="_blank" rel="noopener noreferrer">SCP</a></td>
       <td style="color:var(--text-muted);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${w.notes||''}</td>
       <td style="padding:8px 8px;text-align:center" onclick="event.stopPropagation()">
-        <button onclick="deleteWlEntry('${w.id}')" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:6px;opacity:0.4;transition:all .15s" onmouseover="this.style.opacity='1';this.style.color='var(--red)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--text-muted)'">×</button>
+        <button class="wl-del" onclick="deleteWlEntry('${w.id}')">×</button>
       </td>
     </tr>`;
   }).join('');
+
+  if (cardList) {
+    cardList.innerHTML = list.map(w => {
+      const tier = (w.priority||'medium').toLowerCase();
+      const s = _wlTierStyle(tier);
+      const u = linkUrls(w);
+      return `<div class="went" onclick="openEditWatchlist('${w.id}')">
+        <div class="went-top">
+          <div class="went-nm">${w.player}</div>
+          <span class="wl-tier" style="background:${s.bg};color:${s.color}">${tier.charAt(0).toUpperCase()+tier.slice(1)}</span>
+        </div>
+        ${w.notes ? `<div class="went-notes">${w.notes}</div>` : ''}
+        <div class="went-links" onclick="event.stopPropagation()">
+          <a href="${u.auto}" target="_blank" rel="noopener noreferrer">Auto</a>
+          <a href="${u.sn}" target="_blank" rel="noopener noreferrer">S/N</a>
+          <a href="${u.scp}" target="_blank" rel="noopener noreferrer">SCP</a>
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 function openAddWatchlist() {
@@ -4602,35 +4658,33 @@ boot();
 
 
 <!-- WATCHLIST ADD/EDIT MODAL -->
-<div id="wl-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)closeWlModal()">
-  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;width:460px;max-width:95vw;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.5)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)">
+<div id="wl-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeWlModal()">
+  <div style="background:var(--v-surface);border:1px solid var(--v-hairline);border-radius:16px;width:420px;max-width:95vw;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.5)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--v-hairline)">
       <div id="wl-modal-title" style="font-size:16px;font-weight:700">Add Player</div>
-      <button onclick="closeWlModal()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
+      <button onclick="closeWlModal()" style="background:none;border:none;color:var(--v-text-3);cursor:pointer;font-size:18px;padding:4px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--v-text-3)'">✕</button>
     </div>
-    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Player Name</label>
-        <input id="wl-player" class="form-input" type="text" placeholder="e.g. Victor Rodrigues" style="width:100%" onkeydown="if(event.key==='Enter')saveWlEntry()">
-      </div>
-
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:8px">Value</label>
-        <div style="display:flex;gap:8px">
-          <button class="wl-priority-btn" data-p="low" onclick="setWlPriority(this)" style="flex:1;padding:8px 0;border-radius:8px;border:1px solid rgba(45,212,191,0.35);background:rgba(45,212,191,0.08);color:var(--teal);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">Low</button>
-          <button class="wl-priority-btn active" data-p="medium" onclick="setWlPriority(this)" style="flex:1;padding:8px 0;border-radius:8px;border:1px solid rgba(245,200,66,0.35);background:rgba(245,200,66,0.08);color:var(--yellow);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">Medium</button>
-          <button class="wl-priority-btn" data-p="high" onclick="setWlPriority(this)" style="flex:1;padding:8px 0;border-radius:8px;border:1px solid rgba(242,92,92,0.35);background:rgba(242,92,92,0.08);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">High</button>
+    <div class="vgroup" style="margin:16px 20px 0">
+      <div class="vrow"><span class="vrow-k">Player Name</span>
+        <input id="wl-player" class="vrow-in" type="text" placeholder="e.g. Victor Rodrigues" onkeydown="if(event.key==='Enter')saveWlEntry()"></div>
+      <div class="vrow"><span class="vrow-k">Priority</span>
+        <div class="seg-ctrl" style="width:auto">
+          <button class="wl-priority-btn" data-p="low" onclick="setWlPriority(this)">Low</button>
+          <button class="wl-priority-btn active" data-p="medium" onclick="setWlPriority(this)">Medium</button>
+          <button class="wl-priority-btn" data-p="high" onclick="setWlPriority(this)">High</button>
         </div>
       </div>
-      <div>
-        <label style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px">Notes</label>
-        <textarea id="wl-notes" class="form-input" placeholder="e.g. Watch for 1st Chrome auto, targeting under $30…" style="width:100%;height:72px;resize:vertical;font-family:inherit;line-height:1.5"></textarea>
+      <div class="vrow" style="display:block">
+        <span class="vrow-k" style="display:block;margin-bottom:8px">Notes</span>
+        <textarea id="wl-notes" placeholder="e.g. Watch for 1st Chrome auto, targeting under $30…" class="vrow-in" style="width:100%;min-height:64px;resize:vertical;font-size:13px;font-weight:400;text-align:left;line-height:1.5"></textarea>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--border)">
-      <button onclick="saveWlEntry()" class="form-btn" style="flex:1">Save</button>
-      <button id="wl-delete-btn" onclick="deleteWlEntry(_wlEditId)" class="form-btn" style="background:var(--red-bg);border-color:rgba(242,92,92,0.35);color:var(--red);display:none">Delete</button>
-      <button onclick="closeWlModal()" class="form-btn secondary">Cancel</button>
+    <div style="display:flex;align-items:center;gap:8px;padding:16px 20px;margin-top:16px;border-top:1px solid var(--v-hairline)">
+      <button id="wl-delete-btn" onclick="deleteWlEntry(_wlEditId)" class="vlink-btn" style="color:var(--v-text-3);display:none">Delete</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button onclick="closeWlModal()" class="vm-action-btn quiet">Cancel</button>
+        <button onclick="saveWlEntry()" class="vm-action-btn primary">Save</button>
+      </div>
     </div>
   </div>
 </div>
