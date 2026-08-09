@@ -114,6 +114,15 @@
     #hero-player > div > div:nth-child(2){flex:1 1 100% !important}
     #hero-player > div > div:nth-last-child(1){display:none !important}
 
+    /* Valuation entry modal: Date Purchased / Date Sold rows are label +
+       date input + a "Mark ✓" action all in one row — too tight at this
+       width, so the value side drops to its own line under the label */
+    #vm-bought-form,#vm-sold-date-row{flex-wrap:wrap;row-gap:8px}
+    #vm-bought-form > div,#vm-sold-date-row > div{flex:1 1 100%;justify-content:space-between}
+    /* Footer: the "Load into form" link wraps into the buttons at this width */
+    #val-modal-overlay .val-modal > div:last-child{flex-direction:column;align-items:stretch !important;gap:10px !important}
+    #val-modal-overlay .val-modal > div:last-child > div{justify-content:flex-end}
+
     /* Tables scroll horizontally */
     .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
     table{font-size:11.5px}
@@ -359,14 +368,26 @@
   #search-hint span{display:flex;align-items:center;gap:5px}
   .sh-kbd{background:#1a1a1a;border:1px solid #2d2d2d;border-radius:4px;padding:1px 5px;font-size:10px;color:#777}
 
-  /* BOTTOM NAV (mobile only) */
+  /* BOTTOM NAV (mobile only) — floating capsule, icon-only until active.
+     Reference: the "Plate" app's tab bar — a raised pill that only spells
+     out the current tab's name, everything else is just an icon. */
   #bottom-nav{display:none}
   @media(max-width:767px){
-    #bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:54px;background:var(--bg-card);border-top:1px solid var(--border);z-index:300;safe-area-inset-bottom:env(safe-area-inset-bottom)}
-    .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;transition:color .15s;gap:3px;padding-bottom:2px}
-    .bn-item.active{color:var(--accent)}
-    .bn-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    .content{padding-bottom:70px !important}
+    #bottom-nav{display:flex;align-items:center;gap:2px;position:fixed;
+      left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);
+      padding:6px;border-radius:26px;background:rgba(20,20,22,0.82);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,0.08);box-shadow:0 10px 32px rgba(0,0,0,0.55);z-index:300}
+    .bn-item{display:flex;align-items:center;justify-content:center;gap:6px;
+      height:40px;padding:0 12px;border-radius:20px;color:var(--v-text-2);
+      cursor:pointer;transition:background .18s,color .18s,padding .18s}
+    .bn-item.active{background:rgba(212,168,67,0.14);color:var(--accent);padding:0 15px}
+    .bn-item svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;
+      stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .bn-label{font-size:12.5px;font-weight:600;letter-spacing:-.1px;
+      max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width .2s ease,opacity .15s}
+    .bn-item.active .bn-label{max-width:80px;opacity:1}
+    .content{padding-bottom:88px !important}
   }
 
 
@@ -687,16 +708,17 @@
   .vm-section-title{font-size:11px;font-weight:600;color:var(--v-text-3);letter-spacing:.3px;margin-bottom:11px}
   .vm-input{background:var(--v-surface-2);border:1px solid transparent;border-radius:9px;padding:8px 11px;color:var(--text-primary);font-size:14px;font-weight:600;outline:none;transition:border-color .15s;font-family:inherit}
   .vm-input:focus{border-color:var(--accent)}
-  .vm-hf-btn{background:var(--v-surface-2);border:none;color:var(--v-text-2);font-size:11.5px;font-weight:500;padding:6px 13px;border-radius:16px;cursor:pointer;transition:all .15s}
+  /* Intent (Hold/Flip/Watching) — a neutral segmented control like Type,
+     not a traffic-light. These are states you're tracking, not a verdict,
+     so they don't need alarm colors. */
+  .vm-hf-btn{flex:1;background:none;border:none;color:var(--v-text-2);font-size:11.5px;font-weight:500;padding:6px 10px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .vm-hf-btn.active{background:var(--v-surface);color:var(--text-primary);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  .vm-hf-btn:hover:not(.active){color:var(--text-primary)}
   .cd-hf-btn{background:var(--v-surface-2);border:none;color:var(--v-text-2);font-size:10.5px;font-weight:600;padding:4px 11px;border-radius:14px;cursor:pointer;transition:all .15s}
   .cd-hf-btn[data-hf="sell"].active{background:rgba(48,209,88,0.15);color:var(--v-green)}
   .cd-hf-btn[data-hf="hold"].active{background:rgba(255,69,58,0.15);color:var(--v-red)}
   .cd-hf-btn[data-hf="flip"].active{background:rgba(255,214,10,0.15);color:#ffd60a}
   .cd-hf-btn:hover:not(.active){color:var(--text-primary)}
-  .vm-hf-btn[data-hf="hold"].active{background:rgba(255,69,58,0.15);color:var(--v-red)}
-  .vm-hf-btn[data-hf="flip"].active{background:rgba(255,214,10,0.15);color:#ffd60a}
-  .vm-hf-btn[data-hf="watching"].active{background:rgba(100,210,255,0.15);color:#64d2ff}
-  .vm-hf-btn:hover:not(.active){color:var(--text-primary)}
   .vm-action-btn{font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer;transition:opacity .15s;border:none}
   .vm-action-btn:hover{opacity:.85}
   .vm-action-btn.quiet{background:var(--v-surface-2);color:var(--v-text-2)}
@@ -3757,14 +3779,14 @@ function openValCard(id) {
   const ce = $('vm-comps');
   if (e.comps && e.comps.length) {
     ce.innerHTML = e.comps.map((c,i) =>
-      `<div style="background:var(--v-surface-2);border-radius:9px;padding:8px 12px;text-align:center;min-width:72px">
-        <div style="font-size:10px;color:var(--v-text-3);margin-bottom:3px">Comp ${i+1}</div>
-        <div style="font-size:14px;font-weight:700">$${c.toFixed(2)}</div>
+      `<div style="background:var(--v-surface-2);border-radius:9px;padding:9px 4px;text-align:center;flex:1 1 72px;min-width:72px">
+        <div style="font-size:9px;color:var(--v-text-3);margin-bottom:3px">Comp ${i+1}</div>
+        <div style="font-size:14px;font-weight:600">$${c.toFixed(2)}</div>
       </div>`
     ).join('') +
-    `<div style="background:rgba(212,168,67,0.1);border-radius:9px;padding:8px 12px;text-align:center;min-width:72px">
-      <div style="font-size:10px;color:var(--accent);margin-bottom:3px">Avg TMV</div>
-      <div style="font-size:14px;font-weight:700;color:var(--accent)">$${e.tmv.toFixed(2)}</div>
+    `<div style="background:rgba(212,168,67,0.1);border-radius:9px;padding:9px 4px;text-align:center;flex:1 1 72px;min-width:72px">
+      <div style="font-size:9px;color:var(--accent);margin-bottom:3px">Avg TMV</div>
+      <div style="font-size:14px;font-weight:600;color:var(--accent)">$${e.tmv.toFixed(2)}</div>
     </div>`;
   } else {
     ce.innerHTML = '<span style="color:var(--v-text-3);font-size:12px">No comps saved.</span>';
@@ -3779,19 +3801,21 @@ function openValCard(id) {
   // Sold section
   if (e.status === 'sold') {
     $('vm-sold-form').style.display = 'none';
-    $('vm-sold-display').style.display = 'block';
+    $('vm-sold-date-row').style.display = 'none';
+    $('vm-sold-display').style.display = 'flex';
     const pl = e.listing != null ? (e.soldPrice - e.listing) : null;
     const plStr = pl !== null ? ((pl >= 0 ? '+' : '') + '$' + pl.toFixed(2)) : '—';
     const plColor = pl !== null ? (pl >= 0 ? 'var(--v-green)' : 'var(--v-red)') : 'var(--v-text-3)';
     $('vm-sold-display').innerHTML = `
-      <div class="vm-sold-tag" style="width:fit-content">✓ Sold for <strong>$${e.soldPrice.toFixed(2)}</strong></div>
-      <div style="display:flex;gap:20px;margin-top:10px">
-        <div><div style="font-size:10px;color:var(--v-text-3);margin-bottom:2px">DATE</div><div style="font-size:13px;font-weight:600">${e.soldDate || '—'}</div></div>
-        <div><div style="font-size:10px;color:var(--v-text-3);margin-bottom:2px">P/L</div><div style="font-size:13px;font-weight:700;color:${plColor}">${plStr}</div></div>
-        <div style="margin-left:auto;align-self:flex-end"><button onclick="unmarkSold()" style="background:none;border:none;color:var(--v-text-3);font-size:11px;padding:5px 4px;cursor:pointer">Undo</button></div>
+      <div class="vm-sold-tag">✓ Sold for <strong>$${e.soldPrice.toFixed(2)}</strong></div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="text-align:right"><div style="font-size:9.5px;color:var(--v-text-3)">DATE</div><div style="font-size:13px;font-weight:600">${e.soldDate || '—'}</div></div>
+        <div style="text-align:right"><div style="font-size:9.5px;color:var(--v-text-3)">P/L</div><div style="font-size:13px;font-weight:700;color:${plColor}">${plStr}</div></div>
+        <button onclick="unmarkSold()" class="vlink-btn" style="color:var(--v-text-3)">Undo</button>
       </div>`;
   } else {
     $('vm-sold-form').style.display = 'flex';
+    $('vm-sold-date-row').style.display = 'flex';
     $('vm-sold-display').style.display = 'none';
     $('vm-sold-price').value = '';
     $('vm-sold-date').value  = new Date().toISOString().slice(0,10);
@@ -3800,12 +3824,10 @@ function openValCard(id) {
   // Purchased section
   if (e.purchased) {
     $('vm-bought-form').style.display = 'none';
-    $('vm-bought-display').style.display = 'block';
+    $('vm-bought-display').style.display = 'flex';
     $('vm-bought-display').innerHTML = `
-      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(212,168,67,0.1);padding:7px 13px;border-radius:10px">
-        <span style="font-size:13px;font-weight:700;color:var(--accent)">✓ Purchased${e.purchaseDate ? ' · ' + e.purchaseDate : ''}</span>
-        <button onclick="unmarkPurchased()" style="background:none;border:none;color:var(--v-text-3);font-size:11px;cursor:pointer;padding:0 0 0 4px">Undo</button>
-      </div>`;
+      <span style="font-size:13px;font-weight:700;color:var(--accent)">✓ Purchased${e.purchaseDate ? ' · ' + e.purchaseDate : ''}</span>
+      <button onclick="unmarkPurchased()" class="vlink-btn" style="color:var(--v-text-3)">Undo</button>`;
   } else {
     $('vm-bought-form').style.display = 'flex';
     $('vm-bought-display').style.display = 'none';
@@ -4270,68 +4292,50 @@ boot();
     </div>
 
     <!-- Comps -->
-    <div class="vm-section">
-      <div class="vm-section-title">Saved Comps</div>
-      <div id="vm-comps" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-    </div>
+    <div class="vsec"><span class="vsec-t">Saved Comps</span></div>
+    <div class="vgroup"><div id="vm-comps" style="display:flex;gap:7px;flex-wrap:wrap;padding:13px 16px"></div></div>
 
     <!-- Price Goals -->
-    <div class="vm-section">
-      <div class="vm-section-title">Price Goals</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
-        <div>
-          <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Target Sell Price</label>
-          <div style="display:flex;align-items:center;gap:5px">
-            <span style="color:var(--text-muted);font-size:15px">$</span>
-            <input id="vm-goal" type="number" step="0.01" placeholder="0.00" class="vm-input" style="width:100%">
-          </div>
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Intent</label>
-          <div style="display:flex;gap:6px">
-            <button class="vm-hf-btn active" data-hf="hold" onclick="setVmIntent(this)">Hold</button>
-            <button class="vm-hf-btn" data-hf="flip" onclick="setVmIntent(this)">Flip</button>
-            <button class="vm-hf-btn" data-hf="watching" onclick="setVmIntent(this)">Watching</button>
-          </div>
+    <div class="vsec"><span class="vsec-t">Price Goals</span></div>
+    <div class="vgroup">
+      <div class="vrow"><span class="vrow-k">Target Sell Price</span>
+        <span class="vrow-money"><span class="vrow-cur">$</span><input id="vm-goal" type="number" step="0.01" placeholder="0.00" class="vrow-in num"></span></div>
+      <div class="vrow"><span class="vrow-k">Intent</span>
+        <div class="seg-ctrl" style="width:auto">
+          <button class="vm-hf-btn active" data-hf="hold" onclick="setVmIntent(this)">Hold</button>
+          <button class="vm-hf-btn" data-hf="flip" onclick="setVmIntent(this)">Flip</button>
+          <button class="vm-hf-btn" data-hf="watching" onclick="setVmIntent(this)">Watching</button>
         </div>
       </div>
-      <div style="margin-top:12px">
-        <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Notes</label>
-        <textarea id="vm-notes" placeholder="Add notes, context, or reasons..." class="vm-input" style="width:100%;min-height:64px;resize:vertical;font-size:12px;font-weight:400;font-family:inherit;line-height:1.5"></textarea>
+      <div class="vrow" style="display:block">
+        <span class="vrow-k" style="display:block;margin-bottom:8px">Notes</span>
+        <textarea id="vm-notes" placeholder="Add notes, context, or reasons..." class="vrow-in" style="width:100%;min-height:60px;resize:vertical;font-size:13px;font-weight:400;text-align:left;line-height:1.5"></textarea>
       </div>
     </div>
 
     <!-- Ownership -->
-    <div class="vm-section">
-      <div class="vm-section-title">Ownership</div>
-
-      <!-- Purchased row -->
-      <div id="vm-bought-form" style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px">
-        <div>
-          <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Date Purchased</label>
-          <input id="vm-bought-date" type="date" class="vm-input" style="font-size:12px;font-weight:400">
+    <div class="vsec"><span class="vsec-t">Ownership</span></div>
+    <div class="vgroup">
+      <div id="vm-bought-form" class="vrow">
+        <span class="vrow-k">Date Purchased</span>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input id="vm-bought-date" type="date" class="vrow-in" style="width:auto">
+          <button onclick="markAsPurchased()" class="vlink-btn" style="white-space:nowrap">Mark purchased ✓</button>
         </div>
-        <button onclick="markAsPurchased()" class="vm-action-btn tinted-accent" style="margin-bottom:1px">Mark Purchased ✓</button>
       </div>
-      <div id="vm-bought-display" style="display:none;margin-bottom:14px"></div>
-
-      <!-- Sold row -->
-      <div style="height:1px;background:var(--border);margin-bottom:14px"></div>
-      <div id="vm-sold-form" style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
-        <div>
-          <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Sold Price</label>
-          <div style="display:flex;align-items:center;gap:5px">
-            <span style="color:var(--text-muted);font-size:15px">$</span>
-            <input id="vm-sold-price" type="number" step="0.01" placeholder="0.00" class="vm-input" style="width:110px">
-          </div>
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px">Date Sold</label>
-          <input id="vm-sold-date" type="date" class="vm-input" style="font-size:12px;font-weight:400">
-        </div>
-        <button onclick="markAsSold()" class="vm-action-btn tinted-green" style="margin-bottom:1px">Mark Sold ✓</button>
+      <div id="vm-bought-display" class="vrow" style="display:none"></div>
+      <div id="vm-sold-form" class="vrow" style="flex-wrap:wrap">
+        <span class="vrow-k">Sold Price</span>
+        <span class="vrow-money"><span class="vrow-cur">$</span><input id="vm-sold-price" type="number" step="0.01" placeholder="0.00" class="vrow-in num"></span>
       </div>
-      <div id="vm-sold-display" style="display:none"></div>
+      <div id="vm-sold-date-row" class="vrow">
+        <span class="vrow-k">Date Sold</span>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input id="vm-sold-date" type="date" class="vrow-in" style="width:auto">
+          <button onclick="markAsSold()" class="vlink-btn" style="white-space:nowrap;color:var(--v-green)">Mark sold ✓</button>
+        </div>
+      </div>
+      <div id="vm-sold-display" class="vrow" style="display:none"></div>
     </div>
 
     <!-- Footer -->
@@ -4672,19 +4676,19 @@ boot();
 <nav id="bottom-nav">
   <div class="bn-item active" id="bn-overview" onclick="showPageMobile('overview')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    Overview
+    <span class="bn-label">Overview</span>
   </div>
   <div class="bn-item" id="bn-collection" onclick="showPageMobile('collection')">
     <svg viewBox="0 0 24 24"><path d="M4 19V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12"/><path d="M4 19h16"/><path d="M8 15h8"/><path d="M8 11h8"/></svg>
-    Bowman
+    <span class="bn-label">Bowman</span>
   </div>
   <div class="bn-item" id="bn-watchlist" onclick="showPageMobile('watchlist')">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>
-    Watchlist
+    <span class="bn-label">Watchlist</span>
   </div>
   <div class="bn-item" id="bn-valuation" onclick="showPageMobile('valuation')">
     <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-    Valuation
+    <span class="bn-label">Valuation</span>
   </div>
 </nav>
 
