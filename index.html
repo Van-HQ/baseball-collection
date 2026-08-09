@@ -419,36 +419,68 @@
 
 
   /* PLAYER CARDS MODAL */
-  #player-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;backdrop-filter:blur(4px);align-items:center;justify-content:center}
+  /* Backdrop carries a soft lit gradient — the glass pane above needs
+     something to refract, otherwise the blur reads as a flat gray box. */
+  #player-modal-backdrop{display:none;position:fixed;inset:0;z-index:500;
+    background:
+      radial-gradient(70% 55% at 18% 10%, rgba(212,168,67,0.13) 0%, transparent 60%),
+      radial-gradient(60% 50% at 85% 80%, rgba(48,209,88,0.10) 0%, transparent 62%),
+      rgba(0,0,0,0.7);
+    backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
   #player-modal-backdrop.open{display:flex}
-  #player-modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:14px;width:min(620px,96vw);max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 28px 72px rgba(0,0,0,0.7)}
-  #player-modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;justify-content:space-between;flex-shrink:0;border-left:3px solid var(--accent)}
-  #player-modal-title{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
-  .pm-avatar{width:46px;height:46px;border-radius:12px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--accent);letter-spacing:-.5px;flex-shrink:0}
+  /* ══ PLAYER CARD — "trend first" (direction B) ══
+     Real frosted glass: blur + saturation, a hairline border, and a 1px
+     inset catch-light on the top edge so it reads as a physical pane.
+     Glass needs something lit behind it, which the backdrop gradient
+     below provides — over flat black, blur has nothing to refract. */
+  #player-modal{
+    background:rgba(28,28,31,0.72);
+    backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.09);border-radius:22px;
+    width:min(440px,94vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 1px 0 0 rgba(255,255,255,0.07) inset, 0 24px 60px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)}
+  #player-modal-header{padding:18px 20px;display:flex;align-items:center;gap:13px;justify-content:space-between;flex-shrink:0}
+  #player-modal-title{display:flex;align-items:center;gap:13px;flex:1;min-width:0}
+  .pm-avatar{width:46px;height:46px;border-radius:14px;flex-shrink:0;
+    background:linear-gradient(145deg,rgba(212,168,67,0.28),rgba(212,168,67,0.09));
+    border:1px solid rgba(212,168,67,0.22);
+    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;
+    color:var(--accent);letter-spacing:-.4px}
   .pm-hero-info{flex:1;min-width:0}
-  .pm-hero-name{font-size:18px;font-weight:900;letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pm-trend-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;letter-spacing:.3px;padding:2px 8px;border-radius:8px;margin-top:4px}
-  #player-modal-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:6px;flex-shrink:0}
-  #player-modal-close:hover{color:var(--text-primary);background:var(--bg-hover)}
+  .pm-hero-name{font-size:19px;font-weight:700;letter-spacing:-.4px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pm-hero-sub{font-size:12.5px;color:var(--v-text-3);margin-top:2px}
+  .pm-trend-badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px}
+  #player-modal-close{width:29px;height:29px;border-radius:50%;border:none;flex-shrink:0;
+    background:rgba(255,255,255,0.055);color:var(--v-text-2);font-size:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:color .15s}
+  #player-modal-close:hover{color:var(--text-primary)}
   #player-modal-body{overflow-y:auto;flex:1}
-  .pm-stats-row{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
-  .pm-stat{padding:14px 16px;border-right:1px solid var(--border);text-align:center}
-  .pm-stat:last-child{border-right:none}
-  .pm-stat-label{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
-  .pm-stat-val{font-size:21px;font-weight:800;letter-spacing:-.5px}
-  .pm-chart-wrap{padding:12px 20px 0;border-bottom:1px solid var(--border)}
-  .pm-chart-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
-  .pm-best{margin:12px 20px;padding:12px 16px;border-radius:10px;border:1px solid rgba(212,168,67,0.22);background:rgba(212,168,67,0.05);display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .pm-best-flag{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
-  .pm-best-name{font-size:13px;font-weight:700}
-  .pm-best-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
-  .pm-cards-hdr{padding:8px 20px 6px;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);border-top:1px solid var(--border);background:var(--bg-base)}
-  .pm-card{display:grid;grid-template-columns:1fr auto auto auto;border-bottom:1px solid var(--border);padding:11px 20px;align-items:center;gap:12px;transition:background .1s}
-  .pm-card:last-child{border-bottom:none}
-  .pm-card:hover{background:var(--bg-hover)}
-  .pm-card-name{font-size:12px;font-weight:600;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pm-card-year{font-size:11px;color:var(--text-muted)}
-  .pm-val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .pm-rule{height:1px;background:rgba(255,255,255,0.09)}
+
+  /* Hero: value + trend lead, then the chart */
+  .pm-lead{padding:2px 20px 0}
+  .pm-lead-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .pm-lead-val{font-size:34px;font-weight:700;letter-spacing:-1.2px;font-variant-numeric:tabular-nums;line-height:1}
+  .pm-lead-sub{font-size:13px;color:var(--v-text-2);margin-top:5px}
+  .pm-chart-wrap{padding:10px 20px 18px}
+  .pm-chart-foot{display:flex;justify-content:space-between;font-size:11px;color:var(--v-text-3);margin-top:6px}
+
+  /* Two supporting figures */
+  .pm-figs{display:flex;padding:16px 20px}
+  .pm-fig{flex:1}
+  .pm-fig-l{font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--v-text-3);margin-bottom:4px}
+  .pm-fig-v{font-size:21px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums;line-height:1}
+
+  /* Card list — compact, and every number is labelled */
+  .pm-cards-hdr{padding:16px 20px 8px;font-size:11px;font-weight:600;letter-spacing:.3px;color:var(--v-text-3)}
+  .pm-list{padding:0 20px 18px}
+  .pm-card{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;position:relative}
+  .pm-card + .pm-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,0.09)}
+  .pm-card-name{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pm-card-year{font-size:11px;color:var(--v-text-3);margin-top:1px}
+  .pm-card-v{text-align:right;flex-shrink:0}
+  .pm-card-tmv{font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .pm-card-pl{font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
   #player-modal-summary{display:none}
   /* COLLECTION STATS BAR */
   .coll-stat-bar{display:flex;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.3);flex-wrap:wrap}
@@ -1408,80 +1440,73 @@ function openPlayerModal(player) {
   const totalCost = cards.reduce((s,c) => s+(c.cost||0), 0);
   const totalTmv  = cards.reduce((s,c) => s+(c.tmv||0), 0);
   const totalPl   = totalTmv - totalCost;
-  const plColor   = totalPl >= 0 ? 'var(--green)' : 'var(--red)';
+  const plColor   = totalPl >= 0 ? 'var(--v-green)' : 'var(--v-red)';
   const plStr     = (totalPl>=0?'+$':'-$') + Math.abs(totalPl).toFixed(2);
   const initials  = player.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const years     = [...new Set(cards.map(c=>c.year).filter(Boolean))].sort();
+  const yearLabel = years.length ? (years.length === 1 ? years[0] : years[0]+'–'+years[years.length-1]) : '';
 
-  // Trend + sparkline from val history
+  // Value history drives the hero: trend badge, headline delta, and the chart.
+  // Ordered by entry_date, not createdAt — this is a value-over-time chart, and
+  // the bulk-imported rows all share a single import timestamp, so their real
+  // chronology only exists in entry_date. createdAt just breaks same-day ties.
   const hist = getValHistory()
     .filter(e => e.player === player && e.tmv != null)
-    .sort((a,b) => (a.date||'').localeCompare(b.date||''));
+    .sort((a,b) => (a.date||'').localeCompare(b.date||'')
+                || (a.createdAt||'').localeCompare(b.createdAt||''));
 
-  let trendHtml = '', sparkHtml = '';
+  let trendHtml = '', chartHtml = '', deltaHtml = '';
   if (hist.length >= 2) {
     const first = hist[0].tmv, last = hist[hist.length-1].tmv;
     const chg = (last - first) / Math.max(first, 1);
-    const [tLabel, tColor, tBg, tBdr] = chg > 0.10
-      ? ['↑ Surging','var(--green)','var(--green-bg)','rgba(34,211,106,0.3)']
+    const [tLabel, tColor, tBg] = chg > 0.10
+      ? ['↑ Surging','var(--v-green)','rgba(48,209,88,0.14)']
       : chg < -0.10
-      ? ['↓ Cooling','var(--red)','var(--red-bg)','rgba(242,92,92,0.3)']
-      : ['→ Stable','var(--yellow)','var(--yellow-bg)','rgba(245,200,66,0.3)'];
-    trendHtml = `<span class="pm-trend-badge" style="color:${tColor};background:${tBg};border:1px solid ${tBdr}">${tLabel}</span>`;
+      ? ['↓ Cooling','var(--v-red)','rgba(255,69,58,0.14)']
+      : ['→ Stable','#ffd60a','rgba(255,214,10,0.14)'];
+    trendHtml = `<span class="pm-trend-badge" style="color:${tColor};background:${tBg}">${tLabel}</span>`;
+
+    const up = last >= first;
+    const lineColor = up ? '#30d158' : '#ff453a';
+    const [r,g,b] = up ? [48,209,88] : [255,69,58];
+    const deltStr = (up?'+$':'-$') + Math.abs(last-first).toFixed(2);
+    deltaHtml = `<span style="color:${lineColor};font-weight:600">${deltStr}</span> since first tracked`;
 
     const vals = hist.map(e => e.tmv);
     const mn = Math.min(...vals), mx = Math.max(...vals);
     const range = mx - mn || 1;
-    const W = 500, H = 60;
-    const pts = vals.map((v,i) => `${((i/(vals.length-1))*W).toFixed(1)},${(H-((v-mn)/range)*(H-12)-6).toFixed(1)}`);
+    const W = 400, H = 96;
+    const pts = vals.map((v,i) => `${((i/(vals.length-1))*W).toFixed(1)},${(H-8-((v-mn)/range)*(H-20)).toFixed(1)}`);
     const ptStr = pts.join(' ');
-    const lineColor = last >= first ? '#22d36a' : '#f25c5c';
-    const [r,g,b] = last >= first ? [34,211,106] : [242,92,92];
-    const deltStr  = (last>=first?'+$':'-$') + Math.abs(last-first).toFixed(2);
-    sparkHtml = `<div class="pm-chart-wrap">
-      <div class="pm-chart-label">Value History</div>
-      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:64px;display:block">
+    const lastPt = pts[pts.length-1].split(',');
+    chartHtml = `<div class="pm-chart-wrap">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:96px;display:block">
         <defs><linearGradient id="pmSG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="rgba(${r},${g},${b},0.3)"/>
+          <stop offset="0%" stop-color="rgba(${r},${g},${b},0.34)"/>
           <stop offset="100%" stop-color="rgba(${r},${g},${b},0)"/>
         </linearGradient></defs>
         <polygon points="${ptStr} ${W},${H} 0,${H}" fill="url(#pmSG)"/>
         <polyline points="${ptStr}" fill="none" stroke="${lineColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        ${vals.length <= 10 ? pts.map(p=>`<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="3" fill="${lineColor}" opacity="0.85"/>`).join('') : ''}
+        <circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="4" fill="${lineColor}"/>
       </svg>
-      <div style="display:flex;justify-content:space-between;padding:3px 0 10px;font-size:9px;color:var(--text-muted)">
-        <span>${hist[0].date}</span>
-        <span style="color:${lineColor};font-weight:700">${deltStr} since first tracked</span>
-        <span>${hist[hist.length-1].date}</span>
-      </div>
+      <div class="pm-chart-foot"><span>${hist[0].date}</span><span>${hist[hist.length-1].date}</span></div>
     </div>`;
   }
 
-  // Best card
-  const bestCard = [...cards].sort((a,b) => b.tmv - a.tmv)[0];
-  const bestPl = bestCard.tmv - (bestCard.cost||0);
-  const bestHtml = cards.length > 1 ? `<div class="pm-best">
-    <div style="min-width:0">
-      <div class="pm-best-flag">★ Best Card</div>
-      <div class="pm-best-name">${bestCard.parallel || bestCard.card_no || '—'}</div>
-      <div class="pm-best-meta">${bestCard.year} · ${bestCard.card_no || '—'}</div>
-    </div>
-    <div style="text-align:right;flex-shrink:0">
-      <div style="font-size:17px;font-weight:800">$${bestCard.tmv.toFixed(2)}</div>
-      <div style="font-size:11px;font-weight:700;color:${bestPl>=0?'var(--green)':'var(--red)'}">${bestPl>=0?'+$':'-$'}${Math.abs(bestPl).toFixed(2)}</div>
-    </div>
-  </div>` : '';
-
-  // Card rows
+  // Card list — compact, and every number is labelled. (The old "Best Card"
+  // callout is gone: it showed the highest-TMV card, which is also just the
+  // first row of this list, so it printed the same card twice.)
   const cardRows = [...cards].sort((a,b) => b.tmv - a.tmv).map(c => {
     const pl = c.tmv - (c.cost||0);
     return `<div class="pm-card">
-      <div>
-        <div class="pm-card-name">${c.parallel||'—'} <span style="color:var(--text-muted);font-weight:400">#${c.card_no||'—'}</span></div>
-        <div class="pm-card-year">${c.year} · ${c.type}</div>
+      <div style="min-width:0">
+        <div class="pm-card-name">${c.parallel || c.card_no || '—'}</div>
+        <div class="pm-card-year">${[c.year, c.card_no, c.type].filter(Boolean).join(' · ')}</div>
       </div>
-      <div class="pm-val" style="color:var(--text-muted)">${c.cost>0?'$'+c.cost.toFixed(2):'Ripped'}</div>
-      <div class="pm-val">$${c.tmv.toFixed(2)}</div>
-      <div class="pm-val" style="color:${pl>=0?'var(--green)':'var(--red)'}">${pl>=0?'+$':'-$'}${Math.abs(pl).toFixed(2)}</div>
+      <div class="pm-card-v">
+        <div class="pm-card-tmv">$${c.tmv.toFixed(2)}</div>
+        <div class="pm-card-pl" style="color:${pl>=0?'var(--v-green)':'var(--v-red)'}">${pl>=0?'+$':'-$'}${Math.abs(pl).toFixed(2)}</div>
+      </div>
     </div>`;
   }).join('');
 
@@ -1489,19 +1514,26 @@ function openPlayerModal(player) {
     <div class="pm-avatar">${initials}</div>
     <div class="pm-hero-info">
       <div class="pm-hero-name">${player}</div>
-      ${trendHtml}
+      <div class="pm-hero-sub">${cards.length} card${cards.length!==1?'s':''}${yearLabel ? ' · '+yearLabel : ''}</div>
     </div>`;
 
   $('player-modal-body').innerHTML = `
-    <div class="pm-stats-row">
-      <div class="pm-stat"><div class="pm-stat-label">Value</div><div class="pm-stat-val">$${totalTmv.toFixed(2)}</div></div>
-      <div class="pm-stat"><div class="pm-stat-label">P/L</div><div class="pm-stat-val" style="color:${plColor}">${plStr}</div></div>
-      <div class="pm-stat"><div class="pm-stat-label">Cards</div><div class="pm-stat-val">${cards.length}</div></div>
+    <div class="pm-lead">
+      <div class="pm-lead-row">
+        <div class="pm-lead-val">$${totalTmv.toFixed(2)}</div>
+        ${trendHtml}
+      </div>
+      ${deltaHtml ? `<div class="pm-lead-sub">${deltaHtml}</div>` : ''}
     </div>
-    ${sparkHtml}
-    ${bestHtml}
-    ${cards.length > 1 ? '<div class="pm-cards-hdr">All Cards</div>' : ''}
-    ${cardRows}`;
+    ${chartHtml || '<div style="height:14px"></div>'}
+    <div class="pm-rule"></div>
+    <div class="pm-figs">
+      <div class="pm-fig"><div class="pm-fig-l">Cost basis</div><div class="pm-fig-v">${totalCost > 0 ? '$'+totalCost.toFixed(2) : '—'}</div></div>
+      <div class="pm-fig"><div class="pm-fig-l">Profit / Loss</div><div class="pm-fig-v" style="color:${plColor}">${plStr}</div></div>
+    </div>
+    <div class="pm-rule"></div>
+    <div class="pm-cards-hdr">${cards.length} card${cards.length!==1?'s':''}</div>
+    <div class="pm-list">${cardRows}</div>`;
 
   $('player-modal-backdrop').classList.add('open');
 }
