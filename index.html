@@ -617,7 +617,7 @@
   .verdict.buy .verdict-tag{color:var(--v-green)}
   .verdict.pass .verdict-tag{color:var(--v-red)}
   .verdict-sub{font-size:13.5px;color:var(--v-text-2);margin-top:7px}
-  .verdict-bid{margin-top:17px;padding-top:15px;border-top:1px solid var(--v-hairline);
+  .verdict-bid{margin-top:15px;padding-top:0;
     display:flex;align-items:baseline;justify-content:center;gap:9px}
   .verdict-bid-lab{font-size:12px;color:var(--v-text-3)}
   .verdict-bid-num{font-size:27px;font-weight:700;letter-spacing:-.7px;font-variant-numeric:tabular-nums}
@@ -659,11 +659,6 @@
 
   /* History — five stat boxes collapse into one quiet line */
   .vhist-head{padding-top:4px}
-  .vl-summary{padding:0 4px;display:flex;flex-direction:column;gap:4px}
-  .vl-sumline{font-size:13px;color:var(--v-text-2);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .vl-sumline b{color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums}
-  .vl-sumline .dot{color:var(--v-text-3)}
-  .vl-sumline .up{color:var(--v-green);font-weight:600}
 
   .vl-filters{display:flex;gap:7px;padding:14px 4px 0;overflow-x:auto;
     -webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -1117,7 +1112,7 @@
           </div>
           <div class="vrow vcomps-foot">
             <span class="vrow-k sub" id="v-compcount">0 / 5</span>
-            <button class="vlink-btn" onclick="clearComps()">Clear comps</button>
+            <button class="vlink-btn" onclick="clearComps()">Clear</button>
           </div>
         </div>
 
@@ -1145,7 +1140,7 @@
           <a id="v-link-comps" href="#" target="_blank" rel="noopener noreferrer" class="disabled" onclick="return openEbayComps(event)">Comps</a>
           <span class="sep">&middot;</span>
           <a id="v-link-sn" href="#" target="_blank" rel="noopener noreferrer" class="disabled" onclick="return openEbaySN(event)">S/N</a>
-          <span class="sep">&middot;</span>
+          <span class="sep" id="v-link-auto-sep">&middot;</span>
           <a id="v-link-auto" href="#" target="_blank" rel="noopener noreferrer" class="disabled" onclick="return openEbayAuto(event)">Auto</a>
         </div>
         <button class="vclear" onclick="resetValuation()">Clear all</button>
@@ -1157,7 +1152,6 @@
           <span class="vsec-t">History</span>
           <button class="vlink-btn danger" onclick="clearValHistory()">Clear all</button>
         </div>
-        <div class="vl-summary" id="vl-stats-row"></div>
         <div class="vl-filters">
           <button class="vl-tab active" data-vf="all"      onclick="setVlFilter(this)">All</button>
           <button class="vl-tab"        data-vf="buy"      onclick="setVlFilter(this)">Buy</button>
@@ -1345,7 +1339,10 @@ async function loadData() {
 // need to change).
 function _dbToValEntry(r) {
   return {
-    id: r.id, date: r.entry_date, player: r.player, year: r.year, parallel: r.parallel,
+    // createdAt is the real save timestamp; `date` is date-only, so sorting
+    // "Recent" on it ties every entry saved on the same day.
+    id: r.id, date: r.entry_date, createdAt: r.created_at,
+    player: r.player, year: r.year, parallel: r.parallel,
     cardno: r.card_no, scpUrl: r.scp_url, type: r.type, listing: r.listing, shipping: r.shipping,
     tax: r.tax, tmv: r.tmv, discount: r.discount, maxBid: r.max_bid, decision: r.decision, comps: r.comps || [],
     priceGoal: r.price_goal, notes: r.notes, holdFlip: r.hold_flip,
@@ -3593,8 +3590,11 @@ function buildEbayLinks() {
   const type = getValType();
   $('v-link-comps').classList.toggle('disabled', !hasData);
   $('v-link-sn').classList.toggle('disabled', !hasData);
-  // Auto chip only visible when type is AUTO
-  $('v-link-auto').style.display = type === 'AUTO' ? 'inline-flex' : 'none';
+  // Auto chip only visible when type is AUTO — its separator has to hide with
+  // it, otherwise a stray "·" is left dangling after S/N
+  const showAuto = type === 'AUTO';
+  $('v-link-auto').style.display = showAuto ? 'inline-flex' : 'none';
+  $('v-link-auto-sep').style.display = showAuto ? '' : 'none';
   if (type === 'AUTO') $('v-link-auto').classList.toggle('disabled', !hasData);
 }
 
@@ -4024,31 +4024,8 @@ function _vlSortBy(col) {
   renderValHistory();
 }
 
-function renderVlStats(h) {
-  const el = $('vl-stats-row');
-  if (!el) return;
-  const buys    = h.filter(e => e.decision === 'BUY' && e.status !== 'sold');
-  const bought  = h.filter(e => e.purchased && e.status !== 'sold');
-  const withDisc = h.filter(e => e.discount != null && e.discount > 0);
-  const best    = withDisc.length ? Math.max(...withDisc.map(e => e.discount)) : null;
-  const avgDisc = withDisc.length ? withDisc.reduce((s,e) => s+e.discount, 0) / withDisc.length : null;
-  // Two quiet lines of text rather than five competing stat boxes — these are
-  // context for the list below, not the headline.
-  el.innerHTML =
-    `<div class="vl-sumline">
-       <b>${h.length}</b> analyzed <span class="dot">·</span>
-       <b>${buys.length}</b> buy ${buys.length === 1 ? 'signal' : 'signals'} <span class="dot">·</span>
-       <b>${bought.length}</b> bought
-     </div>` +
-    (withDisc.length ? `<div class="vl-sumline">
-       best deal <span class="up">${(best*100).toFixed(0)}% off</span> <span class="dot">·</span>
-       avg discount <b>${(avgDisc*100).toFixed(1)}%</b>
-     </div>` : '');
-}
-
 function renderValHistory() {
   const all = getValHistory();
-  renderVlStats(all);
 
   let h = all.filter(e => {
     if (_vlFilter === 'all')      return true;
@@ -4066,13 +4043,13 @@ function renderValHistory() {
            : col === 'tmv'      ? (a.tmv ?? 0)
            : col === 'listing'  ? (a.listing ?? 0)
            : col === 'player'   ? (a.player || '').toLowerCase()
-           : col === 'date'     ? (a.date || '')
+           : col === 'date'     ? (a.createdAt || a.date || '')
            : 0;
     let bv = col === 'discount' ? (b.discount ?? -Infinity)
            : col === 'tmv'      ? (b.tmv ?? 0)
            : col === 'listing'  ? (b.listing ?? 0)
            : col === 'player'   ? (b.player || '').toLowerCase()
-           : col === 'date'     ? (b.date || '')
+           : col === 'date'     ? (b.createdAt || b.date || '')
            : 0;
     return av < bv ? _vlSort.dir : av > bv ? -_vlSort.dir : 0;
   });
