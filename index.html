@@ -145,14 +145,6 @@
     #page-watchlist .table-wrap{display:none !important}
     .wl-cards{display:block !important}
 
-    /* Collection stats bar: even grid instead of ragged flex-wrap */
-    .coll-stat-bar{display:grid !important;grid-template-columns:repeat(3,1fr);flex-wrap:nowrap}
-    .coll-stat{flex-direction:column;align-items:flex-start;gap:2px;padding:9px 12px;min-width:0}
-    .coll-stat:nth-child(3n){border-right:none}
-    .coll-stat:nth-child(-n+3){border-bottom:1px solid var(--border)}
-    .coll-stat:last-child{margin-left:0}
-    .coll-stat-val{font-size:14px;white-space:nowrap}
-
     /* Card view: a plain scrolling list of full-width tiles, not a page grid */
     #coll-card-wrap{padding:12px 10px !important}
     #coll-card-grid{grid-template-columns:1fr !important;gap:9px !important}
@@ -182,11 +174,12 @@
   
   /* MAIN */
   .main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
-  .topbar{position:absolute;top:0;left:0;right:0;z-index:50;height:56px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.6);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.06)}
+  .topbar{position:absolute;top:0;left:0;right:0;z-index:50;height:56px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.6);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.06);transition:transform .22s ease}
+  .topbar.hidden{transform:translateY(-100%)}
   .topbar-title{font-size:15px;font-weight:600}
   .topbar-right{display:flex;align-items:center;gap:12px}
   .badge{background:var(--accent-glow);color:var(--accent);font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;border:1px solid rgba(212,168,67,0.3)}
-  
+
   .content{flex:1;overflow-y:auto;padding:24px;padding-top:80px}
   
   /* STAT CARDS */
@@ -283,7 +276,64 @@
   .pl-bar{height:4px;border-radius:2px;min-width:2px}
   .pl-bar.pos{background:var(--green)}
   .pl-bar.neg{background:var(--red)}
-  
+
+  /* Bowman toolbar — segmented view switch + icon-only actions, so nothing
+     (the Add button, most notably) gets pushed off-screen on narrow widths
+     the way the old text-button row did. */
+  .bw-toolbar{padding:12px 18px 10px;display:flex;align-items:center;gap:8px}
+  .bw-seg{display:flex;background:rgba(255,255,255,0.05);border-radius:9px;padding:2px}
+  .bw-seg button{border:none;background:none;color:var(--v-text-2);font-size:12px;font-weight:600;
+    padding:6px 11px;border-radius:7px;cursor:pointer;font-family:inherit}
+  .bw-seg button.active{background:rgba(255,255,255,0.11);color:var(--text-primary)}
+  .bw-icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--v-hairline);
+    background:rgba(255,255,255,0.03);color:var(--v-text-2);display:flex;align-items:center;
+    justify-content:center;flex-shrink:0;cursor:pointer;transition:border-color .15s,color .15s}
+  .bw-icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .bw-icon-btn.accent{border-color:rgba(212,168,67,0.35);color:var(--accent)}
+  .bw-scp-status{font-size:11px;font-weight:600;color:var(--text-muted);white-space:nowrap}
+
+  .bw-search-row{padding:0 18px 12px}
+  .bw-search-wrap{position:relative}
+  .bw-search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--v-text-3)}
+  .bw-search-wrap input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--v-hairline);
+    color:var(--text-primary);padding:8px 12px 8px 34px;border-radius:9px;font-size:13px;
+    outline:none;font-family:inherit}
+  .bw-search-wrap input::placeholder{color:var(--v-text-3)}
+  .bw-search-wrap input:focus{border-color:var(--accent)}
+
+  .bw-chip-row{display:flex;gap:6px;overflow-x:auto;padding:0 18px 14px;scrollbar-width:none}
+  .bw-chip-row::-webkit-scrollbar{display:none}
+  .bw-chip{flex-shrink:0;font-size:12px;font-weight:600;color:var(--v-text-2);background:rgba(255,255,255,0.04);
+    border:1px solid var(--v-hairline);padding:5px 12px;border-radius:20px;white-space:nowrap;cursor:pointer}
+  .bw-chip.active{background:var(--accent-glow);border-color:rgba(212,168,67,0.4);color:var(--accent)}
+  .bw-chip.static{cursor:default;color:var(--v-text-3)}
+
+  /* Stat carousel — exactly 4 cards fill the width per page, swipe for more,
+     instead of the old bordered grid that wrapped into visible grid lines. */
+  .bw-stat-carousel{margin:0 18px 16px;border:1px solid var(--v-hairline);border-radius:14px;
+    background:rgba(255,255,255,0.025);overflow:hidden}
+  .bw-stat-scroll{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .bw-stat-scroll::-webkit-scrollbar{display:none}
+  .bw-stat-page{flex:0 0 100%;display:flex;padding:14px 4px;scroll-snap-align:start}
+  .bw-stat{flex:1 0 25%;min-width:0;text-align:center;padding:0 6px;position:relative}
+  .bw-stat + .bw-stat::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:1px;background:var(--v-hairline)}
+  .bw-stat-lbl{font-size:9.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--v-text-3);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bw-stat-val{font-size:14.5px;font-weight:700;letter-spacing:-.2px;font-variant-numeric:tabular-nums}
+  .bw-stat-dots{display:flex;justify-content:center;gap:5px;padding-bottom:10px}
+  .bw-stat-dot{width:5px;height:5px;border-radius:50%;background:var(--v-hairline)}
+  .bw-stat-dot.active{background:var(--v-text-2)}
+
+  /* Table card — bounded height with its own scroll, frozen header row +
+     frozen Slot/Player columns, so a long collection never loses context
+     no matter which direction you're scrolling. */
+  .bw-table-card{margin:0 18px 18px;border:1px solid var(--v-hairline);border-radius:14px;overflow:hidden}
+  .bw-table-scroll{overflow:auto;max-height:560px;-webkit-overflow-scrolling:touch}
+  #cards-table .frozen{position:sticky;background:var(--bg-card);z-index:2}
+  #cards-table .frozen.slot{left:0;width:40px;padding-left:8px !important;padding-right:4px !important;color:var(--text-muted)}
+  #cards-table .frozen.player{left:40px;box-shadow:1px 0 0 var(--v-hairline)}
+  #cards-table thead th.frozen{z-index:6;background:#141416}
+
   /* SEARCH/FILTER */
   .filter-row{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
   .search-input{background:var(--bg-hover);border:1px solid var(--border-light);color:var(--text-primary);padding:7px 12px 7px 32px;border-radius:8px;font-size:13px;width:220px;outline:none}
@@ -484,12 +534,6 @@
   .pm-card-pl{font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
   #player-modal-summary{display:none}
   /* COLLECTION STATS BAR */
-  .coll-stat-bar{display:flex;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.3);flex-wrap:wrap}
-  .coll-stat{display:flex;align-items:baseline;gap:7px;padding:9px 18px;border-right:1px solid var(--border)}
-  .coll-stat:last-child{border-right:none;margin-left:auto}
-  .coll-stat-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted)}
-  .coll-stat-val{font-size:13px;font-weight:800;letter-spacing:-.3px}
-
   /* CARD VIEW TILES — matches Valuation's grouped-list language */
   .mtile{background:var(--v-surface);border-radius:14px;padding:14px 15px;cursor:pointer;transition:background .15s}
   .mtile:hover{background:var(--v-surface-2)}
@@ -997,50 +1041,64 @@
     <!-- COLLECTION PAGE -->
     <div class="page" id="page-collection">
       <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Bowman Collection</div>
-          <div class="panel-actions">
-            <span class="chip active" id="filter-all" onclick="filterType('all',this)">All</span>
-            <span class="chip" id="filter-ripped" onclick="filterType('Ripped',this)">Ripped</span>
-            <span class="chip" id="filter-auction" onclick="filterType('Auction',this)">Auction</span>
-            <span style="width:1px;height:16px;background:var(--border-light);margin:0 4px"></span>
-            <span class="chip active" id="collview-table" onclick="setCollView('table',this)">☰ Table</span>
-            <span class="chip" id="collview-cards" onclick="setCollView('cards',this)">▦ Cards</span>
+        <div class="bw-toolbar">
+          <div class="bw-seg">
+            <button class="active" id="collview-table" onclick="setCollView('table',this)">☰ Table</button>
+            <button id="collview-cards" onclick="setCollView('cards',this)">▦ Cards</button>
+          </div>
+          <div style="flex:1"></div>
+          <span id="scp-all-status" class="bw-scp-status"></span>
+          <button id="scp-all-btn" class="bw-icon-btn" onclick="fetchAllSCP()" title="Fetch SCP values">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          </button>
+          <button class="bw-icon-btn accent" onclick="openAddCard()" title="Add card">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="bw-search-row">
+          <div class="bw-search-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search player, parallel..." id="card-search" oninput="filterCards()">
           </div>
         </div>
-        <div class="filter-row">
-          <div class="search-wrap">
-            <input class="search-input" type="text" placeholder="Search player, parallel..." id="card-search" oninput="filterCards()">
-          </div>
-          <span id="scp-all-status" style="font-size:11px;font-weight:600;color:var(--text-muted);white-space:nowrap"></span>
-          <button id="scp-all-btn" onclick="fetchAllSCP()" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">SCP All</button>
-          <button onclick="openAddCard()" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">+ Add</button>
-          <span class="count-label" id="card-count"></span>
+        <div class="bw-chip-row">
+          <span class="bw-chip active" id="filter-all" onclick="filterType('all',this)">All</span>
+          <span class="bw-chip" id="filter-ripped" onclick="filterType('Ripped',this)">Ripped</span>
+          <span class="bw-chip" id="filter-auction" onclick="filterType('Auction',this)">Auction</span>
+          <span class="bw-chip static" id="card-count"></span>
         </div>
-        <div id="coll-stats-bar" class="coll-stat-bar"></div>
-        <div class="table-wrap" id="coll-table-wrap">
-          <table id="cards-table">
-            <thead>
-              <tr>
-                <th onclick="sortTable('binder')" style="text-align:center">Slot</th>
-                <th onclick="sortTable('player')">Player</th>
-                <th style="cursor:default;text-align:center"></th>
-                <th onclick="sortTable('year')">Year</th>
-                <th onclick="sortTable('parallel')">Parallel</th>
-                <th onclick="sortTable('card_no')">Card #</th>
-                <th onclick="sortTable('type')">Type</th>
-                <th onclick="sortTable('cost')" style="text-align:right">Cost</th>
-                <th onclick="sortTable('scp_value')" style="text-align:right">SCP Val</th>
-                <th onclick="sortTable('tmv')" style="text-align:right">TMV</th>
-                <th style="text-align:center;width:60px">Trend</th>
-                  <th onclick="sortTable('pl_dollars')" style="text-align:right">P/L</th>
-                <th style="text-align:center;cursor:default">Active</th>
-                <th style="text-align:center;cursor:default">Comps</th>
-                <th style="cursor:default;width:28px"></th>
-              </tr>
-            </thead>
-            <tbody id="cards-tbody"></tbody>
-          </table>
+        <div class="bw-stat-carousel">
+          <div class="bw-stat-scroll" id="collStatScroll">
+            <div class="bw-stat-page" id="collStatPage1"></div>
+            <div class="bw-stat-page" id="collStatPage2"></div>
+          </div>
+          <div class="bw-stat-dots" id="collStatDots"><span class="bw-stat-dot active"></span><span class="bw-stat-dot"></span></div>
+        </div>
+        <div class="bw-table-card" id="coll-table-wrap">
+          <div class="bw-table-scroll">
+            <table id="cards-table">
+              <thead>
+                <tr>
+                  <th class="frozen slot" onclick="sortTable('binder')" style="text-align:center">Slot</th>
+                  <th class="frozen player" onclick="sortTable('player')">Player</th>
+                  <th style="cursor:default;text-align:center"></th>
+                  <th onclick="sortTable('year')">Year</th>
+                  <th onclick="sortTable('parallel')">Parallel</th>
+                  <th onclick="sortTable('card_no')">Card #</th>
+                  <th onclick="sortTable('type')">Type</th>
+                  <th onclick="sortTable('cost')" style="text-align:right">Cost</th>
+                  <th onclick="sortTable('scp_value')" style="text-align:right">SCP Val</th>
+                  <th onclick="sortTable('tmv')" style="text-align:right">TMV</th>
+                  <th style="text-align:center;width:60px">Trend</th>
+                    <th onclick="sortTable('pl_dollars')" style="text-align:right">P/L</th>
+                  <th style="text-align:center;cursor:default">Active</th>
+                  <th style="text-align:center;cursor:default">Comps</th>
+                  <th style="cursor:default;width:28px"></th>
+                </tr>
+              </thead>
+              <tbody id="cards-tbody"></tbody>
+            </table>
+          </div>
         </div>
         <div id="coll-card-wrap" style="display:none;padding:18px">
           <div id="coll-card-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
@@ -2777,8 +2835,8 @@ function renderCardsTable() {
     const dolStr = (d >= 0 ? '+' : '') + '$' + Math.abs(d).toFixed(2);
     const pctStr = c.cost >= 5 ? `<small>${c.pl >= 0 ? '+' : ''}${c.pl.toFixed(0)}%</small>` : '';
     return `<tr style="cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg-hover)';showCardPreview(filteredCards[${idx}],event)" onmouseout="this.style.background='';hideCardPreview()" onclick="openCardDetail(${idx})">
-      <td style="text-align:center;padding:8px 10px;color:var(--text-muted);font-size:11px;font-weight:600;white-space:nowrap;cursor:text" title="Click to edit slot" onclick="if(_isMobile()){return}event.stopPropagation();editSlot(this,${idx})" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">${c.binder||'—'}</td>
-      <td class="player-name" style="cursor:text" title="Click to edit player" onclick="if(_isMobile()){return}event.stopPropagation();editPlayer(this,${idx})">${c.player}</td>
+      <td class="frozen slot" style="text-align:center;font-size:11px;font-weight:600;cursor:text" title="Click to edit slot" onclick="if(_isMobile()){return}event.stopPropagation();editSlot(this,${idx})" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">${c.binder||'—'}</td>
+      <td class="frozen player player-name" style="cursor:text" title="Click to edit player" onclick="if(_isMobile()){return}event.stopPropagation();editPlayer(this,${idx})">${c.player}</td>
       <td onclick="event.stopPropagation();cycleStatus(${idx})"><span class="bw-status" title="Click to cycle status">${statusDot}${statusLab}</span></td>
       <td class="bw-yr">${c.year||'—'}</td>
       <td class="parallel-text" style="cursor:text" title="Click to edit parallel" onclick="if(_isMobile()){return}event.stopPropagation();editParallel(this,${idx})">${c.parallel||'—'}</td>
@@ -2812,24 +2870,30 @@ function renderCardsTable() {
   });
 }
 function renderCollectionStats() {
-  const bar = $('coll-stats-bar');
-  if (!bar) return;
+  const p1 = $('collStatPage1'), p2 = $('collStatPage2');
+  if (!p1 || !p2) return;
   const fc = filteredCards;
   const count    = fc.length;
   const tmv      = fc.reduce((s,c) => s+(c.tmv||0), 0);
   const cardCost = fc.reduce((s,c) => s+(c.cost||0), 0);
   const wax      = DATA.summary.wax_spent || 0;
+  const singles  = DATA.summary.singles_spent || 0;
   const cost     = cardCost + wax;
   const pl       = tmv - cost;
   const ret      = cost > 0 ? (pl/cost)*100 : 0;
+  const avgCost  = count > 0 ? cardCost / count : 0;
   const plColor = pl >= 0 ? 'var(--green)' : 'var(--red)';
   const retColor = ret >= 0 ? 'var(--green)' : 'var(--red)';
-  bar.innerHTML = `
-    <div class="coll-stat"><span class="coll-stat-label">Cards</span><span class="coll-stat-val">${count}</span></div>
-    <div class="coll-stat"><span class="coll-stat-label">Market Value</span><span class="coll-stat-val">$${tmv.toFixed(2)}</span></div>
-    <div class="coll-stat"><span class="coll-stat-label">Cost Basis</span><span class="coll-stat-val">$${cost.toFixed(2)}</span></div>
-    <div class="coll-stat"><span class="coll-stat-label">P/L</span><span class="coll-stat-val" style="color:${plColor}">${pl>=0?'+$':'-$'}${Math.abs(pl).toFixed(2)}</span></div>
-    <div class="coll-stat"><span class="coll-stat-label">Return</span><span class="coll-stat-val" style="color:${retColor}">${ret>=0?'+':''}${ret.toFixed(1)}%</span></div>`;
+  p1.innerHTML = `
+    <div class="bw-stat"><div class="bw-stat-lbl">Cards</div><div class="bw-stat-val">${count}</div></div>
+    <div class="bw-stat"><div class="bw-stat-lbl">Market</div><div class="bw-stat-val">$${tmv.toFixed(2)}</div></div>
+    <div class="bw-stat"><div class="bw-stat-lbl">Cost</div><div class="bw-stat-val">$${cost.toFixed(2)}</div></div>
+    <div class="bw-stat"><div class="bw-stat-lbl">P/L</div><div class="bw-stat-val" style="color:${plColor}">${pl>=0?'+$':'-$'}${Math.abs(pl).toFixed(2)}</div></div>`;
+  p2.innerHTML = `
+    <div class="bw-stat"><div class="bw-stat-lbl">Return</div><div class="bw-stat-val" style="color:${retColor}">${ret>=0?'+':''}${ret.toFixed(1)}%</div></div>
+    <div class="bw-stat"><div class="bw-stat-lbl">Wax</div><div class="bw-stat-val">$${wax.toFixed(2)}</div></div>
+    <div class="bw-stat"><div class="bw-stat-lbl">Singles</div><div class="bw-stat-val">$${singles.toFixed(2)}</div></div>
+    <div class="bw-stat"><div class="bw-stat-lbl">Avg Cost</div><div class="bw-stat-val">$${avgCost.toFixed(2)}</div></div>`;
 }
 function filterCards() { renderCardsTable(); }
 
@@ -3235,7 +3299,7 @@ async function deleteCard(idx) {
 
 function filterType(type, el) {
   cardFilter = type;
-  document.querySelectorAll('.chip[id^="filter-"]').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.bw-chip[id^="filter-"]').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   renderCardsTable();
 }
@@ -4386,6 +4450,41 @@ function updateSrFocus(items) {
 document.addEventListener('DOMContentLoaded', () => {
   const si = $('search-input');
   if (si) si.addEventListener('input', e => { _srFocused = -1; renderSearchResults(e.target.value); });
+
+  // Bowman stat carousel — sync the dot indicator to whichever page is snapped into view.
+  const statScroll = $('collStatScroll');
+  if (statScroll) {
+    const dots = [...document.querySelectorAll('#collStatDots .bw-stat-dot')];
+    statScroll.addEventListener('scroll', () => {
+      const page = Math.round(statScroll.scrollLeft / statScroll.clientWidth);
+      dots.forEach((d,i) => d.classList.toggle('active', i === page));
+    });
+  }
+
+  // App header hides on scroll-down, reveals on scroll-up. Tracked against
+  // an anchor point (not just the previous tick) so a real ~16px scroll is
+  // needed to flip state — trackpad/momentum settle jitter (a few px of
+  // reverse drift as a scroll comes to rest) can't falsely re-trigger it.
+  // Deliberately NOT resizing .content's padding here: shrinking it changes
+  // the scrollable height mid-gesture, which recomputes scrollTop and feeds
+  // straight back into this same listener — a self-undoing loop where the
+  // header reveals itself again the instant it hides.
+  const topbar = document.querySelector('.topbar');
+  const content = document.querySelector('.content');
+  if (topbar && content) {
+    let anchorY = 0;
+    content.addEventListener('scroll', () => {
+      const y = content.scrollTop;
+      if (y < 40) {
+        topbar.classList.remove('hidden'); anchorY = y; return;
+      }
+      if (y - anchorY > 16) {
+        topbar.classList.add('hidden'); anchorY = y;
+      } else if (anchorY - y > 16) {
+        topbar.classList.remove('hidden'); anchorY = y;
+      }
+    });
+  }
 });
 function renderSearchResults(q) {
   const el = $('search-results');
