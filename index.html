@@ -109,9 +109,15 @@
 
     /* Hero player card: avatar + name on their own row (name was truncating
        to "Bill…" squeezed against the metrics), Value/P/L flow below;
-       Cards is dropped as the third metric doesn't fit meaningfully here */
-    #hero-player > div{flex-wrap:wrap;row-gap:10px;padding:16px 18px !important}
+       Cards is dropped as the third metric doesn't fit meaningfully here.
+       Value/P&L are stretched to split the row evenly instead of hugging
+       the left edge and leaving the rest of the card empty. */
+    #hero-player > div{flex-wrap:wrap;row-gap:14px;padding:16px 18px !important}
     #hero-player > div > div:nth-child(2){flex:1 1 100% !important}
+    #hero-player > div > div:nth-child(3),
+    #hero-player > div > div:nth-child(4){flex:1 !important;text-align:left !important}
+    #hero-player > div > div:nth-child(3) > div:last-child,
+    #hero-player > div > div:nth-child(4) > div:last-child{font-size:22px !important}
     #hero-player > div > div:nth-last-child(1){display:none !important}
 
     /* Metrics strip: 4 equal columns don't fit "Max Bid $70.00" at this
@@ -356,8 +362,8 @@
      tier (the badge already carries that meaning) and no more three
      individually bordered/colored link chips per row. */
   .wl-tier{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px}
-  .wl-rlink{color:var(--v-text-3);font-size:11px;text-decoration:none;margin-right:14px;transition:color .15s}
-  .wl-rlink:hover{color:var(--text-primary)}
+  .wl-rlink{color:var(--accent);font-size:11px;text-decoration:none;margin-right:14px;transition:opacity .15s}
+  .wl-rlink:hover{opacity:.75}
   .wl-del{background:none;border:none;color:var(--v-text-3);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;opacity:0;transition:opacity .15s,color .15s}
   #wl-table tbody tr:hover .wl-del{opacity:1}
   .wl-del:hover{color:var(--v-red)}
@@ -370,7 +376,7 @@
   .went-nm{font-size:15px;font-weight:600}
   .went-notes{font-size:11.5px;color:var(--v-text-3);margin-top:6px}
   .went-links{margin-top:8px;padding-top:8px;border-top:1px solid var(--v-hairline);display:flex;gap:16px}
-  .went-links a{color:var(--v-text-3);font-size:11px;text-decoration:none}
+  .went-links a{color:var(--accent);font-size:11px;text-decoration:none}
   .tier-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
   .tier-badge.low{background:var(--green-bg);color:var(--green)}
   .tier-badge.medium{background:var(--yellow-bg);color:var(--yellow)}
@@ -811,6 +817,11 @@
     transform:translateY(12px);transition:transform .18s}
   .val-modal-overlay.open .val-modal{transform:translateY(0)}
   .val-modal-hdr{padding:18px 20px 16px;display:flex;align-items:flex-start;gap:16px;border-bottom:1px solid var(--v-hairline)}
+  /* This modal's sections (Comps/Price Goals/Ownership) used the page-wide
+     .vsec top padding, which reads fine spread across a full page but left
+     visible dead air stacked three times in a compact modal — tightened
+     here only, so the calculator form elsewhere keeps its normal rhythm. */
+  #val-modal-overlay .vsec{padding-top:16px}
   .vm-icon-btn{width:29px;height:29px;border-radius:50%;border:none;flex-shrink:0;
     background:rgba(255,255,255,0.055);color:var(--v-text-2);font-size:14px;cursor:pointer;
     display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s}
@@ -835,7 +846,7 @@
   .vm-toggle-row{display:flex;align-items:center;gap:12px;padding:12px 8px}
   .vm-toggle{width:42px;height:25px;border-radius:14px;background:rgba(255,255,255,0.09);position:relative;
     flex-shrink:0;border:none;cursor:pointer;padding:0;transition:background .2s}
-  .vm-toggle.on{background:var(--v-green)}
+  .vm-toggle.on{background:var(--accent)}
   .vm-toggle-knob{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:#fff;
     box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .2s}
   .vm-toggle.on .vm-toggle-knob{transform:translateX(17px)}
@@ -844,7 +855,8 @@
   .vm-toggle-sub{font-size:11.5px;color:var(--v-text-3);margin-top:1px}
   .vm-toggle-sub.g{color:var(--v-green)}
   .vm-toggle-date{font-size:12.5px;color:var(--text-primary);background:rgba(255,255,255,0.07);border:none;
-    border-radius:8px;padding:6px 9px;flex-shrink:0;font-family:inherit;outline:none;color-scheme:dark}
+    border-radius:8px;padding:6px 10px;flex-shrink:0;font-family:inherit;outline:none;color-scheme:dark;
+    text-align:center;text-align-last:center}
   /* Intent (Hold/Flip/Watching) — a neutral segmented control like Type,
      not a traffic-light. These are states you're tracking, not a verdict,
      so they don't need alarm colors. */
@@ -1128,7 +1140,7 @@
           <table id="wl-table">
             <thead>
               <tr>
-                <th style="text-align:center;width:90px;cursor:pointer;user-select:none" onclick="toggleWlSort()" id="wl-sort-th">Value ↓</th>
+                <th style="text-align:center;width:90px;cursor:pointer;user-select:none" onclick="toggleWlSort()" id="wl-sort-th">Price ↓</th>
                 <th>Player</th>
                 <th style="text-align:center;width:80px">AUTO</th>
                 <th style="text-align:center;width:70px">S/N</th>
@@ -2414,7 +2426,7 @@ function setWlFilter(f, el) {
 function toggleWlSort() {
   _wlSortDir *= -1;
   const th = $('wl-sort-th');
-  if (th) th.textContent = 'Priority ' + (_wlSortDir === 1 ? '↓' : '↑');
+  if (th) th.textContent = 'Price ' + (_wlSortDir === 1 ? '↓' : '↑');
   renderWatchlistFull();
 }
 
@@ -2427,7 +2439,7 @@ function renderWatchlistFull() {
   list.sort((a,b) => { const ord={high:0,medium:1,low:2}; return _wlSortDir * ((ord[a.priority]||1)-(ord[b.priority]||1)); });
 
   if (!list.length) {
-    const emptyMsg = `No players on watchlist${_wlFilter!=='all'?' for this priority':''} — click + Add Player to get started.`;
+    const emptyMsg = `No players on watchlist${_wlFilter!=='all'?' at this price':''} — click + Add Player to get started.`;
     tbody.innerHTML = `<tr><td colspan="7" style="padding:28px;text-align:center;color:var(--text-muted);font-size:13px">${emptyMsg}</td></tr>`;
     if (cardList) cardList.innerHTML = `<div class="val-empty">${emptyMsg}</div>`;
     return;
@@ -4046,7 +4058,8 @@ function openValCard(id) {
     <a href="https://www.ebay.com/sch/i.html?_nkw=${ebayQ}" target="_blank" rel="noopener noreferrer">Active</a>
     <a href="https://www.ebay.com/sch/i.html?_nkw=${ebayQ}&LH_Complete=1&LH_Sold=1" target="_blank" rel="noopener noreferrer">Sold</a>`;
 
-  // Decision badge
+  // Decision badge — hidden entirely when there's no decision to show,
+  // rather than a placeholder "—" that serves no purpose.
   const db = $('vm-decision-badge');
   if (e.status === 'sold') {
     db.textContent = 'SOLD'; db.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;background:rgba(48,209,88,0.14);color:var(--v-green)';
@@ -4055,7 +4068,7 @@ function openValCard(id) {
   } else if (e.decision === 'PASS') {
     db.textContent = 'PASS'; db.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;background:rgba(255,69,58,0.14);color:var(--v-red)';
   } else {
-    db.textContent = '—';   db.style.cssText = 'font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;background:var(--v-surface-2);color:var(--v-text-3)';
+    db.textContent = ''; db.style.cssText = 'display:none';
   }
 
   // Metrics
@@ -4628,7 +4641,7 @@ boot();
       </div>
       <div class="vrow" style="display:block">
         <span class="vrow-k" style="display:block;margin-bottom:8px">Notes</span>
-        <textarea id="vm-notes" placeholder="Add notes, context, or reasons..." class="vrow-in" style="width:100%;min-height:60px;resize:vertical;font-size:13px;font-weight:400;text-align:left;line-height:1.5"></textarea>
+        <textarea id="vm-notes" placeholder="Add notes, context, or reasons..." class="vrow-in" style="width:100%;min-height:44px;resize:vertical;font-size:13px;font-weight:400;text-align:left;line-height:1.5"></textarea>
       </div>
     </div>
 
@@ -4929,7 +4942,7 @@ boot();
     <div class="vgroup" style="margin:16px 20px 0">
       <div class="vrow"><span class="vrow-k">Player Name</span>
         <input id="wl-player" class="vrow-in" type="text" placeholder="e.g. Victor Rodrigues" onkeydown="if(event.key==='Enter')saveWlEntry()"></div>
-      <div class="vrow"><span class="vrow-k">Priority</span>
+      <div class="vrow"><span class="vrow-k">Price</span>
         <div class="seg-ctrl" style="width:auto">
           <button class="wl-priority-btn" data-p="low" onclick="setWlPriority(this)">Low</button>
           <button class="wl-priority-btn active" data-p="medium" onclick="setWlPriority(this)">Medium</button>
