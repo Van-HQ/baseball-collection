@@ -167,9 +167,6 @@
     .cd-comps-row{grid-template-columns:repeat(3,1fr) !important}
     .cd-nav-arrow{display:none}
 
-    /* Hover preview is desktop-only */
-    #card-preview{display:none !important}
-
     /* Watchlist table */
     #wl-table th:nth-child(n+5),#wl-table td:nth-child(n+5){display:none}
     #wl-table th:last-child,#wl-table td:last-child{display:table-cell}
@@ -582,17 +579,6 @@
   body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px}
 
 
-
-  /* CARD HOVER PREVIEW */
-  #card-preview{position:fixed;z-index:9000;pointer-events:none;opacity:0;transition:opacity .15s;width:220px;background:rgba(8,8,8,0.97);border:1px solid #2d2d2d;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-  #card-preview.visible{opacity:1}
-  .cp-header{padding:12px 14px 10px;border-bottom:1px solid #1e1e1e;border-left:2px solid var(--accent)}
-  .cp-player{font-size:13px;font-weight:800;color:#fff;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cp-parallel{font-size:10px;color:#666;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cp-body{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
-  .cp-stat{display:flex;flex-direction:column;gap:2px}
-  .cp-stat-label{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#555}
-  .cp-stat-val{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.3px}
 
   /* TOASTS */
   #toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:10001;pointer-events:none}
@@ -1670,28 +1656,6 @@ function closeSidebar() {
 }
 
 
-// ── CARD HOVER PREVIEW ──
-let _cpTimer = null;
-function _getCP() {
-  let el = document.getElementById('card-preview');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'card-preview';
-    el.innerHTML = `
-      <div class="cp-header">
-        <div class="cp-player" id="cp-player"></div>
-        <div class="cp-parallel" id="cp-parallel"></div>
-      </div>
-      <div class="cp-body">
-        <div class="cp-stat"><div class="cp-stat-label">Cost</div><div class="cp-stat-val" id="cp-cost"></div></div>
-        <div class="cp-stat"><div class="cp-stat-label">Value</div><div class="cp-stat-val" id="cp-tmv"></div></div>
-        <div class="cp-stat"><div class="cp-stat-label">P/L</div><div class="cp-stat-val" id="cp-pl"></div></div>
-        <div class="cp-stat"><div class="cp-stat-label">Year</div><div class="cp-stat-val" id="cp-year"></div></div>
-      </div>`;
-    document.body.appendChild(el);
-  }
-  return el;
-}
 // Attach a horizontal swipe gesture. onSwipe(-1) = swiped right (previous),
 // onSwipe(1) = swiped left (next). Ignores mostly-vertical drags so scrolling still works.
 function _addSwipe(el, onSwipe) {
@@ -1710,39 +1674,6 @@ function _addSwipe(el, onSwipe) {
     onSwipe(dx < 0 ? 1 : -1);
   }, {passive:true});
 }
-
-function showCardPreview(card, e) {
-  if (_isMobile()) return;   // hover preview is desktop-only
-  clearTimeout(_cpTimer);
-  const cp = _getCP();
-  document.getElementById('cp-player').textContent = card.player;
-  document.getElementById('cp-parallel').textContent = [card.parallel, card.card_no].filter(Boolean).join(' · ') || '—';
-  document.getElementById('cp-cost').textContent = card.cost > 0 ? '$'+card.cost.toFixed(2) : 'Ripped';
-  document.getElementById('cp-tmv').textContent = '$'+(card.tmv||0).toFixed(2);
-  const pl = (card.tmv||0) - (card.cost||0);
-  const plEl = document.getElementById('cp-pl');
-  plEl.textContent = (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2);
-  plEl.style.color = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : '#999';
-  document.getElementById('cp-year').textContent = card.year || '—';
-  _positionCP(cp, e);
-  cp.classList.add('visible');
-}
-function _positionCP(cp, e) {
-  const W = 220, H = 145, pad = 12;
-  let x = e.clientX + 18, y = e.clientY - 70;
-  if (x + W > window.innerWidth - pad) x = e.clientX - W - 18;
-  if (y + H > window.innerHeight - pad) y = window.innerHeight - H - pad;
-  if (y < pad) y = pad;
-  cp.style.left = x + 'px';
-  cp.style.top  = y + 'px';
-}
-function hideCardPreview() {
-  _cpTimer = setTimeout(() => { const cp = document.getElementById('card-preview'); if(cp) cp.classList.remove('visible'); }, 80);
-}
-document.addEventListener('mousemove', e => {
-  const cp = document.getElementById('card-preview');
-  if (cp && cp.classList.contains('visible')) _positionCP(cp, e);
-});
 
 // ── TOASTS ──
 function showToast(msg, type='success') {
@@ -2575,7 +2506,7 @@ async function deleteWlEntry(id) {
 // --- RECENT SINGLES ---
 function renderRecentSingles() {
   const el = $('recent-singles');
-  const sorted = [...DATA.singles_transactions].reverse().slice(0,10);
+  const sorted = DATA.singles_transactions.slice(0,10);
   el.innerHTML = sorted.map(t=>`
     <div class="txn-item">
       <div>
@@ -2598,7 +2529,7 @@ function renderTransactions() {
       </div>
       <div class="txn-price">$${t.price.toFixed(2)}</div>
     </div>`).join('');
-  $('singles-list').innerHTML = [...DATA.singles_transactions].reverse().map(t=>`
+  $('singles-list').innerHTML = DATA.singles_transactions.map(t=>`
     <div class="txn-item" style="cursor:pointer" onclick="openEditTxn('single','${t.id}')" title="Click to edit">
       <div>
         <div class="txn-name">${t.player}</div>
@@ -2846,7 +2777,7 @@ function renderCardsTable() {
     const plClr = pos ? 'var(--green)' : neg ? 'var(--red)' : 'var(--text-muted)';
     const dolStr = (d >= 0 ? '+' : '') + '$' + Math.abs(d).toFixed(2);
     const pctStr = c.cost >= 5 ? `<small>${c.pl >= 0 ? '+' : ''}${c.pl.toFixed(0)}%</small>` : '';
-    return `<tr style="cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg-hover)';showCardPreview(filteredCards[${idx}],event)" onmouseout="this.style.background='';hideCardPreview()" onclick="openCardDetail(${idx})">
+    return `<tr style="cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''" onclick="openCardDetail(${idx})">
       <td class="frozen slot" style="text-align:center;font-size:11px;font-weight:600;cursor:text" title="Click to edit slot" onclick="if(_isMobile()){return}event.stopPropagation();editSlot(this,${idx})" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'">${c.binder||'—'}</td>
       <td class="frozen player player-name" style="cursor:text" title="Click to edit player" onclick="if(_isMobile()){return}event.stopPropagation();editPlayer(this,${idx})">${c.player}</td>
       <td onclick="event.stopPropagation();cycleStatus(${idx})"><span class="bw-status" title="Click to cycle status">${statusDot}${statusLab}</span></td>
