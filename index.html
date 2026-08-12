@@ -4018,7 +4018,7 @@ function clearComps() {
 }
 
 function resetValuation() {
-  ['v-player','v-year','v-parallel','v-cardno','v-listing','v-shipping','v-c1','v-c2','v-c3','v-c4','v-c5']
+  ['v-player','v-year','v-parallel','v-cardno','v-listing','v-shipping','v-c1','v-c2','v-c3','v-c4','v-c5','v-paste']
     .forEach(id => $(id).value = '');
   document.querySelectorAll('#v-type-seg .seg-btn').forEach((b,i) => b.classList.toggle('active', i===0));
   $('v-scp-block').style.display = 'none';
@@ -4273,7 +4273,7 @@ function renderWatchRow() {
 }
 
 let _vlFilter = 'all';
-let _vlSort = { col: 'discount', dir: -1 };
+let _vlSort = { col: 'date', dir: 1 };
 
 function setVlFilter(btn) {
   document.querySelectorAll('.vl-tab').forEach(b => b.classList.remove('active'));
