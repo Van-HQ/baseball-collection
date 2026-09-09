@@ -1,0 +1,35 @@
+name: Keep Supabase project active
+
+# Supabase's free tier pauses a project after 7 days with no API activity.
+# This app is a static GitHub Pages site (no server), so if nobody opens it
+# for a week the project would otherwise get paused. This workflow just
+# pings the database on a schedule so that never happens, regardless of
+# whether the site itself gets visited.
+#
+# The request below is a trivial read (SELECT id LIMIT 1 on the `cards`
+# table) using the anon key — the same key already public in index.html,
+# since reads are open to anyone in this app's RLS policy. No new secrets,
+# no schema changes, nothing written to the database.
+
+on:
+  schedule:
+    # Every 3 days at 12:00 UTC — comfortably inside Supabase's 7-day window.
+    - cron: '0 12 */3 * *'
+  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab to test
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          http_status=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            "https://mtvseizlulonxxnktdwz.supabase.co/rest/v1/cards?select=id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10dnNlaXpsdWxvbnh4bmt0ZHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NTgzMDQsImV4cCI6MjEwMTUzNDMwNH0.h7ZlaPztQWAYatLqFRC7iTlEbBfGDJswCNUo8bSeAog" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10dnNlaXpsdWxvbnh4bmt0ZHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NTgzMDQsImV4cCI6MjEwMTUzNDMwNH0.h7ZlaPztQWAYatLqFRC7iTlEbBfGDJswCNUo8bSeAog")
+          echo "HTTP status: $http_status"
+          cat /tmp/response.json
+          if [ "$http_status" -lt 200 ] || [ "$http_status" -ge 300 ]; then
+            echo "::error::Supabase ping failed with status $http_status"
+            exit 1
+          fi
